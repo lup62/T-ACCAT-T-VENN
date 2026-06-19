@@ -1,22 +1,16 @@
 import {Link} from 'react-router-dom'
+import { AppBar, Toolbar, Typography } from "@mui/material";
 
-function Navbar(){
+function Navbar() {
     return (
-        <nav>
-            <Link to="/">Home</Link>
-            {" | "}
-            <Link to="/annunci">Annunci</Link>
-            {" | "}
-            <Link to="/profilo">Profilo</Link>
-            {" | "}
-            <Link to="/chat">Chat</Link>
-            {" | "}
-            <Link to="/login">Login</Link>
-            {" | "}
-            <Link to="/register">Registrati</Link>
-            {" | "}
-        </nav>
-    )
+        <AppBar position="sticky">
+            <Toolbar>
+                <Typography variant="h6">
+                    T&apos;ACCAT
+                </Typography>
+            </Toolbar>
+        </AppBar>
+    );
 }
 
 export default Navbar;
