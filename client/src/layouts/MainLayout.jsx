@@ -10,6 +10,7 @@ function MainLayout() {
                 minHeight: "100vh",
                 display: "flex",
                 flexDirection: "column",
+                bgcolor: "background.default",
             }}
         >
             <Navbar />
@@ -19,7 +20,7 @@ function MainLayout() {
                 maxWidth="lg"
                 sx={{
                     flex: 1,
-                    py: 4,
+                    py: { xs: 2, md: 5 },
                 }}
             >
                 <Outlet />

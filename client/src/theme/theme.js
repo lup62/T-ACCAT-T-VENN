@@ -8,6 +8,10 @@ const theme = createTheme({
         secondary: {
             main: "#ffb300",
         },
+        background: {
+            default: "#f8f7f2",
+            paper: "#ffffff",
+        },
     },
     shape: {
         borderRadius: 12,
