@@ -5,8 +5,9 @@ import {
     Typography,
     Box,
     Button,
+    IconButton,
 } from "@mui/material";
-
+import MenuIcon from "@mui/icons-material/Menu";
 import WorkIcon from "@mui/icons-material/Work";
 import farmerIcon from "../assets/farmerIcon.png"
 
@@ -48,7 +49,7 @@ function Navbar() {
                             letterSpacing: "-0.5px",
                         }}
                     >
-                        T&apos;ACCAT
+                        T&apos;ACCAT & T&apos;VENN
                     </Typography>
                 </Box>
 
@@ -75,12 +76,12 @@ function Navbar() {
                         to="/annunci"
                         color="inherit"
                     >
-                        Annunci
+                        Cerca annunci
                     </Button>
 
                     <Button
                         component={RouterLink}
-                        to="#"
+                        to="/come-funziona"
                         color="inherit"
                     >
                         Come funziona
@@ -108,6 +109,12 @@ function Navbar() {
                         to="/register"
                         variant="contained"
                         color="secondary"
+                        sx={{
+                            display: {
+                                xs: "none",
+                                md: "inline-flex",
+                            },
+                        }}
                         startIcon={
                             <Box
                                 component="img"
@@ -122,6 +129,20 @@ function Navbar() {
                     >
                         Registrati
                     </Button>
+
+
+                    {/*Modifiche per il mobile*/}
+                    <IconButton
+                        aria-label="Apri menu"
+                        sx={{
+                            display: {
+                                xs: "flex",
+                                md: "none",
+                            },
+                        }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
                 </Box>
             </Toolbar>
         </AppBar>
