@@ -1,8 +1,19 @@
+
+import { Box, Typography } from "@mui/material";
+
 function Footer() {
     return (
-        <footer>
-            <p>T&apos;ACCAT & T&apos;VENN — Marketplace agricolo per domanda e offerta di manodopera</p>
-        </footer>
+        <Box
+            component="footer"
+            sx={{
+                py: 3,
+                textAlign: "center",
+            }}
+        >
+            <Typography variant="body2">
+                © 2026 T&apos;ACCAT & T&apos;VENN
+            </Typography>
+        </Box>
     );
 }
 
