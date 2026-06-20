@@ -15,6 +15,7 @@ import {
     Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import WorkIcon from "@mui/icons-material/Work";
 import farmerIcon from "../assets/farmerIcon.png"
 
@@ -162,7 +163,42 @@ function Navbar() {
                 open={mobileMenuOpen}
                 onClose={() => setMobileMenuOpen(false)}
             >
-                <Box sx={{ width: 240 }} role="presentation">
+                <Box sx={{ width: 280 }} role="presentation">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            px: 2,
+                            py: 2,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                            }}
+                        >
+                            <WorkIcon color="primary" />
+                            <Typography
+                                variant="subtitle1"
+                                sx={{ fontWeight: 700 }}
+                            >
+                                T&apos;ACCAT & T&apos;VENN
+                            </Typography>
+                        </Box>
+
+                        <IconButton
+                            aria-label="Chiudi menu"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+
+                    <Divider />
+
                     <List>
                         {navLinks.map(({ label, to }) => (
                             <ListItem key={to} disablePadding>
@@ -189,17 +225,31 @@ function Navbar() {
                                 <ListItemText primary="Accedi" />
                             </ListItemButton>
                         </ListItem>
-
-                        <ListItem disablePadding>
-                            <ListItemButton
-                                component={RouterLink}
-                                to="/register"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <ListItemText primary="Registrati" />
-                            </ListItemButton>
-                        </ListItem>
                     </List>
+
+                    <Box sx={{ px: 2, py: 1 }}>
+                        <Button
+                            component={RouterLink}
+                            to="/register"
+                            onClick={() => setMobileMenuOpen(false)}
+                            variant="contained"
+                            color="secondary"
+                            fullWidth
+                            startIcon={
+                                <Box
+                                    component="img"
+                                    src={farmerIcon}
+                                    alt=""
+                                    sx={{
+                                        width: 22,
+                                        height: 22,
+                                    }}
+                                />
+                            }
+                        >
+                            Registrati
+                        </Button>
+                    </Box>
                 </Box>
             </Drawer>
         </AppBar>
