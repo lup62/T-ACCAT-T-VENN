@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
     AppBar,
@@ -6,12 +7,28 @@ import {
     Box,
     Button,
     IconButton,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import WorkIcon from "@mui/icons-material/Work";
 import farmerIcon from "../assets/farmerIcon.png"
 
+
+
+const navLinks = [
+    { label: "Home", to: "/" },
+    { label: "Cerca annunci", to: "/annunci" },
+    { label: "Come funziona", to: "/come-funziona" },
+];
+
 function Navbar() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
     return (
         <AppBar
             position="sticky"
@@ -63,29 +80,16 @@ function Navbar() {
                         gap: 1,
                     }}
                 >
-                    <Button
-                        component={RouterLink}
-                        to="/"
-                        color="inherit"
-                    >
-                        Home
-                    </Button>
-
-                    <Button
-                        component={RouterLink}
-                        to="/annunci"
-                        color="inherit"
-                    >
-                        Cerca annunci
-                    </Button>
-
-                    <Button
-                        component={RouterLink}
-                        to="/come-funziona"
-                        color="inherit"
-                    >
-                        Come funziona
-                    </Button>
+                    {navLinks.map(({ to, label }) => (
+                        <Button
+                            key={to}
+                            component={RouterLink}
+                            to={to}
+                            color="inherit"
+                        >
+                            {label}
+                        </Button>
+                    ))}
                 </Box>
 
                 {/* Azioni utente */}
@@ -100,6 +104,12 @@ function Navbar() {
                         component={RouterLink}
                         to="/login"
                         color="inherit"
+                        sx={{
+                            display: {
+                                xs: "none",
+                                md: "inline-flex",
+                            },
+                        }}
                     >
                         Accedi
                     </Button>
@@ -134,6 +144,7 @@ function Navbar() {
                     {/*Modifiche per il mobile*/}
                     <IconButton
                         aria-label="Apri menu"
+                        onClick={() => setMobileMenuOpen(true)}
                         sx={{
                             display: {
                                 xs: "flex",
@@ -145,6 +156,52 @@ function Navbar() {
                     </IconButton>
                 </Box>
             </Toolbar>
+
+            <Drawer
+                anchor="right"
+                open={mobileMenuOpen}
+                onClose={() => setMobileMenuOpen(false)}
+            >
+                <Box sx={{ width: 240 }} role="presentation">
+                    <List>
+                        {navLinks.map(({ label, to }) => (
+                            <ListItem key={to} disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to={to}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary={label} />
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+                    </List>
+
+                    <Divider />
+
+                    <List>
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                component={RouterLink}
+                                to="/login"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                <ListItemText primary="Accedi" />
+                            </ListItemButton>
+                        </ListItem>
+
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                component={RouterLink}
+                                to="/register"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                <ListItemText primary="Registrati" />
+                            </ListItemButton>
+                        </ListItem>
+                    </List>
+                </Box>
+            </Drawer>
         </AppBar>
     );
 }
