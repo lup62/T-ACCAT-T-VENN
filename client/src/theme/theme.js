@@ -3,18 +3,44 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
     palette: {
         primary: {
-            main: "#2e7d32",
+            main: "#387347",
         },
         secondary: {
-            main: "#ffb300",
+            main: "#69A62D",
         },
         background: {
-            default: "#c1ab5f",
-            paper: "#873f3f",
+            default: "#F7F5EF",
+            paper: "#FFFFFF",
+        },
+        text: {
+            primary: "#24301F",
+            secondary: "#5E6658",
+        },
+        success: {
+            main: "#69A62D",
+        },
+        warning: {
+            main: "#F2A96D",
+        },
+        error: {
+            main: "#BF6565",
         },
     },
-    shape: {
-        borderRadius: 12,
+
+    typography: {
+        fontFamily: '"Montserrat Alternates", system-ui, sans-serif',
+    },
+
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 16,
+                    textTransform: "none",
+                    fontWeight: 600,
+                },
+            },
+        },
     },
 });
 
