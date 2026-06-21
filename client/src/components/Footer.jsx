@@ -1,4 +1,3 @@
-
 import { Box, Typography } from "@mui/material";
 
 function Footer() {
@@ -8,6 +7,9 @@ function Footer() {
             sx={{
                 py: 3,
                 textAlign: "center",
+                bgcolor: "primary.main",
+                color: "primary.contrastText",
+                mt: "auto",
             }}
         >
             <Typography variant="body2">
