@@ -3,6 +3,7 @@ import sfondoHero from "../../assets/sfondoHero.png";
 
 function HomePage() {
     return (
+        <>
         <Box
             component="section"
             sx={{
@@ -82,6 +83,30 @@ function HomePage() {
                 </Button>
             </Stack>
         </Box>
+
+        <Box
+            component="section"
+            sx={{
+                mt: { xs: 6, md: 10 },
+                px: { xs: 3, md: 10 },
+            }}
+        >
+            <Typography
+                variant="h2"
+                component="h2"
+                sx={{
+                    display: "inline-block",
+                    bgcolor: "primary.main",
+                    color: "#FFFFFF",
+                    px: 3,
+                    py: 1,
+                    borderRadius: 1,
+                }}
+            >
+                L'iniziativa
+            </Typography>
+        </Box>
+        </>
     );
 }
 

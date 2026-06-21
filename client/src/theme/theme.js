@@ -30,6 +30,10 @@ const theme = createTheme({
         },
     },
 
+    shape: {
+        borderRadius: 16,
+    },
+
     //font di riferimento da Google fonts: https://fonts.google.com/share?selection.family=Montserrat+Alternates:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900
     typography: {
         fontFamily: '"Montserrat Alternates", system-ui, sans-serif',
@@ -53,17 +57,17 @@ const theme = createTheme({
     components: {
         MuiButton: {
             styleOverrides: {
-                root: {
-                    borderRadius: 16,
+                root: ({ theme }) => ({
+                    borderRadius: theme.shape.borderRadius,
                     textTransform: "none",
                     fontWeight: 600,
-                },
-                sizeLarge: {
-                    borderRadius: 24,
+                }),
+                sizeLarge: ({ theme }) => ({
+                    borderRadius: theme.shape.borderRadius * 1.5,
                     fontWeight: 700,
                     fontSize: "1.1rem",
                     padding: "14px 32px",
-                },
+                }),
                 contained: ({ ownerState, theme }) => {
                     const colorKey = ownerState.color || "primary";
                     const mainColor = theme.palette[colorKey]?.main;
