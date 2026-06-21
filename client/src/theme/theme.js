@@ -64,6 +64,18 @@ const theme = createTheme({
                     fontSize: "1.1rem",
                     padding: "14px 32px",
                 },
+                contained: ({ ownerState, theme }) => {
+                    const colorKey = ownerState.color || "primary";
+                    const mainColor = theme.palette[colorKey]?.main;
+
+                    return {
+                        border: "2px solid transparent",
+                        "&:hover": {
+                            backgroundColor: mainColor,
+                            borderColor: "#FFFFFF",
+                        },
+                    };
+                },
             },
         },
     },
