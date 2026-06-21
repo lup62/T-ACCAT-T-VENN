@@ -125,6 +125,9 @@ function Navbar() {
                                 xs: "none",
                                 md: "inline-flex",
                             },
+                            "&:hover": {
+                                color: "#FFFFFF",
+                            },
                         }}
                         startIcon={
                             <Box
@@ -151,6 +154,7 @@ function Navbar() {
                                 xs: "flex",
                                 md: "none",
                             },
+
                         }}
                     >
                         <MenuIcon />
@@ -235,6 +239,11 @@ function Navbar() {
                             variant="contained"
                             color="secondary"
                             fullWidth
+                            sx={{
+                                "&:hover": {
+                                    color: "#FFFFFF",
+                                },
+                            }}
                             startIcon={
                                 <Box
                                     component="img"
