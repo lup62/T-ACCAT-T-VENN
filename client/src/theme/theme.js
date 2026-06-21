@@ -58,6 +58,12 @@ const theme = createTheme({
                     textTransform: "none",
                     fontWeight: 600,
                 },
+                sizeLarge: {
+                    borderRadius: 24,
+                    fontWeight: 700,
+                    fontSize: "1.1rem",
+                    padding: "14px 32px",
+                },
             },
         },
     },

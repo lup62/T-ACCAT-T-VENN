@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Stack, Button } from "@mui/material";
 import sfondoHero from "../../assets/sfondoHero.png";
 
 function HomePage() {
@@ -56,6 +56,31 @@ function HomePage() {
             >
                 Coltiviamo nuove opportunità di lavoro
             </Typography>
+
+            <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{
+                    mt: 4,
+                    alignItems: { xs: "stretch", sm: "flex-start" },
+                }}
+            >
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                >
+                    Cerco lavoro
+                </Button>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                >
+                    Cerco lavoratori
+                </Button>
+            </Stack>
         </Box>
     );
 }
