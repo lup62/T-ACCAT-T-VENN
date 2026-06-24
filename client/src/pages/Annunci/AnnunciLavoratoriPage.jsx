@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
+import StatoVuoto from "./StatoVuoto";
 
 const ANNUNCI_VISIBILI = 2;
 
@@ -57,41 +58,50 @@ function AnnunciLavoratoriPage() {
                 Chi cerca lavoratori
             </Typography>
 
-            <Box
-                sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                        xs: "1fr",
-                        sm: "repeat(2, 1fr)",
-                        md: "repeat(3, 1fr)",
-                    },
-                    gap: 3,
-                }}
-            >
-                {annunciVisibili.map((annuncio) => (
-                    <AnnuncioCard
-                        key={annuncio.id}
-                        titolo={annuncio.titolo}
-                        tipoLavoro={annuncio.tipoLavoro}
-                        luogo={annuncio.luogo}
-                        periodo={annuncio.periodo}
-                        prezzo={annuncio.prezzo}
-                        profilo={annuncio.profilo}
-                        color="primary"
-                    />
-                ))}
-            </Box>
+            {annunci.length === 0 ? (
+                <StatoVuoto
+                    titolo="Nessun annuncio disponibile"
+                    descrizione="Al momento non ci sono aziende che cercano lavoratori. Torna a controllare presto."
+                />
+            ) : (
+                <>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(3, 1fr)",
+                            },
+                            gap: 3,
+                        }}
+                    >
+                        {annunciVisibili.map((annuncio) => (
+                            <AnnuncioCard
+                                key={annuncio.id}
+                                titolo={annuncio.titolo}
+                                tipoLavoro={annuncio.tipoLavoro}
+                                luogo={annuncio.luogo}
+                                periodo={annuncio.periodo}
+                                prezzo={annuncio.prezzo}
+                                profilo={annuncio.profilo}
+                                color="primary"
+                            />
+                        ))}
+                    </Box>
 
-            <Box sx={{ textAlign: "center", mt: 4 }}>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    size="large"
-                    onClick={() => setDialogOpen(true)}
-                >
-                    Vedi altri annunci
-                </Button>
-            </Box>
+                    <Box sx={{ textAlign: "center", mt: 4 }}>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            size="large"
+                            onClick={() => setDialogOpen(true)}
+                        >
+                            Vedi altri annunci
+                        </Button>
+                    </Box>
+                </>
+            )}
 
             <RegistratiDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
         </Box>
