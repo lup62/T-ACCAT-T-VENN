@@ -2,7 +2,7 @@ import { Box, Typography, Stack, Button, Card, CardContent } from "@mui/material
 
 
 import sfondoHero from "../../assets/sfondoHero.png";
-
+import fotoPasquale from "../../assets/fotoPasquale.jpeg"
 
 import HowItWorks from "../../components/HowItWorks";
 
@@ -197,7 +197,7 @@ function HomePage() {
                 Nascosta su mobile per non appesantire il layout verticale. */}
             <Box
                 component="img"
-                src={sfondoHero}
+                src={fotoPasquale}
                 alt="L'iniziativa"
                 sx={{
                     flex: "0 0 40%",
