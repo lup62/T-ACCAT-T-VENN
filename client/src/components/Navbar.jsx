@@ -23,7 +23,8 @@ import farmerIcon from "../assets/farmerIcon.png"
 
 const navLinks = [
     { label: "Home", to: "/" },
-    { label: "Cerca annunci", to: "/annunci" },
+    { label: "Offerte di lavoro", to: "/annunci/lavoro" },
+    { label: "Cerca personale", to: "/annunci/lavoratori" },
     { label: "Come funziona", to: "/#come-funziona", isAnchor: true },
 ];
 
@@ -76,7 +77,7 @@ function Navbar() {
                     sx={{
                         display: {
                             xs: "none",
-                            md: "flex",
+                            lg: "flex",
                         },
                         gap: 1,
                     }}
@@ -108,7 +109,7 @@ function Navbar() {
                         sx={{
                             display: {
                                 xs: "none",
-                                md: "inline-flex",
+                                lg: "inline-flex",
                             },
                         }}
                     >
@@ -123,7 +124,7 @@ function Navbar() {
                         sx={{
                             display: {
                                 xs: "none",
-                                md: "inline-flex",
+                                lg: "inline-flex",
                             },
                             "&:hover": {
                                 color: "#FFFFFF",
@@ -152,7 +153,7 @@ function Navbar() {
                         sx={{
                             display: {
                                 xs: "flex",
-                                md: "none",
+                                lg: "none",
                             },
 
                         }}

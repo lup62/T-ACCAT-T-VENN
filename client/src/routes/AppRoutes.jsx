@@ -2,7 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import HomePage from '../pages/Home/HomePage.jsx'
 import LoginPage from '../pages/Login/LoginPage.jsx'
 import RegisterPage from '../pages/Register/RegisterPage.jsx'
-import AnnunciPage from '../pages/Annunci/AnnunciPage.jsx'
+import AnnunciLavoroPage from '../pages/Annunci/AnnunciLavoroPage.jsx'
+import AnnunciLavoratoriPage from '../pages/Annunci/AnnunciLavoratoriPage.jsx'
 import ProfiloPage from '../pages/Profilo/ProfiloPage.jsx'
 import ChatPage from '../pages/Chat/ChatPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
@@ -14,7 +15,8 @@ function AppRoutes() {
                 <Route index element={<HomePage />} />
                 <Route path="login" element={<LoginPage />} />
                 <Route path="register" element={<RegisterPage />} />
-                <Route path="annunci" element={<AnnunciPage />} />
+                <Route path="annunci/lavoro" element={<AnnunciLavoroPage />} />
+                <Route path="annunci/lavoratori" element={<AnnunciLavoratoriPage />} />
                 <Route path="profilo" element={<ProfiloPage />} />
                 <Route path="chat" element={<ChatPage />} />
             </Route>

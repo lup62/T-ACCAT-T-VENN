@@ -1,4 +1,5 @@
 import { Box, Typography, Stack, Button, Card, CardContent } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 
 import sfondoHero from "../../assets/sfondoHero.png";
@@ -7,6 +8,8 @@ import fotoPasquale from "../../assets/fotoPasquale.jpeg"
 import HowItWorks from "../../components/HowItWorks";
 
 function HomePage() {
+    const navigate = useNavigate();
+
     return (
         <>
 
@@ -81,11 +84,21 @@ function HomePage() {
                     alignItems: { xs: "stretch", sm: "flex-start" },
                 }}
             >
-                <Button variant="contained" color="secondary" size="large">
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                    onClick={() => navigate("/annunci/lavoro")}
+                >
                     Cerco lavoro
                 </Button>
 
-                <Button variant="contained" color="primary" size="large">
+                <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    onClick={() => navigate("/annunci/lavoratori")}
+                >
                     Cerco lavoratori
                 </Button>
             </Stack>
