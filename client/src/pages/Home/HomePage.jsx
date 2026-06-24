@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Button } from "@mui/material";
+import { Box, Typography, Stack, Button, Card, CardContent } from "@mui/material";
 import sfondoHero from "../../assets/sfondoHero.png";
 
 function HomePage() {
@@ -11,7 +11,6 @@ function HomePage() {
                 position: "relative",
                 left: "50%",
                 marginLeft: "-50vw",
-                mt: { xs: -2, md: -5 },
                 minHeight: "calc(100vh - 72px)",
                 display: "flex",
                 flexDirection: "column",
@@ -37,20 +36,18 @@ function HomePage() {
                 variant="h2"
                 component="h1"
                 sx={{
-                    fontWeight: 800,
                     mb: 2,
                     color: "#FFFFFF",
                     maxWidth: 650,
                 }}
             >
-                T&apos;ACCAT &amp; T&apos;VENN
+                T&apos;accat &amp; T&apos;venn
             </Typography>
 
             <Typography
                 variant="h5"
                 component="p"
                 sx={{
-                    fontWeight: 500,
                     color: "#FFFFFF",
                     maxWidth: 620,
                 }}
@@ -92,7 +89,7 @@ function HomePage() {
             }}
         >
             <Typography
-                variant="h2"
+                variant="h3"
                 component="h2"
                 sx={{
                     display: "inline-block",
@@ -105,6 +102,84 @@ function HomePage() {
             >
                 L'iniziativa
             </Typography>
+
+            <Typography
+                variant="h6"
+                component="p"
+                sx={{
+                    mt: 3,
+                    maxWidth: 850,
+                    color: "text.secondary",
+                    lineHeight: 1.8,
+                }}
+            >
+                T&apos;accat &amp; T&apos;venn è la piattaforma che mette in contatto
+                lavoratori agricoli e imprenditori del territorio. Chi cerca un&apos;opportunità
+                può mostrare le proprie disponibilità e competenze; chi cerca manodopera
+                può pubblicare richieste di lavoro in modo semplice e diretto.
+            </Typography>
+
+            <Stack
+                direction={{ xs: "column", md: "row" }}
+                spacing={3}
+                sx={{ mt: 5 }}
+            >
+                <Card
+                    sx={{
+                        flex: 1,
+                        borderRadius: 3,
+                        boxShadow: 3,
+                    }}
+                >
+                    <CardContent sx={{ p: 4 }}>
+                        <Typography
+                            variant="h4"
+                            component="h3"
+                            color="secondary"
+                            sx={{ mb: 2 }}
+                        >
+                            Per chi cerca lavoro
+                        </Typography>
+
+                        <Typography color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+                            Pubblica la tua disponibilità, indica le tue competenze e trova
+                            aziende agricole che cercano lavoratori nella tua zona.
+                        </Typography>
+
+                        <Button variant="outlined" color="secondary">
+                            Scopri le opportunità
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                <Card
+                    sx={{
+                        flex: 1,
+                        borderRadius: 3,
+                        boxShadow: 3,
+                    }}
+                >
+                    <CardContent sx={{ p: 4 }}>
+                        <Typography
+                            variant="h4"
+                            component="h3"
+                            color="primary"
+                            sx={{ mb: 2 }}
+                        >
+                            Per chi cerca lavoratori
+                        </Typography>
+
+                        <Typography color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+                            Pubblica una richiesta di manodopera, trova profili adatti alle
+                            tue esigenze e organizza il lavoro in modo più rapido.
+                        </Typography>
+
+                        <Button variant="outlined" color="primary">
+                            Pubblica una richiesta
+                        </Button>
+                    </CardContent>
+                </Card>
+            </Stack>
         </Box>
         </>
     );

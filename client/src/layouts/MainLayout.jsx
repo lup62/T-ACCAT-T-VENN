@@ -20,7 +20,7 @@ function MainLayout() {
                 maxWidth="lg"
                 sx={{
                     flex: 1,
-                    py: { xs: 2, md: 5 },
+                    pb: { xs: 2, md: 5 },
                 }}
             >
                 <Outlet />
