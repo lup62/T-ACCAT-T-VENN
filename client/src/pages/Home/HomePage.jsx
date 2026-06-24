@@ -1,5 +1,6 @@
 import { Box, Typography, Stack, Button, Card, CardContent } from "@mui/material";
 import sfondoHero from "../../assets/sfondoHero.png";
+import HowItWorks from "../../components/HowItWorks";
 
 function HomePage() {
     return (
@@ -85,102 +86,111 @@ function HomePage() {
             component="section"
             sx={{
                 mt: { xs: 6, md: 10 },
+                mb: { xs: 6, md: 10 },
                 px: { xs: 3, md: 10 },
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                gap: { xs: 6, md: 8 },
+                alignItems: { md: "center" },
             }}
         >
-            <Typography
-                variant="h3"
-                component="h2"
-                sx={{
-                    display: "inline-block",
-                    bgcolor: "primary.main",
-                    color: "#FFFFFF",
-                    px: 3,
-                    py: 1,
-                    borderRadius: 1,
-                }}
-            >
-                L'iniziativa
-            </Typography>
-
-            <Typography
-                variant="h6"
-                component="p"
-                sx={{
-                    mt: 3,
-                    maxWidth: 850,
-                    color: "text.secondary",
-                    lineHeight: 1.8,
-                }}
-            >
-                T&apos;accat &amp; T&apos;venn è la piattaforma che mette in contatto
-                lavoratori agricoli e imprenditori del territorio. Chi cerca un&apos;opportunità
-                può mostrare le proprie disponibilità e competenze; chi cerca manodopera
-                può pubblicare richieste di lavoro in modo semplice e diretto.
-            </Typography>
-
-            <Stack
-                direction={{ xs: "column", md: "row" }}
-                spacing={3}
-                sx={{ mt: 5 }}
-            >
-                <Card
+            {/* Colonna sinistra: testo + card */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                    variant="h3"
+                    component="h2"
                     sx={{
-                        flex: 1,
-                        borderRadius: 3,
-                        boxShadow: 3,
+                        display: "inline-block",
+                        bgcolor: "primary.main",
+                        color: "#FFFFFF",
+                        px: 3,
+                        py: 1,
+                        borderRadius: 1,
                     }}
                 >
-                    <CardContent sx={{ p: 4 }}>
-                        <Typography
-                            variant="h4"
-                            component="h3"
-                            color="secondary"
-                            sx={{ mb: 2 }}
-                        >
-                            Per chi cerca lavoro
-                        </Typography>
+                    L'iniziativa
+                </Typography>
 
-                        <Typography color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
-                            Pubblica la tua disponibilità, indica le tue competenze e trova
-                            aziende agricole che cercano lavoratori nella tua zona.
-                        </Typography>
-
-                        <Button variant="outlined" color="secondary">
-                            Scopri le opportunità
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                <Card
+                <Typography
+                    variant="h6"
+                    component="p"
                     sx={{
-                        flex: 1,
-                        borderRadius: 3,
-                        boxShadow: 3,
+                        mt: 3,
+                        color: "text.secondary",
+                        lineHeight: 1.8,
                     }}
                 >
-                    <CardContent sx={{ p: 4 }}>
-                        <Typography
-                            variant="h4"
-                            component="h3"
-                            color="primary"
-                            sx={{ mb: 2 }}
-                        >
-                            Per chi cerca lavoratori
-                        </Typography>
+                    T&apos;accat &amp; T&apos;venn è la piattaforma che mette in contatto
+                    lavoratori agricoli e imprenditori del territorio. Chi cerca un&apos;opportunità
+                    può mostrare le proprie disponibilità e competenze; chi cerca manodopera
+                    può pubblicare richieste di lavoro in modo semplice e diretto.
+                </Typography>
 
-                        <Typography color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
-                            Pubblica una richiesta di manodopera, trova profili adatti alle
-                            tue esigenze e organizza il lavoro in modo più rapido.
-                        </Typography>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 4 }}>
+                    <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3 }}>
+                        <CardContent sx={{ p: 4 }}>
+                            <Typography
+                                variant="h4"
+                                component="h3"
+                                color="secondary"
+                                sx={{ mb: 2 }}
+                            >
+                                Per chi cerca lavoro
+                            </Typography>
 
-                        <Button variant="outlined" color="primary">
-                            Pubblica una richiesta
-                        </Button>
-                    </CardContent>
-                </Card>
-            </Stack>
+                            <Typography color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+                                Pubblica la tua disponibilità, indica le tue competenze e trova
+                                aziende agricole che cercano lavoratori nella tua zona.
+                            </Typography>
+
+                            <Button variant="outlined" color="secondary">
+                                Scopri le opportunità
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3 }}>
+                        <CardContent sx={{ p: 4 }}>
+                            <Typography
+                                variant="h4"
+                                component="h3"
+                                color="primary"
+                                sx={{ mb: 2 }}
+                            >
+                                Per chi cerca lavoratori
+                            </Typography>
+
+                            <Typography color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+                                Pubblica una richiesta di manodopera, trova profili adatti alle
+                                tue esigenze e organizza il lavoro in modo più rapido.
+                            </Typography>
+
+                            <Button variant="outlined" color="primary">
+                                Pubblica una richiesta
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </Stack>
+            </Box>
+
+            {/* Colonna destra: immagine */}
+            <Box
+                component="img"
+                src={sfondoHero}
+                alt="L'iniziativa"
+                sx={{
+                    flex: "0 0 40%",
+                    width: { xs: "100%", md: "40%" },
+                    maxHeight: 500,
+                    objectFit: "cover",
+                    borderRadius: 4,
+                    boxShadow: 4,
+                    display: { xs: "none", md: "block" },
+                }}
+            />
         </Box>
+
+        <HowItWorks />
         </>
     );
 }

@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -15,16 +15,15 @@ function MainLayout() {
         >
             <Navbar />
 
-            <Container
+            <Box
                 component="main"
-                maxWidth="lg"
                 sx={{
                     flex: 1,
                     pb: { xs: 2, md: 5 },
                 }}
             >
                 <Outlet />
-            </Container>
+            </Box>
 
             <Footer />
         </Box>

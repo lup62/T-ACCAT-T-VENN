@@ -24,7 +24,7 @@ import farmerIcon from "../assets/farmerIcon.png"
 const navLinks = [
     { label: "Home", to: "/" },
     { label: "Cerca annunci", to: "/annunci" },
-    { label: "Come funziona", to: "/come-funziona" },
+    { label: "Come funziona", to: "/#come-funziona", isAnchor: true },
 ];
 
 function Navbar() {
@@ -81,11 +81,11 @@ function Navbar() {
                         gap: 1,
                     }}
                 >
-                    {navLinks.map(({ to, label }) => (
+                    {navLinks.map(({ to, label, isAnchor }) => (
                         <Button
                             key={to}
-                            component={RouterLink}
-                            to={to}
+                            component={isAnchor ? "a" : RouterLink}
+                            {...(isAnchor ? { href: to } : { to })}
                             color="inherit"
                         >
                             {label}
@@ -204,11 +204,11 @@ function Navbar() {
                     <Divider />
 
                     <List>
-                        {navLinks.map(({ label, to }) => (
+                        {navLinks.map(({ label, to, isAnchor }) => (
                             <ListItem key={to} disablePadding>
                                 <ListItemButton
-                                    component={RouterLink}
-                                    to={to}
+                                    component={isAnchor ? "a" : RouterLink}
+                                    {...(isAnchor ? { href: to } : { to })}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     <ListItemText primary={label} />
