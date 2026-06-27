@@ -88,7 +88,7 @@ function HomePage() {
                     variant="contained"
                     color="secondary"
                     size="large"
-                    onClick={() => navigate("/annunci/lavoro")}
+                    onClick={() => navigate("/annunci/offerte")}
                 >
                     Cerco lavoro
                 </Button>
@@ -97,7 +97,7 @@ function HomePage() {
                     variant="contained"
                     color="primary"
                     size="large"
-                    onClick={() => navigate("/annunci/lavoratori")}
+                    onClick={() => navigate("/annunci/cercasi")}
                 >
                     Cerco lavoratori
                 </Button>
