@@ -5,19 +5,23 @@
  * (tipo "richiesta_manodopera" in mockAnnunci.js).
  *
  * Comportamento:
- *   - Senza filtri attivi: mostra max ANNUNCI_VISIBILI card; "Vedi altri"
- *     apre il RegistratiDialog (gating verso la registrazione).
+ *   - Toggle Lista/Mappa: boolean vistaLista controlla cosa viene mostrato.
+ *   - Senza filtri attivi in vista lista: max ANNUNCI_VISIBILI card;
+ *     "Vedi altri" apre il RegistratiDialog (gating verso la registrazione).
  *   - Con filtri attivi: mostra tutti i risultati corrispondenti.
- *   - I filtri sono bloccati finché l'utente non è autenticato;
- *     isLoggedIn è false finché non sarà implementato il sistema auth.
+ *   - I filtri sono bloccati finché l'utente non è autenticato.
+ *   - In vista mappa: tutti gli annunci filtrati compaiono come marker.
  */
 
 import { useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import MapIcon from "@mui/icons-material/Map";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import FiltriAnnunci, { FILTRI_INIZIALI } from "./FiltriAnnunci";
+import MappaAnnunci from "./MappaAnnunci";
 import { mockAnnunci } from "../../services/mockAnnunci";
 
 // Numero massimo di card visibili senza filtri attivi
@@ -73,6 +77,8 @@ function applicaFiltri(lista, filtri) {
 function AnnunciLavoroPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
+    // true = vista lista (default), false = vista mappa
+    const [vistaLista, setVistaLista] = useState(true);
 
     const filtriAttivi = hasFiltriAttivi(filtri);
     const annunciFiltrati = applicaFiltri(annunci, filtri);
@@ -84,24 +90,47 @@ function AnnunciLavoroPage() {
 
     return (
         <Box sx={{ px: { xs: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
-            <Typography
-                variant="h3"
-                component="h1"
-                sx={{
-                    display: "inline-block",
-                    bgcolor: "secondary.main",
-                    color: "#FFFFFF",
-                    px: 3,
-                    py: 1,
-                    borderRadius: 1,
-                    mb: 4,
-                }}
-            >
-                Chi cerca lavoro
-            </Typography>
+            <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 4 }}>
+                <Typography
+                    variant="h3"
+                    component="h1"
+                    sx={{
+                        display: "inline-block",
+                        bgcolor: "secondary.main",
+                        color: "#FFFFFF",
+                        px: 3,
+                        py: 1,
+                        borderRadius: 1,
+                    }}
+                >
+                    Chi cerca lavoro
+                </Typography>
 
-            {/* Layout: sidebar filtri a sinistra + griglia a destra */}
-            <Box sx={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
+                {/* Toggle lista / mappa — ml:auto lo spinge all'estrema destra */}
+                <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+                    <Button
+                        variant={vistaLista ? "contained" : "outlined"}
+                        color="secondary"
+                        size="large"
+                        startIcon={<ViewListIcon />}
+                        onClick={() => setVistaLista(true)}
+                    >
+                        Lista
+                    </Button>
+                    <Button
+                        variant={!vistaLista ? "contained" : "outlined"}
+                        color="secondary"
+                        size="large"
+                        startIcon={<MapIcon />}
+                        onClick={() => setVistaLista(false)}
+                    >
+                        Mappa
+                    </Button>
+                </Stack>
+            </Stack>
+
+            {/* Layout: sidebar filtri a sinistra + contenuto a destra */}
+            <Box sx={{ display: "flex", gap: 4, alignItems: "stretch" }}>
                 {/* isLoggedIn=false finché non è implementato il sistema auth */}
                 <FiltriAnnunci
                     annunci={annunci}
@@ -111,50 +140,55 @@ function AnnunciLavoroPage() {
                     isLoggedIn={false}
                 />
 
-                {/* Colonna principale con la griglia degli annunci */}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                    {annunciFiltrati.length === 0 ? (
-                        <StatoVuoto
-                            titolo="Nessun annuncio trovato"
-                            descrizione="Nessun annuncio corrisponde ai filtri selezionati. Prova a modificarli."
-                        />
-                    ) : (
-                        <>
-                            {/* Griglia responsive: 1 col mobile, 2 tablet, adatta su desktop con sidebar */}
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gridTemplateColumns: {
-                                        xs: "1fr",
-                                        sm: "repeat(2, 1fr)",
-                                        lg: "repeat(3, 1fr)",
-                                    },
-                                    gap: 3,
-                                }}
-                            >
-                                {annunciDaMostrare.map((annuncio) => (
-                                    <AnnuncioCard
-                                        key={annuncio.id}
-                                        annuncio={annuncio}
-                                        color="secondary"
-                                    />
-                                ))}
-                            </Box>
-
-                            {/* Bottone "Vedi altri" solo quando non ci sono filtri attivi */}
-                            {!filtriAttivi && annunciFiltrati.length > ANNUNCI_VISIBILI && (
-                                <Box sx={{ textAlign: "center", mt: 4 }}>
-                                    <Button
-                                        variant="outlined"
-                                        color="secondary"
-                                        size="large"
-                                        onClick={() => setDialogOpen(true)}
-                                    >
-                                        Vedi altri annunci
-                                    </Button>
+                    {vistaLista ? (
+                        /* Vista lista: griglia di card */
+                        annunciFiltrati.length === 0 ? (
+                            <StatoVuoto
+                                titolo="Nessun annuncio trovato"
+                                descrizione="Nessun annuncio corrisponde ai filtri selezionati. Prova a modificarli."
+                            />
+                        ) : (
+                            <>
+                                {/* Griglia responsive: 1 col mobile, 2 tablet, 3 desktop con sidebar */}
+                                <Box
+                                    sx={{
+                                        display: "grid",
+                                        gridTemplateColumns: {
+                                            xs: "1fr",
+                                            sm: "repeat(2, 1fr)",
+                                            lg: "repeat(3, 1fr)",
+                                        },
+                                        gap: 3,
+                                    }}
+                                >
+                                    {annunciDaMostrare.map((annuncio) => (
+                                        <AnnuncioCard
+                                            key={annuncio.id}
+                                            annuncio={annuncio}
+                                            color="secondary"
+                                        />
+                                    ))}
                                 </Box>
-                            )}
-                        </>
+
+                                {/* Bottone "Vedi altri" solo senza filtri attivi */}
+                                {!filtriAttivi && annunciFiltrati.length > ANNUNCI_VISIBILI && (
+                                    <Box sx={{ textAlign: "center", mt: 4 }}>
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            size="large"
+                                            onClick={() => setDialogOpen(true)}
+                                        >
+                                            Vedi altri annunci
+                                        </Button>
+                                    </Box>
+                                )}
+                            </>
+                        )
+                    ) : (
+                        /* Vista mappa: mostra tutti gli annunci filtrati come marker */
+                        <MappaAnnunci annunci={annunciFiltrati} color="secondary" />
                     )}
                 </Box>
             </Box>
