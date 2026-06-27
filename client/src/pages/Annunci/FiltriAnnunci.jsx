@@ -40,7 +40,6 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import RegistratiDialog from "./RegistratiDialog";
@@ -55,10 +54,9 @@ export const FILTRI_INIZIALI = {
     periodoFine: "",
 };
 
-function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isLoggedIn = false }) {
+function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isLoggedIn = false, drawerOpen = false, onDrawerClose = () => {} }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-    const [drawerOpen, setDrawerOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
 
     // Opzioni tipo lavoro uniche presenti negli annunci passati
@@ -240,28 +238,14 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
         </Box>
     );
 
-    // Su mobile: icona hamburger che apre un Drawer
+    // Su mobile: solo Drawer (il bottone trigger è gestito dalla pagina padre)
     if (isMobile) {
         return (
             <>
-                <IconButton
-                    onClick={() => setDrawerOpen(true)}
-                    sx={{
-                        mb: 2,
-                        alignSelf: "flex-start",
-                        border: 1,
-                        borderColor: `${color}.main`,
-                        borderRadius: 2,
-                        color: `${color}.main`,
-                    }}
-                >
-                    <MenuIcon />
-                </IconButton>
-
-                <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+                <Drawer anchor="left" open={drawerOpen} onClose={onDrawerClose}>
                     <Box sx={{ width: 300 }}>
                         <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-                            <IconButton onClick={() => setDrawerOpen(false)}>
+                            <IconButton onClick={onDrawerClose}>
                                 <CloseIcon />
                             </IconButton>
                         </Box>

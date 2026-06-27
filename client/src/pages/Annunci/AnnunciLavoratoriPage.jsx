@@ -14,10 +14,11 @@
  */
 
 import { useState } from "react";
-import { Box, Button, FormControl, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
+import MenuIcon from "@mui/icons-material/Menu";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
@@ -88,6 +89,7 @@ function applicaFiltri(lista, filtri) {
 
 function AnnunciLavoratoriPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [filtriDrawerOpen, setFiltriDrawerOpen] = useState(false);
     const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
     const [ricerca, setRicerca] = useState("");
     const [ordinamento, setOrdinamento] = useState("recenti");
@@ -129,8 +131,8 @@ function AnnunciLavoratoriPage() {
                     Cerca personale
                 </Typography>
 
-                {/* Toggle lista / mappa — ml:auto lo spinge all'estrema destra */}
-                <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+                {/* Toggle lista / mappa — solo su desktop, su mobile è nella toolbar */}
+                <Stack direction="row" spacing={1} sx={{ ml: "auto", display: { xs: "none", md: "flex" } }}>
                     <Button
                         variant={vistaLista ? "contained" : "outlined"}
                         color="primary"
@@ -184,8 +186,26 @@ function AnnunciLavoratoriPage() {
                 </FormControl>
             </Stack>
 
+            {/* Toolbar mobile: hamburger filtri a sinistra + toggle lista/mappa a destra */}
+            <Stack direction="row" alignItems="center" sx={{ display: { xs: "flex", md: "none" }, mb: 2 }}>
+                <IconButton
+                    onClick={() => setFiltriDrawerOpen(true)}
+                    sx={{ border: 1, borderColor: "primary.main", borderRadius: 2, color: "primary.main" }}
+                >
+                    <MenuIcon />
+                </IconButton>
+                <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+                    <Button variant={vistaLista ? "contained" : "outlined"} color="primary" onClick={() => setVistaLista(true)} sx={{ minWidth: 44, px: 1 }}>
+                        <ViewListIcon fontSize="small" />
+                    </Button>
+                    <Button variant={!vistaLista ? "contained" : "outlined"} color="primary" onClick={() => setVistaLista(false)} sx={{ minWidth: 44, px: 1 }}>
+                        <MapIcon fontSize="small" />
+                    </Button>
+                </Stack>
+            </Stack>
+
             {/* Layout: sidebar filtri a sinistra + contenuto a destra */}
-            <Box sx={{ display: "flex", gap: 4, alignItems: "stretch" }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4, alignItems: { md: "stretch" } }}>
                 {/* isLoggedIn=false finché non è implementato il sistema auth */}
                 <FiltriAnnunci
                     annunci={annunci}
@@ -193,6 +213,8 @@ function AnnunciLavoratoriPage() {
                     onFiltriChange={setFiltri}
                     color="primary"
                     isLoggedIn={false}
+                    drawerOpen={filtriDrawerOpen}
+                    onDrawerClose={() => setFiltriDrawerOpen(false)}
                 />
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>

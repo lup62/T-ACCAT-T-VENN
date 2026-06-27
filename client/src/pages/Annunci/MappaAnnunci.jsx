@@ -60,7 +60,7 @@ function MappaAnnunci({ annunci, color = 'primary' }) {
     const markerIcon = createMarkerIcon(hexColor);
 
     return (
-        <Box sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 2, height: '100%', minHeight: { xs: 400, md: 500 } }}>
+        <Box sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 2, height: { xs: 450, md: '100%' } }}>
             <MapContainer
                 center={CENTRO_PUGLIA}
                 zoom={ZOOM_INIZIALE}
