@@ -16,11 +16,11 @@ function RegistratiDialog({ open, onClose }) {
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle sx={{ textAlign: "center", pt: 4 }}>
                 <LockOutlinedIcon sx={{ fontSize: 48, color: "primary.main", mb: 1, display: "block", mx: "auto" }} />
-                Vuoi vedere tutti gli annunci?
+                Accedi per continuare
             </DialogTitle>
             <DialogContent>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                    Registrati gratuitamente per accedere a tutti gli annunci e contattare direttamente datori di lavoro e lavoratori.
+                    Registrati gratuitamente per accedere a tutte le funzionalità della piattaforma.
                 </Typography>
             </DialogContent>
             <DialogActions sx={{ flexDirection: "column", gap: 1, px: 3, pb: 3 }}>
