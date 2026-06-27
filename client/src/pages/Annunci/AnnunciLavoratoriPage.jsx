@@ -14,7 +14,7 @@
  */
 
 import { useState } from "react";
-import { Box, Button, InputAdornment, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, FormControl, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
@@ -42,6 +42,17 @@ function hasFiltriAttivi(filtri) {
         filtri.prezzoRange[0] > 0 ||
         filtri.prezzoRange[1] < 200
     );
+}
+
+function applicaOrdinamento(lista, ordinamento) {
+    const copia = [...lista];
+    switch (ordinamento) {
+        case "recenti":  return copia.sort((a, b) => b.periodo.dataInizio.localeCompare(a.periodo.dataInizio));
+        case "vecchi":   return copia.sort((a, b) => a.periodo.dataInizio.localeCompare(b.periodo.dataInizio));
+        case "prezzoAsc":  return copia.sort((a, b) => a.prezzo.min - b.prezzo.min);
+        case "prezzoDesc": return copia.sort((a, b) => b.prezzo.max - a.prezzo.max);
+        default: return copia;
+    }
 }
 
 // Applica tutti i filtri attivi all'array degli annunci
@@ -79,6 +90,7 @@ function AnnunciLavoratoriPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
     const [ricerca, setRicerca] = useState("");
+    const [ordinamento, setOrdinamento] = useState("recenti");
     // true = vista lista (default), false = vista mappa
     const [vistaLista, setVistaLista] = useState(true);
 
@@ -91,7 +103,7 @@ function AnnunciLavoratoriPage() {
             a.descrizione.toLowerCase().includes(ricerca.toLowerCase())
         );
 
-    const annunciFiltrati = applicaFiltri(annunciCercati, filtri);
+    const annunciFiltrati = applicaOrdinamento(applicaFiltri(annunciCercati, filtri), ordinamento);
 
     // Con filtri attivi mostra tutti i risultati; senza, applica il limite
     const annunciDaMostrare = filtriAttivi
@@ -139,23 +151,37 @@ function AnnunciLavoratoriPage() {
                 </Stack>
             </Stack>
 
-            {/* Barra di ricerca testuale */}
-            <TextField
-                fullWidth
-                placeholder="Cerca per titolo o descrizione..."
-                value={ricerca}
-                onChange={(e) => setRicerca(e.target.value)}
-                sx={{ mb: 4 }}
-                slotProps={{
-                    input: {
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon color="action" />
-                            </InputAdornment>
-                        ),
-                    },
-                }}
-            />
+            {/* Barra di ricerca + ordinamento */}
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 4 }}>
+                <TextField
+                    fullWidth
+                    placeholder="Cerca per titolo o descrizione..."
+                    value={ricerca}
+                    onChange={(e) => setRicerca(e.target.value)}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon color="action" />
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
+                <FormControl sx={{ minWidth: 200 }}>
+                    <InputLabel>Ordina per</InputLabel>
+                    <Select
+                        value={ordinamento}
+                        label="Ordina per"
+                        onChange={(e) => setOrdinamento(e.target.value)}
+                    >
+                        <MenuItem value="recenti">Più recenti</MenuItem>
+                        <MenuItem value="vecchi">Più vecchi</MenuItem>
+                        <MenuItem value="prezzoAsc">Prezzo crescente</MenuItem>
+                        <MenuItem value="prezzoDesc">Prezzo decrescente</MenuItem>
+                    </Select>
+                </FormControl>
+            </Stack>
 
             {/* Layout: sidebar filtri a sinistra + contenuto a destra */}
             <Box sx={{ display: "flex", gap: 4, alignItems: "stretch" }}>
