@@ -123,9 +123,10 @@ function AnnunciLavoroPage() {
                         px: 3,
                         py: 1,
                         borderRadius: 1,
+                        width: { xs: "100%", sm: "auto" },
                     }}
                 >
-                    Chi cerca lavoro
+                    Offerte di lavoro
                 </Typography>
 
                 {/* Toggle lista / mappa — ml:auto lo spinge all'estrema destra */}
@@ -133,20 +134,20 @@ function AnnunciLavoroPage() {
                     <Button
                         variant={vistaLista ? "contained" : "outlined"}
                         color="secondary"
-                        size="large"
-                        startIcon={<ViewListIcon />}
                         onClick={() => setVistaLista(true)}
+                        sx={{ minWidth: { xs: 44, sm: "auto" }, px: { xs: 1, sm: 2.5 } }}
                     >
-                        Lista
+                        <ViewListIcon fontSize="small" sx={{ mr: { xs: 0, sm: 1 } }} />
+                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Lista</Box>
                     </Button>
                     <Button
                         variant={!vistaLista ? "contained" : "outlined"}
                         color="secondary"
-                        size="large"
-                        startIcon={<MapIcon />}
                         onClick={() => setVistaLista(false)}
+                        sx={{ minWidth: { xs: 44, sm: "auto" }, px: { xs: 1, sm: 2.5 } }}
                     >
-                        Mappa
+                        <MapIcon fontSize="small" sx={{ mr: { xs: 0, sm: 1 } }} />
+                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Mappa</Box>
                     </Button>
                 </Stack>
             </Stack>

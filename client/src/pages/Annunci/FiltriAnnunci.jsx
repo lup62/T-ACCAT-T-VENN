@@ -40,7 +40,7 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import FilterListIcon from "@mui/icons-material/FilterList";
+import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import RegistratiDialog from "./RegistratiDialog";
@@ -240,19 +240,23 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
         </Box>
     );
 
-    // Su mobile: bottone che apre un Drawer
+    // Su mobile: icona hamburger che apre un Drawer
     if (isMobile) {
         return (
             <>
-                <Button
-                    startIcon={<FilterListIcon />}
-                    variant="outlined"
-                    color={color}
+                <IconButton
                     onClick={() => setDrawerOpen(true)}
-                    sx={{ mb: 2 }}
+                    sx={{
+                        mb: 2,
+                        alignSelf: "flex-start",
+                        border: 1,
+                        borderColor: `${color}.main`,
+                        borderRadius: 2,
+                        color: `${color}.main`,
+                    }}
                 >
-                    Filtri
-                </Button>
+                    <MenuIcon />
+                </IconButton>
 
                 <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
                     <Box sx={{ width: 300 }}>
