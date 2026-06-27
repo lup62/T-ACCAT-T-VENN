@@ -39,8 +39,26 @@ import EuroIcon from "@mui/icons-material/Euro";
 import AgricultureIcon from "@mui/icons-material/Agriculture";
 import GroupIcon from "@mui/icons-material/Group";
 
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
 import { mockAnnunci } from "../../services/mockAnnunci";
 import RegistratiDialog from "./RegistratiDialog";
+
+const COLORI_TEMA = { primary: "#387347", secondary: "#69A62D" };
+
+function creaMarkerIcon(hexColor) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="${hexColor}" stroke="white" stroke-width="3"/></svg>`;
+    const uri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    return L.divIcon({
+        className: "",
+        html: `<img src="${uri}" width="20" height="20" />`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+        popupAnchor: [0, -14],
+    });
+}
 
 // Converte le date ISO in stringa leggibile: "ott 2026 – nov 2026"
 function formatPeriodo(periodo) {
@@ -165,6 +183,30 @@ function DettaglioAnnuncioPage() {
                     >
                         Accedi per inviare una proposta
                     </Button>
+
+                    {/* Mini mappa: limitata alla larghezza della colonna principale */}
+                    <Box sx={{ mt: 5 }}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Posizione</Typography>
+                        <Box sx={{ borderRadius: 3, overflow: "hidden", boxShadow: 2, height: 300 }}>
+                            <MapContainer
+                                center={[annuncio.luogo.lat, annuncio.luogo.lng]}
+                                zoom={12}
+                                style={{ width: "100%", height: "100%" }}
+                                scrollWheelZoom={false}
+                            >
+                                <TileLayer
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                                />
+                                <Marker
+                                    position={[annuncio.luogo.lat, annuncio.luogo.lng]}
+                                    icon={creaMarkerIcon(COLORI_TEMA[tipoColor])}
+                                >
+                                    <Popup>{annuncio.luogo.testo}</Popup>
+                                </Marker>
+                            </MapContainer>
+                        </Box>
+                    </Box>
                 </Box>
 
                 {/* Sidebar: riepilogo dati chiave dell'annuncio */}
