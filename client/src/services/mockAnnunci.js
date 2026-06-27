@@ -1,3 +1,40 @@
+/**
+ * mockAnnunci.js
+ *
+ * Dati fittizi degli annunci agricoli usati dal frontend finché non sarà
+ * disponibile una API reale. Tutti i componenti che mostrano annunci
+ * importano da qui — niente array locali nelle pagine.
+ *
+ * Ogni annuncio ha due possibili valori di `tipo`:
+ *   - "disponibilita_lavoro"  → un lavoratore che si propone
+ *                               mostrato nella pagina /annunci/cercasi
+ *   - "richiesta_manodopera"  → un datore di lavoro che cerca persone
+ *                               mostrato nella pagina /annunci/offerte
+ *
+ * ATTENZIONE: la corrispondenza tipo → rotta sembra invertita,
+ * ma è corretta: /annunci/offerte mostra le OFFERTE DI LAVORO dei datori,
+ * ovvero le "richieste_manodopera".
+ *
+ * Struttura di ogni annuncio:
+ *   id                        numero univoco
+ *   tipo                      "disponibilita_lavoro" | "richiesta_manodopera"
+ *   titolo                    testo breve mostrato nella card
+ *   descrizione               testo lungo mostrato nel dettaglio
+ *   autore.nome               nome del lavoratore o dell'azienda
+ *   autore.ruolo              ruolo/qualifica dell'autore
+ *   luogo.testo               città e provincia (solo testo, niente coordinate)
+ *   periodo.dataInizio        data ISO "YYYY-MM-DD"
+ *   periodo.dataFine          data ISO "YYYY-MM-DD"
+ *   tipoLavoro                categoria agricola (es. "Olivicoltura")
+ *   competenze                array di stringhe, mostrate come chip
+ *   prezzo.min / .max         fascia retributiva giornaliera
+ *   prezzo.unita              es. "€/giorno"
+ *   stato                     "attivo" | "chiuso"
+ *   numeroLavoratoriRichiesti (solo richiesta_manodopera) quante persone servono
+ */
+
+// disponibilita_lavoro  → lavoratori che si propongono  → /annunci/cercasi
+// richiesta_manodopera  → datori che offrono impiego    → /annunci/offerte
 export const mockAnnunci = [
     {
         id: 1,

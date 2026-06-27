@@ -23,8 +23,8 @@ import farmerIcon from "../assets/farmerIcon.png"
 
 const navLinks = [
     { label: "Home", to: "/" },
-    { label: "Offerte di lavoro", to: "/annunci/lavoro" },
-    { label: "Cerca personale", to: "/annunci/lavoratori" },
+    { label: "Offerte di lavoro", to: "/annunci/offerte" },
+    { label: "Cerca personale", to: "/annunci/cercasi" },
     { label: "Come funziona", to: "/#come-funziona", isAnchor: true },
 ];
 

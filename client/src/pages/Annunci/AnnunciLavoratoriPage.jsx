@@ -1,3 +1,15 @@
+/**
+ * AnnunciLavoratoriPage.jsx  —  rotta: /annunci/cercasi
+ *
+ * Mostra i profili dei lavoratori che si rendono disponibili
+ * (tipo "disponibilita_lavoro" in mockAnnunci.js).
+ *
+ * Comportamento identico ad AnnunciLavoroPage ma per la sezione opposta:
+ *   - Limite di ANNUNCI_VISIBILI card senza autenticazione.
+ *   - "Vedi altri annunci" apre il dialog di registrazione.
+ *   - StatoVuoto se non ci sono annunci.
+ */
+
 import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import AnnuncioCard from "./AnnuncioCard";
@@ -5,10 +17,14 @@ import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import { mockAnnunci } from "../../services/mockAnnunci";
 
+// Numero massimo di card visibili prima del prompt di registrazione
 const ANNUNCI_VISIBILI = 2;
+
+// cerca personale = lavoratori che si propongono, non richieste di datori
 const annunci = mockAnnunci.filter((a) => a.tipo === "disponibilita_lavoro");
 
 function AnnunciLavoratoriPage() {
+    // controlla apertura/chiusura del dialog di registrazione
     const [dialogOpen, setDialogOpen] = useState(false);
     const annunciVisibili = annunci.slice(0, ANNUNCI_VISIBILI);
 
@@ -30,6 +46,7 @@ function AnnunciLavoratoriPage() {
                 Chi cerca lavoratori
             </Typography>
 
+            {/* Se non ci sono annunci mostra un messaggio illustrato */}
             {annunci.length === 0 ? (
                 <StatoVuoto
                     titolo="Nessun annuncio disponibile"
@@ -37,6 +54,7 @@ function AnnunciLavoratoriPage() {
                 />
             ) : (
                 <>
+                    {/* Griglia responsive: 1 col mobile, 2 tablet, 3 desktop */}
                     <Box
                         sx={{
                             display: "grid",
@@ -57,6 +75,7 @@ function AnnunciLavoratoriPage() {
                         ))}
                     </Box>
 
+                    {/* Invece di paginare, si chiede la registrazione */}
                     <Box sx={{ textAlign: "center", mt: 4 }}>
                         <Button
                             variant="outlined"

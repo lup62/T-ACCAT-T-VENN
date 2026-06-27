@@ -1,3 +1,19 @@
+/**
+ * AnnuncioCard.jsx
+ *
+ * Card riutilizzabile che mostra il riepilogo di un singolo annuncio
+ * nella griglia delle pagine lista (/annunci/offerte e /annunci/cercasi).
+ *
+ * Props:
+ *   annuncio  oggetto completo proveniente da mockAnnunci.js
+ *   color     "primary" | "secondary" — colore MUI usato per bordi,
+ *             avatar e bottone; viene passato dalla pagina padre in base
+ *             alla sezione (offerte = secondary, cercasi = primary)
+ *
+ * Al click di "Visualizza dettagli" naviga a /annunci/:id
+ * senza ricaricare la pagina (React Router, niente window.location).
+ */
+
 import { useNavigate } from "react-router-dom";
 import {
     Avatar,
@@ -15,12 +31,14 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EuroIcon from "@mui/icons-material/Euro";
 
+// Converte le date ISO in una stringa leggibile: "mar 2026 – mag 2026"
 function formatPeriodo(periodo) {
     const fmt = (iso) =>
         new Date(iso).toLocaleDateString("it-IT", { month: "short", year: "numeric" });
     return `${fmt(periodo.dataInizio)} – ${fmt(periodo.dataFine)}`;
 }
 
+// Formatta la fascia di prezzo: "70 – 80 €/giorno" oppure "80 €/giorno" se min === max
 function formatPrezzo(prezzo) {
     if (prezzo.min === prezzo.max) return `${prezzo.min} ${prezzo.unita}`;
     return `${prezzo.min} – ${prezzo.max} ${prezzo.unita}`;
@@ -52,6 +70,7 @@ function AnnuncioCard({ annuncio, color }) {
                     flexGrow: 1,
                 }}
             >
+                {/* Chip categoria agricola (es. "Olivicoltura") */}
                 <Chip
                     label={annuncio.tipoLavoro}
                     variant="outlined"
@@ -63,6 +82,7 @@ function AnnuncioCard({ annuncio, color }) {
                     {annuncio.titolo}
                 </Typography>
 
+                {/* Dati sintetici: luogo, periodo, compenso */}
                 <Stack spacing={1.5} sx={{ mb: 3 }}>
                     <Stack direction="row" spacing={1} alignItems="center">
                         <LocationOnIcon sx={{ fontSize: 20, color: "primary.main" }} />
@@ -88,6 +108,7 @@ function AnnuncioCard({ annuncio, color }) {
 
                 <Divider sx={{ mb: 2 }} />
 
+                {/* Avatar con iniziale del nome dell'autore */}
                 <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
                     <Avatar
                         src={annuncio.autore.avatar}
@@ -106,6 +127,7 @@ function AnnuncioCard({ annuncio, color }) {
                     </Typography>
                 </Stack>
 
+                {/* Bottone che porta alla pagina di dettaglio dell'annuncio */}
                 <Box sx={{ mt: "auto" }}>
                     <Button
                         variant="outlined"
