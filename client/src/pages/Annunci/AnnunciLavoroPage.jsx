@@ -14,9 +14,10 @@
  */
 
 import { useState } from "react";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, InputAdornment, Stack, TextField, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
+import SearchIcon from "@mui/icons-material/Search";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
@@ -77,11 +78,20 @@ function applicaFiltri(lista, filtri) {
 function AnnunciLavoroPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
+    const [ricerca, setRicerca] = useState("");
     // true = vista lista (default), false = vista mappa
     const [vistaLista, setVistaLista] = useState(true);
 
-    const filtriAttivi = hasFiltriAttivi(filtri);
-    const annunciFiltrati = applicaFiltri(annunci, filtri);
+    const filtriAttivi = hasFiltriAttivi(filtri) || ricerca.trim() !== "";
+
+    const annunciCercati = ricerca.trim() === ""
+        ? annunci
+        : annunci.filter((a) =>
+            a.titolo.toLowerCase().includes(ricerca.toLowerCase()) ||
+            a.descrizione.toLowerCase().includes(ricerca.toLowerCase())
+        );
+
+    const annunciFiltrati = applicaFiltri(annunciCercati, filtri);
 
     // Con filtri attivi mostra tutti i risultati; senza, applica il limite
     const annunciDaMostrare = filtriAttivi
@@ -128,6 +138,24 @@ function AnnunciLavoroPage() {
                     </Button>
                 </Stack>
             </Stack>
+
+            {/* Barra di ricerca testuale */}
+            <TextField
+                fullWidth
+                placeholder="Cerca per titolo o descrizione..."
+                value={ricerca}
+                onChange={(e) => setRicerca(e.target.value)}
+                sx={{ mb: 4 }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon color="action" />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
+            />
 
             {/* Layout: sidebar filtri a sinistra + contenuto a destra */}
             <Box sx={{ display: "flex", gap: 4, alignItems: "stretch" }}>
