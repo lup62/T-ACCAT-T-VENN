@@ -3,38 +3,10 @@ import { Box, Button, Typography } from "@mui/material";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
+import { mockAnnunci } from "../../services/mockAnnunci";
 
 const ANNUNCI_VISIBILI = 2;
-
-const annunci = [
-    {
-        id: 1,
-        titolo: "Raccolta olive — Masseria San Marco",
-        tipoLavoro: "Olivicoltura",
-        luogo: "Fasano (BR)",
-        periodo: "Ott – Nov 2026",
-        prezzo: "80 €/giorno",
-        profilo: { nome: "Giovanni Greco", avatar: null },
-    },
-    {
-        id: 2,
-        titolo: "Potatura vigneto stagionale",
-        tipoLavoro: "Viticoltura",
-        luogo: "Locorotondo (BA)",
-        periodo: "Feb – Mar 2026",
-        prezzo: "75 €/giorno",
-        profilo: { nome: "Azienda Vitivinicola Lama", avatar: null },
-    },
-    {
-        id: 3,
-        titolo: "Raccolta pomodori — Cooperativa Valle",
-        tipoLavoro: "Orticoltura",
-        luogo: "Castellaneta (TA)",
-        periodo: "Lug – Set 2026",
-        prezzo: "70 €/giorno",
-        profilo: { nome: "Cooperativa Valle Verde", avatar: null },
-    },
-];
+const annunci = mockAnnunci.filter((a) => a.tipo === "disponibilita_lavoro");
 
 function AnnunciLavoratoriPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -79,12 +51,7 @@ function AnnunciLavoratoriPage() {
                         {annunciVisibili.map((annuncio) => (
                             <AnnuncioCard
                                 key={annuncio.id}
-                                titolo={annuncio.titolo}
-                                tipoLavoro={annuncio.tipoLavoro}
-                                luogo={annuncio.luogo}
-                                periodo={annuncio.periodo}
-                                prezzo={annuncio.prezzo}
-                                profilo={annuncio.profilo}
+                                annuncio={annuncio}
                                 color="primary"
                             />
                         ))}

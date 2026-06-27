@@ -3,38 +3,10 @@ import { Box, Button, Typography } from "@mui/material";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
+import { mockAnnunci } from "../../services/mockAnnunci";
 
 const ANNUNCI_VISIBILI = 3;
-
-const annunci = [
-    {
-        id: 1,
-        titolo: "Disponibile per lavori agricoli generali",
-        tipoLavoro: "Generico",
-        luogo: "Taranto (TA)",
-        periodo: "Tutto l'anno",
-        prezzo: "Su accordo",
-        profilo: { nome: "Marco Esposito", avatar: null },
-    },
-    {
-        id: 2,
-        titolo: "Esperto in potatura e innesto",
-        tipoLavoro: "Frutticoltura",
-        luogo: "Bari (BA)",
-        periodo: "Mar – Mag 2026",
-        prezzo: "90 €/giorno",
-        profilo: { nome: "Salvatore Rizzo", avatar: null },
-    },
-    {
-        id: 3,
-        titolo: "Cura e irrigazione orto biologico",
-        tipoLavoro: "Orticoltura",
-        luogo: "Lecce (LE)",
-        periodo: "Apr – Giu 2026",
-        prezzo: "65 €/giorno",
-        profilo: { nome: "Anna Convertino", avatar: null },
-    },
-];
+const annunci = mockAnnunci.filter((a) => a.tipo === "richiesta_manodopera");
 
 function AnnunciLavoroPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -79,12 +51,7 @@ function AnnunciLavoroPage() {
                         {annunciVisibili.map((annuncio) => (
                             <AnnuncioCard
                                 key={annuncio.id}
-                                titolo={annuncio.titolo}
-                                tipoLavoro={annuncio.tipoLavoro}
-                                luogo={annuncio.luogo}
-                                periodo={annuncio.periodo}
-                                prezzo={annuncio.prezzo}
-                                profilo={annuncio.profilo}
+                                annuncio={annuncio}
                                 color="secondary"
                             />
                         ))}
