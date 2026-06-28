@@ -43,16 +43,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import RegistratiDialog from "./RegistratiDialog";
-
-// Valori iniziali esportati così le pagine li usano per inizializzare lo stato
-export const FILTRI_INIZIALI = {
-    tipiLavoro: [],
-    province: [],
-    prezzoRange: [0, 200],
-    stati: [],
-    periodoInizio: "",
-    periodoFine: "",
-};
+import { FILTRI_INIZIALI } from "./annunciConstants";
 
 function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isLoggedIn = false, drawerOpen = false, onDrawerClose = () => {} }) {
     const theme = useTheme();

@@ -22,7 +22,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
-import FiltriAnnunci, { FILTRI_INIZIALI } from "./FiltriAnnunci";
+import FiltriAnnunci from "./FiltriAnnunci";
+import { FILTRI_INIZIALI } from "./annunciConstants";
 import MappaAnnunci from "./MappaAnnunci";
 import { mockAnnunci } from "../../services/mockAnnunci";
 
@@ -31,19 +32,6 @@ const ANNUNCI_VISIBILI = 5;
 
 // offerte di lavoro = richieste dei datori, non disponibilità dei lavoratori
 const annunci = mockAnnunci.filter((a) => a.tipo === "richiesta_manodopera");
-
-// Restituisce true se almeno un filtro è diverso dal valore iniziale
-function hasFiltriAttivi(filtri) {
-    return (
-        filtri.tipiLavoro.length > 0 ||
-        filtri.province.length > 0 ||
-        filtri.stati.length > 0 ||
-        filtri.periodoInizio !== "" ||
-        filtri.periodoFine !== "" ||
-        filtri.prezzoRange[0] > 0 ||
-        filtri.prezzoRange[1] < 200
-    );
-}
 
 function applicaOrdinamento(lista, ordinamento) {
     const copia = [...lista];
