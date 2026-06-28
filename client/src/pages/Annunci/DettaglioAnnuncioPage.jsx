@@ -77,6 +77,7 @@ const COLOR_STATO = { aperto: "success", in_corso: "warning", concluso: "default
 const LABEL_RUOLO = { lavoratore: "Lavoratore", imprenditore: "Imprenditore" };
 
 function formatPrezzo(prezzo) {
+    if (!prezzo || prezzo.unita === "da_concordare" || prezzo.min == null) return "Da concordare";
     const unita = LABEL_UNITA[prezzo.unita] ?? prezzo.unita;
     if (prezzo.min === prezzo.max) return `${prezzo.min} ${unita}`;
     return `${prezzo.min} – ${prezzo.max} ${unita}`;

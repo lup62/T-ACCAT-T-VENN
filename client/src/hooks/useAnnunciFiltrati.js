@@ -1,0 +1,109 @@
+/**
+ * useAnnunciFiltrati.js
+ *
+ * Hook condiviso tra AnnunciLavoroPage e AnnunciLavoratoriPage.
+ * Centralizza tutta la logica di stato e calcolo che prima era
+ * duplicata nelle due pagine: ricerca, filtri, ordinamento,
+ * toggle lista/mappa e gestione dialog/drawer.
+ *
+ * Parametri:
+ *   annunci — array degli annunci già filtrati per tipo (richiesta o disponibilità)
+ *
+ * Ritorna:
+ *   - annunciFiltrati   — annunci dopo ricerca + filtri + ordinamento (lista completa)
+ *   - annunciDaMostrare — annunciFiltrati limitati a ANNUNCI_VISIBILI se non loggati
+ *   - tutto lo stato necessario alla UI (filtri, ricerca, ordinamento, ecc.)
+ */
+
+import { useState, useMemo } from "react";
+import { FILTRI_INIZIALI } from "../pages/Annunci/annunciConstants";
+
+const ANNUNCI_VISIBILI = 5;
+
+function applicaOrdinamento(lista, ordinamento) {
+    const copia = [...lista];
+    switch (ordinamento) {
+        case "recenti":    return copia.sort((a, b) => b.periodo.dataInizio.localeCompare(a.periodo.dataInizio));
+        case "vecchi":     return copia.sort((a, b) => a.periodo.dataInizio.localeCompare(b.periodo.dataInizio));
+        case "prezzoAsc":  return copia.sort((a, b) => a.prezzo.min - b.prezzo.min);
+        case "prezzoDesc": return copia.sort((a, b) => b.prezzo.max - a.prezzo.max);
+        default: return copia;
+    }
+}
+
+function applicaFiltri(lista, filtri) {
+    return lista.filter((a) => {
+        if (filtri.tipiLavoro.length > 0 && !filtri.tipiLavoro.includes(a.tipoLavoro))
+            return false;
+
+        if (filtri.province.length > 0) {
+            const match = a.luogo.testo.match(/\(([A-Z]+)\)/);
+            const prov = match ? match[1] : "";
+            if (!filtri.province.includes(prov)) return false;
+        }
+
+        // Include l'annuncio solo se la sua fascia di prezzo si sovrappone al range selezionato
+        if (a.prezzo.max < filtri.prezzoRange[0] || a.prezzo.min > filtri.prezzoRange[1])
+            return false;
+
+        if (filtri.stati.length > 0 && !filtri.stati.includes(a.stato))
+            return false;
+
+        if (filtri.periodoInizio && a.periodo.dataFine < filtri.periodoInizio)
+            return false;
+
+        if (filtri.periodoFine && a.periodo.dataInizio > filtri.periodoFine)
+            return false;
+
+        return true;
+    });
+}
+
+export function useAnnunciFiltrati(annunci) {
+    const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
+    const [ricerca, setRicerca] = useState("");
+    const [ordinamento, setOrdinamento] = useState("recenti");
+    const [vistaLista, setVistaLista] = useState(true);
+    const [filtriDrawerOpen, setFiltriDrawerOpen] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    // TODO: collegare all'auth reale (context o store)
+    const isLoggedIn = false;
+
+    const annunciCercati = useMemo(() =>
+        ricerca.trim() === ""
+            ? annunci
+            : annunci.filter((a) =>
+                a.titolo.toLowerCase().includes(ricerca.toLowerCase()) ||
+                a.descrizione.toLowerCase().includes(ricerca.toLowerCase())
+            ),
+        [annunci, ricerca]
+    );
+
+    const annunciFiltrati = useMemo(
+        () => applicaOrdinamento(applicaFiltri(annunciCercati, filtri), ordinamento),
+        [annunciCercati, filtri, ordinamento]
+    );
+
+    // Gli utenti non autenticati vedono solo i primi ANNUNCI_VISIBILI risultati
+    const annunciDaMostrare = useMemo(
+        () => isLoggedIn ? annunciFiltrati : annunciFiltrati.slice(0, ANNUNCI_VISIBILI),
+        [annunciFiltrati, isLoggedIn]
+    );
+
+    // true se ci sono risultati nascosti dal limite (per mostrare il bottone "Vedi altri")
+    const hasMore = !isLoggedIn && annunciFiltrati.length > ANNUNCI_VISIBILI;
+
+    return {
+        filtri, setFiltri,
+        ricerca, setRicerca,
+        ordinamento, setOrdinamento,
+        vistaLista, setVistaLista,
+        filtriDrawerOpen, setFiltriDrawerOpen,
+        dialogOpen, setDialogOpen,
+        isLoggedIn,
+        annunciFiltrati,
+        annunciDaMostrare,
+        hasMore,
+    };
+}
