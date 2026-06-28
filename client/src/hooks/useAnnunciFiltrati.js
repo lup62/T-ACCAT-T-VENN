@@ -17,6 +17,7 @@
 
 import { useState, useMemo } from "react";
 import { FILTRI_INIZIALI } from "../pages/Annunci/annunciConstants";
+import { useAuth } from "./useAuth";
 
 const ANNUNCI_VISIBILI = 5;
 
@@ -67,8 +68,7 @@ export function useAnnunciFiltrati(annunci) {
     const [filtriDrawerOpen, setFiltriDrawerOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    // TODO: collegare all'auth reale (context o store)
-    const isLoggedIn = false;
+    const { isLoggedIn } = useAuth();
 
     const annunciCercati = useMemo(() =>
         ricerca.trim() === ""

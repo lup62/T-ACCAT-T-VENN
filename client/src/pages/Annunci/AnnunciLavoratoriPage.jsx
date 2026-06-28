@@ -151,13 +151,13 @@ function AnnunciLavoratoriPage() {
 
             {/* Layout: sidebar filtri a sinistra + contenuto a destra */}
             <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4, alignItems: { md: "stretch" } }}>
-                {/* isLoggedIn=false finché non è implementato il sistema auth */}
+                {/* isLoggedIn viene da useAuth (via useAnnunciFiltrati) */}
                 <FiltriAnnunci
                     annunci={annunci}
                     filtri={filtri}
                     onFiltriChange={setFiltri}
                     color="primary"
-                    isLoggedIn={false}
+                    isLoggedIn={isLoggedIn}
                     drawerOpen={filtriDrawerOpen}
                     onDrawerClose={() => setFiltriDrawerOpen(false)}
                 />
