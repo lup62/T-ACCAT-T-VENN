@@ -1,3 +1,24 @@
+/**
+ * PubblicaAnnuncioPage.jsx  —  rotta: /annunci/nuovo
+ *
+ * Form per la pubblicazione di un nuovo annuncio.
+ * Accessibile solo agli utenti autenticati: se non loggati viene mostrato
+ * un blocco con i link ad Accedi e Registrati.
+ *
+ * Flusso:
+ *   1. L'utente sceglie il tipo (richiesta_manodopera / disponibilita_lavoro)
+ *   2. Compila le 4 sezioni: info principali, luogo, periodo/compenso, dettagli
+ *   3. Al blur sul campo "Luogo" parte una chiamata Nominatim per il geocoding
+ *      automatico: se il luogo è trovato il marker viene posizionato sulla mappa
+ *   4. L'utente può affinare la posizione cliccando direttamente sulla mappa
+ *   5. Al submit il form viene validato; se valido viene costruito il payload
+ *      e mostrata una Snackbar di conferma (TODO: POST /api/annunci)
+ *
+ * Campi condizionali:
+ *   - nLavoratoriRichiesti: visibile solo per tipo "richiesta_manodopera"
+ *   - posizione: facoltativa, auto-impostata dal geocoding
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {

@@ -1,3 +1,29 @@
+/**
+ * DettaglioAnnuncioPage.jsx  —  rotta: /annunci/:id
+ *
+ * Pagina di dettaglio di un singolo annuncio.
+ * Viene raggiunta cliccando "Visualizza dettagli" in una AnnuncioCard.
+ *
+ * Flusso:
+ *   1. Legge il parametro :id dall'URL (es. /annunci/4 → id = 4)
+ *   2. Cerca l'annuncio in mockAnnunci.js confrontando l'id come stringa
+ *   3. Se non trovato → mostra stato di errore con bottone per tornare indietro
+ *   4. Se trovato → mostra il dettaglio completo
+ *
+ * Layout (due colonne su desktop, una su mobile):
+ *   Sinistra  descrizione estesa + chip competenze + bottone proposta + mappa
+ *   Destra    card riassuntiva con luogo, periodo, compenso, autore
+ *
+ * Il bottone "Accedi per inviare una proposta" apre RegistratiDialog
+ * (lo stesso dialog usato nelle pagine lista) invece di navigare a /login,
+ * per coerenza con il resto dell'esperienza non autenticata.
+ *
+ * Note CSS:
+ *   - minWidth:0 sui figli della grid previene l'overflow senza overflow:hidden
+ *   - overflow:hidden solo sul wrapper della mappa (per border-radius)
+ *   - flexWrap e gap vanno in sx, non come prop dirette (MUI v9 li ignora)
+ */
+
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {

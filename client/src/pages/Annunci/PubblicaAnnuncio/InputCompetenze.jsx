@@ -1,3 +1,19 @@
+/**
+ * InputCompetenze.jsx
+ *
+ * Campo per inserire e gestire una lista di competenze come chip rimovibili.
+ *
+ * Comportamento:
+ *   - TextField + bottone "Aggiungi": aggiunge la competenza alla lista
+ *   - Premere Invio nel TextField equivale al click su "Aggiungi"
+ *   - Duplicati ignorati (confronto case-insensitive)
+ *   - Ogni chip ha il bottone di eliminazione (onDelete)
+ *
+ * Props:
+ *   valore   — array di stringhe corrente (es. ["Olivicoltura", "Guida trattore"])
+ *   onChange — callback chiamata con il nuovo array aggiornato
+ */
+
 import { useState } from "react";
 import { Box, Button, Chip, Stack, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
