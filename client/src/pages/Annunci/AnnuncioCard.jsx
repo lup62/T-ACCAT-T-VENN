@@ -38,10 +38,12 @@ function formatPeriodo(periodo) {
     return `${fmt(periodo.dataInizio)} – ${fmt(periodo.dataFine)}`;
 }
 
-// Formatta la fascia di prezzo: "70 – 80 €/giorno" oppure "80 €/giorno" se min === max
+const LABEL_UNITA = { giornata: '€/giorno', lavoro_completo: '€/lavoro' };
+
 function formatPrezzo(prezzo) {
-    if (prezzo.min === prezzo.max) return `${prezzo.min} ${prezzo.unita}`;
-    return `${prezzo.min} – ${prezzo.max} ${prezzo.unita}`;
+    const unita = LABEL_UNITA[prezzo.unita] ?? prezzo.unita;
+    if (prezzo.min === prezzo.max) return `${prezzo.min} ${unita}`;
+    return `${prezzo.min} – ${prezzo.max} ${unita}`;
 }
 
 function AnnuncioCard({ annuncio, color }) {
@@ -111,7 +113,7 @@ function AnnuncioCard({ annuncio, color }) {
                 {/* Avatar con iniziale del nome dell'autore */}
                 <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
                     <Avatar
-                        src={annuncio.autore.avatar}
+                        src={annuncio.autore.immagineProfilo}
                         alt={annuncio.autore.nome}
                         sx={{
                             width: 32,
@@ -123,7 +125,7 @@ function AnnuncioCard({ annuncio, color }) {
                         {annuncio.autore.nome.charAt(0)}
                     </Avatar>
                     <Typography variant="body2" fontWeight={600}>
-                        {annuncio.autore.nome}
+                        {annuncio.autore.nome} {annuncio.autore.cognome}
                     </Typography>
                 </Stack>
 
@@ -133,7 +135,7 @@ function AnnuncioCard({ annuncio, color }) {
                         variant="outlined"
                         color={color}
                         fullWidth
-                        onClick={() => navigate(`/annunci/${annuncio.id}`)}
+                        onClick={() => navigate(`/annunci/${annuncio._id}`)}
                     >
                         Visualizza dettagli
                     </Button>

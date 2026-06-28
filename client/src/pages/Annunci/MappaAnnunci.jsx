@@ -14,8 +14,7 @@
  *   color     "primary" | "secondary" — colore del tema della pagina
  *
  * Requisiti nei dati:
- *   annuncio.luogo.lat  latitudine
- *   annuncio.luogo.lng  longitudine
+ *   annuncio.luogo.posizione.coordinates  [lng, lat] (GeoJSON)
  *
  * NOTA: il CSS di Leaflet viene importato qui per non inquinare il tema globale.
  */
@@ -76,8 +75,11 @@ function MappaAnnunci({ annunci, color = 'primary' }) {
                 <MarkerClusterGroup chunkedLoading>
                     {annunci.map((annuncio) => (
                         <Marker
-                            key={annuncio.id}
-                            position={[annuncio.luogo.lat, annuncio.luogo.lng]}
+                            key={annuncio._id}
+                            position={[
+                                annuncio.luogo.posizione.coordinates[1],
+                                annuncio.luogo.posizione.coordinates[0],
+                            ]}
                             icon={markerIcon}
                         >
                             <Popup minWidth={200}>
@@ -102,7 +104,7 @@ function MappaAnnunci({ annunci, color = 'primary' }) {
                                     variant="outlined"
                                     color={color}
                                     fullWidth
-                                    onClick={() => navigate(`/annunci/${annuncio.id}`)}
+                                    onClick={() => navigate(`/annunci/${annuncio._id}`)}
                                 >
                                     Vedi dettagli
                                 </Button>

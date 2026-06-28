@@ -22,28 +22,16 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
-import FiltriAnnunci, { FILTRI_INIZIALI } from "./FiltriAnnunci";
+import FiltriAnnunci from "./FiltriAnnunci";
+import { FILTRI_INIZIALI } from "./annunciConstants";
 import MappaAnnunci from "./MappaAnnunci";
 import { mockAnnunci } from "../../services/mockAnnunci";
 
 // Numero massimo di card visibili senza filtri attivi
-const ANNUNCI_VISIBILI = 2;
+const ANNUNCI_VISIBILI = 5;
 
 // cerca personale = lavoratori che si propongono, non richieste di datori
 const annunci = mockAnnunci.filter((a) => a.tipo === "disponibilita_lavoro");
-
-// Restituisce true se almeno un filtro è diverso dal valore iniziale
-function hasFiltriAttivi(filtri) {
-    return (
-        filtri.tipiLavoro.length > 0 ||
-        filtri.province.length > 0 ||
-        filtri.stati.length > 0 ||
-        filtri.periodoInizio !== "" ||
-        filtri.periodoFine !== "" ||
-        filtri.prezzoRange[0] > 0 ||
-        filtri.prezzoRange[1] < 200
-    );
-}
 
 function applicaOrdinamento(lista, ordinamento) {
     const copia = [...lista];
@@ -96,7 +84,8 @@ function AnnunciLavoratoriPage() {
     // true = vista lista (default), false = vista mappa
     const [vistaLista, setVistaLista] = useState(true);
 
-    const filtriAttivi = hasFiltriAttivi(filtri) || ricerca.trim() !== "";
+    // TODO: collegare all'auth reale
+    const isLoggedIn = false;
 
     const annunciCercati = ricerca.trim() === ""
         ? annunci
@@ -107,8 +96,8 @@ function AnnunciLavoratoriPage() {
 
     const annunciFiltrati = applicaOrdinamento(applicaFiltri(annunciCercati, filtri), ordinamento);
 
-    // Con filtri attivi mostra tutti i risultati; senza, applica il limite
-    const annunciDaMostrare = filtriAttivi
+    // Gli utenti non autenticati vedono solo i primi ANNUNCI_VISIBILI risultati
+    const annunciDaMostrare = isLoggedIn
         ? annunciFiltrati
         : annunciFiltrati.slice(0, ANNUNCI_VISIBILI);
 
@@ -241,15 +230,15 @@ function AnnunciLavoratoriPage() {
                                 >
                                     {annunciDaMostrare.map((annuncio) => (
                                         <AnnuncioCard
-                                            key={annuncio.id}
+                                            key={annuncio._id}
                                             annuncio={annuncio}
                                             color="primary"
                                         />
                                     ))}
                                 </Box>
 
-                                {/* Bottone "Vedi altri" solo senza filtri attivi */}
-                                {!filtriAttivi && annunciFiltrati.length > ANNUNCI_VISIBILI && (
+                                {/* Bottone "Vedi altri" per utenti non autenticati */}
+                                {!isLoggedIn && annunciFiltrati.length > ANNUNCI_VISIBILI && (
                                     <Box sx={{ textAlign: "center", mt: 4 }}>
                                         <Button
                                             variant="outlined"
@@ -264,8 +253,8 @@ function AnnunciLavoratoriPage() {
                             </>
                         )
                     ) : (
-                        /* Vista mappa: mostra tutti gli annunci filtrati come marker */
-                        <MappaAnnunci annunci={annunciFiltrati} color="primary" />
+                        /* Vista mappa: rispetta lo stesso limite della lista */
+                        <MappaAnnunci annunci={annunciDaMostrare} color="primary" />
                     )}
                 </Box>
             </Box>

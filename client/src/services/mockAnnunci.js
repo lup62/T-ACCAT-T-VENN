@@ -1,120 +1,294 @@
-/**
- * mockAnnunci.js
- *
- * Dati fittizi degli annunci agricoli usati dal frontend finché non sarà
- * disponibile una API reale. Tutti i componenti che mostrano annunci
- * importano da qui — niente array locali nelle pagine.
- *
- * Ogni annuncio ha due possibili valori di `tipo`:
- *   - "disponibilita_lavoro"  → un lavoratore che si propone
- *                               mostrato nella pagina /annunci/cercasi
- *   - "richiesta_manodopera"  → un datore di lavoro che cerca persone
- *                               mostrato nella pagina /annunci/offerte
- *
- * ATTENZIONE: la corrispondenza tipo → rotta sembra invertita,
- * ma è corretta: /annunci/offerte mostra le OFFERTE DI LAVORO dei datori,
- * ovvero le "richieste_manodopera".
- *
- * Struttura di ogni annuncio:
- *   id                        numero univoco
- *   tipo                      "disponibilita_lavoro" | "richiesta_manodopera"
- *   titolo                    testo breve mostrato nella card
- *   descrizione               testo lungo mostrato nel dettaglio
- *   autore.nome               nome del lavoratore o dell'azienda
- *   autore.ruolo              ruolo/qualifica dell'autore
- *   luogo.testo               città e provincia (solo testo, niente coordinate)
- *   periodo.dataInizio        data ISO "YYYY-MM-DD"
- *   periodo.dataFine          data ISO "YYYY-MM-DD"
- *   tipoLavoro                categoria agricola (es. "Olivicoltura")
- *   competenze                array di stringhe, mostrate come chip
- *   prezzo.min / .max         fascia retributiva giornaliera
- *   prezzo.unita              es. "€/giorno"
- *   stato                     "attivo" | "chiuso"
- *   numeroLavoratoriRichiesti (solo richiesta_manodopera) quante persone servono
- */
-
 // disponibilita_lavoro  → lavoratori che si propongono  → /annunci/cercasi
 // richiesta_manodopera  → datori che offrono impiego    → /annunci/offerte
+//
+// Struttura allineata al modello backend (Annuncio.js + User.js):
+//   _id                       stringa (simula ObjectId MongoDB)
+//   tipo                      "disponibilita_lavoro" | "richiesta_manodopera"
+//   autore._id                stringa
+//   autore.nome / .cognome    separati come nel modello User
+//   autore.ruolo              "lavoratore" | "imprenditore"
+//   autore.immagineProfilo    url o stringa vuota
+//   luogo.testo               città e provincia
+//   luogo.posizione           GeoJSON Point { type, coordinates: [lng, lat] }
+//   periodo.dataInizio/Fine   data ISO "YYYY-MM-DD"
+//   tipoLavoro                categoria agricola
+//   competenze                array di stringhe
+//   prezzo.min / .max         fascia retributiva
+//   prezzo.unita              "giornata" | "lavoro_completo"
+//   stato                     "aperto" | "in_corso" | "concluso" | "chiuso"
+//   nLavoratoriRichiesti      (solo richiesta_manodopera)
 export const mockAnnunci = [
+    // ── DISPONIBILITÀ LAVORO ────────────────────────────────────────────────
     {
-        id: 1,
+        _id: '1',
         tipo: 'disponibilita_lavoro',
         titolo: 'Disponibile per lavori agricoli generali',
         descrizione: 'Agricoltore con esperienza pluriennale in colture cerealicole e orticole. Disponibile per lavori stagionali o continuativi presso aziende agricole della provincia di Taranto. Flessibile su orari e mansioni, titolare di patentino per guida di trattori e macchine operatrici.',
-        autore: { nome: 'Marco Esposito', ruolo: 'Lavoratore agricolo' },
-        luogo: { testo: 'Taranto (TA)', lat: 40.4668, lng: 17.2470 },
+        autore: { _id: 'u1', nome: 'Marco', cognome: 'Esposito', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Taranto (TA)', posizione: { type: 'Point', coordinates: [17.2470, 40.4668] } },
         periodo: { dataInizio: '2026-01-01', dataFine: '2026-12-31' },
         tipoLavoro: 'Generico',
         competenze: ['Cerealicoltura', 'Orticoltura', 'Guida trattori'],
-        prezzo: { min: 60, max: 80, unita: '€/giorno' },
-        stato: 'attivo',
+        prezzo: { min: 60, max: 80, unita: 'giornata' },
+        stato: 'aperto',
     },
     {
-        id: 2,
+        _id: '2',
         tipo: 'disponibilita_lavoro',
         titolo: 'Esperto in potatura e innesto',
         descrizione: 'Tecnico specializzato in potatura di fruttiferi e innesto a gemma e a spacco. Esperienza ventennale in frutteti di mele, pere e ciliegie. Disponibile per trasferte in tutta la Puglia e Basilicata, con attrezzatura propria.',
-        autore: { nome: 'Salvatore Rizzo', ruolo: 'Tecnico frutticolo' },
-        luogo: { testo: 'Bari (BA)', lat: 41.1171, lng: 16.8719 },
+        autore: { _id: 'u2', nome: 'Salvatore', cognome: 'Rizzo', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Bari (BA)', posizione: { type: 'Point', coordinates: [16.8719, 41.1171] } },
         periodo: { dataInizio: '2026-03-01', dataFine: '2026-05-31' },
         tipoLavoro: 'Frutticoltura',
         competenze: ['Potatura', 'Innesto a gemma', 'Difesa fitosanitaria'],
-        prezzo: { min: 85, max: 95, unita: '€/giorno' },
-        stato: 'attivo',
+        prezzo: { min: 85, max: 95, unita: 'giornata' },
+        stato: 'aperto',
     },
     {
-        id: 3,
+        _id: '3',
         tipo: 'disponibilita_lavoro',
         titolo: 'Cura e irrigazione orto biologico',
-        descrizione: "Agronoma specializzata in orticultura biologica. Offro servizi di gestione completa di orti e serre, dalla semina al raccolto, con tecniche a basso impatto ambientale. Certificazione biologica in corso, esperienza con disciplinari regionali.",
-        autore: { nome: 'Anna Convertino', ruolo: 'Agronoma' },
-        luogo: { testo: 'Lecce (LE)', lat: 40.3516, lng: 18.1750 },
+        descrizione: 'Agronoma specializzata in orticultura biologica. Offro servizi di gestione completa di orti e serre, dalla semina al raccolto, con tecniche a basso impatto ambientale. Certificazione biologica in corso, esperienza con disciplinari regionali.',
+        autore: { _id: 'u3', nome: 'Anna', cognome: 'Convertino', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Lecce (LE)', posizione: { type: 'Point', coordinates: [18.1750, 40.3516] } },
         periodo: { dataInizio: '2026-04-01', dataFine: '2026-06-30' },
         tipoLavoro: 'Orticoltura',
         competenze: ['Orticoltura biologica', 'Irrigazione a goccia', 'Compostaggio'],
-        prezzo: { min: 60, max: 70, unita: '€/giorno' },
-        stato: 'attivo',
+        prezzo: { min: 60, max: 70, unita: 'giornata' },
+        stato: 'aperto',
     },
     {
-        id: 4,
+        _id: '7',
+        tipo: 'disponibilita_lavoro',
+        titolo: 'Operatore macchine agricole — disponibile subito',
+        descrizione: 'Operatore con patente per macchine agricole pesanti (mietitrebbia, seminatrice, spandiconcime). Disponibile per campagne cerealicole in tutta la Puglia. Esperienza su terreni argillosi e sabbiosi.',
+        autore: { _id: 'u7', nome: 'Luigi', cognome: 'Patrono', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Foggia (FG)', posizione: { type: 'Point', coordinates: [15.5444, 41.4621] } },
+        periodo: { dataInizio: '2026-05-01', dataFine: '2026-08-31' },
+        tipoLavoro: 'Cerealicoltura',
+        competenze: ['Mietitrebbia', 'Seminatrice', 'Spandiconcime', 'Patente CE'],
+        prezzo: { min: 90, max: 110, unita: 'giornata' },
+        stato: 'aperto',
+    },
+    {
+        _id: '8',
+        tipo: 'disponibilita_lavoro',
+        titolo: 'Viticoltore esperto cerca collaborazione',
+        descrizione: 'Venticinque anni di esperienza in viticoltura tradizionale e biodinamica. Disponibile per consulenza, gestione vigneti, vendemmia e vinificazione. Conosco le principali varietà autoctone pugliesi: Primitivo, Negroamaro, Susumaniello.',
+        autore: { _id: 'u8', nome: 'Pietro', cognome: 'Cafiero', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Manduria (TA)', posizione: { type: 'Point', coordinates: [17.6367, 40.3967] } },
+        periodo: { dataInizio: '2026-08-01', dataFine: '2026-11-30' },
+        tipoLavoro: 'Viticoltura',
+        competenze: ['Vendemmia', 'Vinificazione', 'Potatura vite', 'Biodinamica'],
+        prezzo: { min: 95, max: 120, unita: 'giornata' },
+        stato: 'aperto',
+    },
+    {
+        _id: '9',
+        tipo: 'disponibilita_lavoro',
+        titolo: 'Apicoltore per gestione alveari stagionale',
+        descrizione: 'Apicoltore professionista con 80 arnie proprie. Offro servizi di posizionamento arnie su terreni agricoli per impollinazione, smielatura e vendita miele. Disponibile per accordi stagionali con aziende olivicole e frutticole.',
+        autore: { _id: 'u9', nome: 'Carmelo', cognome: 'Mele', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Alberobello (BA)', posizione: { type: 'Point', coordinates: [17.2394, 40.7853] } },
+        periodo: { dataInizio: '2026-03-01', dataFine: '2026-09-30' },
+        tipoLavoro: 'Apicoltura',
+        competenze: ['Gestione alveari', 'Smielatura', 'Impollinazione', 'Produzione miele'],
+        prezzo: { min: 70, max: 90, unita: 'giornata' },
+        stato: 'aperto',
+    },
+    {
+        _id: '10',
+        tipo: 'disponibilita_lavoro',
+        titolo: 'Raccoglitore stagionale disponibile da giugno',
+        descrizione: 'Lavoratore agricolo con esperienza in raccolta di ciliegie, pesche, uva e pomodori. Disponibile per campagne stagionali, preferibilmente con alloggio incluso. Sono in grado di lavorare sia manualmente che con supporto di macchine raccoglitrici.',
+        autore: { _id: 'u10', nome: 'Cosimo', cognome: 'Palmieri', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Brindisi (BR)', posizione: { type: 'Point', coordinates: [17.9374, 40.6326] } },
+        periodo: { dataInizio: '2026-06-01', dataFine: '2026-10-31' },
+        tipoLavoro: 'Frutticoltura',
+        competenze: ['Raccolta ciliegie', 'Raccolta uva', 'Raccolta pomodori', 'Lavoro in team'],
+        prezzo: { min: 55, max: 70, unita: 'giornata' },
+        stato: 'aperto',
+    },
+    {
+        _id: '11',
+        tipo: 'disponibilita_lavoro',
+        titolo: 'Tecnico irrigazione e impianti idrici',
+        descrizione: 'Tecnico specializzato nella progettazione e manutenzione di impianti di irrigazione a goccia e a pioggia. Esperienza con sistemi automatizzati e telecontrollati. Disponibile per installazioni, collaudi e riparazioni su tutta la Puglia.',
+        autore: { _id: 'u11', nome: 'Donato', cognome: 'Semeraro', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Ostuni (BR)', posizione: { type: 'Point', coordinates: [17.5741, 40.7286] } },
+        periodo: { dataInizio: '2026-02-01', dataFine: '2026-07-31' },
+        tipoLavoro: 'Generico',
+        competenze: ['Irrigazione a goccia', 'Impianti idrici', 'Telecontrollo', 'Manutenzione'],
+        prezzo: { min: 80, max: 100, unita: 'giornata' },
+        stato: 'in_corso',
+    },
+    {
+        _id: '12',
+        tipo: 'disponibilita_lavoro',
+        titolo: 'Allevatrice capre e ovini — cerca azienda',
+        descrizione: 'Allevatrice con 15 anni di esperienza in zootecnia ovina e caprina. Competenze in mungitura, gestione pascoli, profilassi veterinaria di base e trasformazione casearia artigianale. Disponibile per collaborazioni a tempo pieno o parziale.',
+        autore: { _id: 'u12', nome: 'Filomena', cognome: 'Larocca', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Altamura (BA)', posizione: { type: 'Point', coordinates: [16.5538, 40.8263] } },
+        periodo: { dataInizio: '2026-01-01', dataFine: '2026-12-31' },
+        tipoLavoro: 'Zootecnia',
+        competenze: ['Mungitura', 'Pascolo', 'Caseificazione', 'Profilassi veterinaria'],
+        prezzo: { min: 65, max: 80, unita: 'giornata' },
+        stato: 'aperto',
+    },
+    {
+        _id: '13',
+        tipo: 'disponibilita_lavoro',
+        titolo: 'Agronomo per consulenza colture intensive',
+        descrizione: 'Agronomo laureato con specializzazione in colture intensive sotto serra. Offro consulenza per ottimizzazione rese, gestione fitosanitaria e piani di concimazione. Disponibile per contratti di consulenza mensile o stagionale.',
+        autore: { _id: 'u13', nome: 'Roberto', cognome: 'Trane', ruolo: 'lavoratore', immagineProfilo: '' },
+        luogo: { testo: 'Foggia (FG)', posizione: { type: 'Point', coordinates: [15.5500, 41.4600] } },
+        periodo: { dataInizio: '2026-01-01', dataFine: '2026-06-30' },
+        tipoLavoro: 'Orticoltura',
+        competenze: ['Agronomia', 'Colture in serra', 'Fitosanitario', 'Piano di concimazione'],
+        prezzo: { min: 120, max: 150, unita: 'giornata' },
+        stato: 'aperto',
+    },
+
+    // ── RICHIESTA MANODOPERA ────────────────────────────────────────────────
+    {
+        _id: '4',
         tipo: 'richiesta_manodopera',
         titolo: 'Raccolta olive — Masseria San Marco',
         descrizione: "Cerchiamo manodopera qualificata per la raccolta delle olive nella nostra masseria. Si richiede esperienza nell'uso di agevolatori meccanici e attitudine al lavoro in team. Vitto e alloggio inclusi per tutta la durata della campagna.",
-        autore: { nome: 'Giovanni Greco', ruolo: 'Titolare Masseria San Marco' },
-        luogo: { testo: 'Fasano (BR)', lat: 40.8372, lng: 17.3600 },
+        autore: { _id: 'u4', nome: 'Giovanni', cognome: 'Greco', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Fasano (BR)', posizione: { type: 'Point', coordinates: [17.3600, 40.8372] } },
         periodo: { dataInizio: '2026-10-01', dataFine: '2026-11-30' },
         tipoLavoro: 'Olivicoltura',
         competenze: ['Raccolta a mano', 'Agevolatori meccanici', 'Stoccaggio olive'],
-        prezzo: { min: 75, max: 85, unita: '€/giorno' },
-        stato: 'attivo',
-        numeroLavoratoriRichiesti: 6,
+        prezzo: { min: 75, max: 85, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 6,
     },
     {
-        id: 5,
+        _id: '5',
         tipo: 'richiesta_manodopera',
         titolo: 'Potatura vigneto stagionale',
         descrizione: 'Azienda vitivinicola cerca potatori esperti per la potatura invernale del vigneto su oltre 20 ettari. Preferibile esperienza con sistemi di allevamento a Guyot e cordone speronato. Contratto stagionale con possibilità di rinnovo.',
-        autore: { nome: 'Azienda Vitivinicola Lama', ruolo: 'Azienda agricola' },
-        luogo: { testo: 'Locorotondo (BA)', lat: 40.7545, lng: 17.3261 },
+        autore: { _id: 'u5', nome: 'Vitivinicola', cognome: 'Lama', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Locorotondo (BA)', posizione: { type: 'Point', coordinates: [17.3261, 40.7545] } },
         periodo: { dataInizio: '2026-02-01', dataFine: '2026-03-31' },
         tipoLavoro: 'Viticoltura',
         competenze: ['Potatura vite', 'Sistema Guyot', 'Cordone speronato'],
-        prezzo: { min: 70, max: 80, unita: '€/giorno' },
-        stato: 'attivo',
-        numeroLavoratoriRichiesti: 4,
+        prezzo: { min: 70, max: 80, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 4,
     },
     {
-        id: 6,
+        _id: '6',
         tipo: 'richiesta_manodopera',
         titolo: 'Raccolta pomodori — Cooperativa Valle',
         descrizione: 'La nostra cooperativa cerca raccoglitori stagionali per il pomodoro da industria. Forniti alloggio e trasporto dal comune di Castellaneta. Contratto regolare CCNL settore agricolo, pagamento settimanale.',
-        autore: { nome: 'Cooperativa Valle Verde', ruolo: 'Cooperativa agricola' },
-        luogo: { testo: 'Castellaneta (TA)', lat: 40.6325, lng: 16.9378 },
+        autore: { _id: 'u6', nome: 'Cooperativa', cognome: 'Valle Verde', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Castellaneta (TA)', posizione: { type: 'Point', coordinates: [16.9378, 40.6325] } },
         periodo: { dataInizio: '2026-07-01', dataFine: '2026-09-30' },
         tipoLavoro: 'Orticoltura',
         competenze: ['Raccolta manuale', 'Macchina raccoglitrice', 'Selezione prodotto'],
-        prezzo: { min: 65, max: 75, unita: '€/giorno' },
-        stato: 'attivo',
-        numeroLavoratoriRichiesti: 10,
+        prezzo: { min: 65, max: 75, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 10,
+    },
+    {
+        _id: '14',
+        tipo: 'richiesta_manodopera',
+        titolo: 'Operatori per impianto frantoio — campagna olearia',
+        descrizione: 'Frantoio oleario cerca personale per la gestione della linea di spremitura durante la campagna autunnale. Turni di 8 ore, anche notturni. Esperienza con macchinari industriali preferibile ma non indispensabile, formazione garantita.',
+        autore: { _id: 'u14', nome: 'Nicola', cognome: 'Perrone', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Andria (BT)', posizione: { type: 'Point', coordinates: [16.2965, 41.2275] } },
+        periodo: { dataInizio: '2026-10-15', dataFine: '2026-12-15' },
+        tipoLavoro: 'Olivicoltura',
+        competenze: ['Macchinari industriali', 'Turni notturni', 'Controllo qualità olio'],
+        prezzo: { min: 70, max: 80, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 5,
+    },
+    {
+        _id: '15',
+        tipo: 'richiesta_manodopera',
+        titolo: 'Pastori per transumanza estiva',
+        descrizione: 'Azienda zootecnica cerca pastori esperti per la gestione del gregge durante la transumanza estiva verso il Gargano. Periodo di circa 3 mesi, vitto e alloggio inclusi. Richiesta esperienza con ovini e cani da pastore.',
+        autore: { _id: 'u15', nome: 'Rocco', cognome: 'Fumarola', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Foggia (FG)', posizione: { type: 'Point', coordinates: [15.5500, 41.4600] } },
+        periodo: { dataInizio: '2026-06-01', dataFine: '2026-08-31' },
+        tipoLavoro: 'Zootecnia',
+        competenze: ['Gestione gregge', 'Cani da pastore', 'Pascolo montano', 'Mungitura'],
+        prezzo: { min: 60, max: 75, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 3,
+    },
+    {
+        _id: '16',
+        tipo: 'richiesta_manodopera',
+        titolo: 'Operai per trapianto fragole in serra',
+        descrizione: 'Azienda florovivaistica cerca operai per il trapianto di piantine di fragola in 8 ettari di tunnel. Lavoro a bassa postura, ritmo sostenuto. Contratto di 45 giorni con possibilità di estensione alla fase di raccolta.',
+        autore: { _id: 'u16', nome: 'Teresa', cognome: 'Losacco', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Policoro (MT)', posizione: { type: 'Point', coordinates: [16.6715, 40.2118] } },
+        periodo: { dataInizio: '2026-09-01', dataFine: '2026-10-15' },
+        tipoLavoro: 'Orticoltura',
+        competenze: ['Trapianto', 'Lavoro in serra', 'Fragolicoltura'],
+        prezzo: { min: 60, max: 68, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 12,
+    },
+    {
+        _id: '17',
+        tipo: 'richiesta_manodopera',
+        titolo: 'Coltivazione grano duro — seminatore e mietitura',
+        descrizione: 'Azienda cerealicola di 150 ettari cerca operatori per semina autunnale e mietitura estiva. Necessaria esperienza con trattori e seminatrici di precisione. Contratto distinto per le due campagne, con preferenza per chi è disponibile per entrambe.',
+        autore: { _id: 'u17', nome: 'Francesco', cognome: 'Gentile', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Cerignola (FG)', posizione: { type: 'Point', coordinates: [15.9040, 41.2637] } },
+        periodo: { dataInizio: '2026-10-01', dataFine: '2027-07-31' },
+        tipoLavoro: 'Cerealicoltura',
+        competenze: ['Guida trattore', 'Seminatrice di precisione', 'Mietitrebbia', 'GPS agricolo'],
+        prezzo: { min: 85, max: 100, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 2,
+    },
+    {
+        _id: '18',
+        tipo: 'richiesta_manodopera',
+        titolo: 'Potatura e raccolta mandorle — azienda familiare',
+        descrizione: 'Piccola azienda a conduzione familiare cerca 2 aiutanti per potatura invernale e raccolta estiva del mandorleto. Ambiente familiare, pasti inclusi. Preferita esperienza pregressa, ma valutiamo anche persone motivate senza esperienza.',
+        autore: { _id: 'u18', nome: 'Antonia', cognome: 'Delfine', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Ruvo di Puglia (BA)', posizione: { type: 'Point', coordinates: [16.4878, 41.1157] } },
+        periodo: { dataInizio: '2026-01-15', dataFine: '2026-08-31' },
+        tipoLavoro: 'Frutticoltura',
+        competenze: ['Potatura mandorlo', 'Raccolta mandorle', 'Lavoro manuale'],
+        prezzo: { min: 60, max: 70, unita: 'giornata' },
+        stato: 'in_corso',
+        nLavoratoriRichiesti: 2,
+    },
+    {
+        _id: '19',
+        tipo: 'richiesta_manodopera',
+        titolo: 'Operatori per coltivazione carciofi',
+        descrizione: 'Azienda orticola specializzata in carciofo brindisino DOP cerca operai per le fasi di piantagione, manutenzione e raccolta. Stagione lunga da settembre ad aprile. Contratto CCNL agricoltura, trasporto dal centro di Brindisi.',
+        autore: { _id: 'u19', nome: 'Stefano', cognome: 'Margheriti', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Brindisi (BR)', posizione: { type: 'Point', coordinates: [17.9374, 40.6326] } },
+        periodo: { dataInizio: '2026-09-01', dataFine: '2027-04-30' },
+        tipoLavoro: 'Orticoltura',
+        competenze: ['Raccolta carciofi', 'Piantagione', 'Manutenzione coltura'],
+        prezzo: { min: 62, max: 72, unita: 'giornata' },
+        stato: 'aperto',
+        nLavoratoriRichiesti: 8,
+    },
+    {
+        _id: '20',
+        tipo: 'richiesta_manodopera',
+        titolo: 'Innesto e allevamento piantine ulivo — vivaio',
+        descrizione: 'Vivaio olivicolo cerca innestatori esperti per la produzione di piantine certificate di varietà Coratina e Ogliarola. Lavoro in ambiente protetto (tunnel), tutto l\'anno. Preferita esperienza in vivaismo o in innesto a chip e a gemma.',
+        autore: { _id: 'u20', nome: 'Girolamo', cognome: 'Piccarreta', ruolo: 'imprenditore', immagineProfilo: '' },
+        luogo: { testo: 'Corato (BA)', posizione: { type: 'Point', coordinates: [16.4078, 41.1522] } },
+        periodo: { dataInizio: '2026-01-01', dataFine: '2026-12-31' },
+        tipoLavoro: 'Olivicoltura',
+        competenze: ['Innesto a chip', 'Innesto a gemma', 'Vivaismo', 'Coltivazione in tunnel'],
+        prezzo: { min: 75, max: 90, unita: 'giornata' },
+        stato: 'chiuso',
+        nLavoratoriRichiesti: 3,
     },
 ];
