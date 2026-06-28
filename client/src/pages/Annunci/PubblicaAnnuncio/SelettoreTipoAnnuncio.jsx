@@ -1,3 +1,18 @@
+/**
+ * SelettoreTipoAnnuncio.jsx
+ *
+ * Due card cliccabili per scegliere il tipo di annuncio da pubblicare:
+ *   - "Cerco lavoratori"           → richiesta_manodopera  (colore secondary)
+ *   - "Offro la mia disponibilità" → disponibilita_lavoro  (colore primary)
+ *
+ * La card selezionata mostra bordo colorato e icona di spunta.
+ * Su mobile le card si impilano verticalmente (xs: column → sm: row).
+ *
+ * Props:
+ *   valore   — valore corrente ("richiesta_manodopera" | "disponibilita_lavoro" | "")
+ *   onChange — callback chiamata con il nuovo valore al click sulla card
+ */
+
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";

@@ -1,3 +1,24 @@
+/**
+ * SelettorePosizioneMappa.jsx
+ *
+ * Mappa interattiva per selezionare la posizione geografica dell'annuncio.
+ * La posizione viene di norma pre-impostata via geocoding Nominatim in
+ * PubblicaAnnuncioPage; l'utente può affinarla cliccando sulla mappa.
+ *
+ * Comportamento:
+ *   - Click sulla mappa → callback onPosizioneCambiata(lat, lng)
+ *   - Se posizione è null non viene mostrato nessun marker
+ *   - La caption sotto mostra le coordinate oppure un invito a cliccare
+ *   - Con prop error mostra bordo rosso e testo di errore nella caption
+ *
+ * Nota: GestoreClick deve stare dentro MapContainer per accedere a useMapEvents.
+ *
+ * Props:
+ *   posizione           — { lat, lng } | null
+ *   onPosizioneCambiata — callback(lat, lng)
+ *   error               — stringa di errore (o "" se nessuno)
+ */
+
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
