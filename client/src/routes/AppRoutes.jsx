@@ -7,6 +7,8 @@ import AnnunciLavoratoriPage from '../pages/Annunci/AnnunciLavoratoriPage.jsx'
 import DettaglioAnnuncioPage from '../pages/Annunci/DettaglioAnnuncioPage.jsx'
 import ProfiloPage from '../pages/Profilo/ProfiloPage.jsx'
 import ChatPage from '../pages/Chat/ChatPage.jsx'
+import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage.jsx'
+import TerminiCondizioniPage from '../pages/Legal/TerminiCondizioniPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
 
 /**
@@ -34,6 +36,8 @@ function AppRoutes() {
                 <Route path="annunci/:id" element={<DettaglioAnnuncioPage />} />
                 <Route path="profilo" element={<ProfiloPage />} />
                 <Route path="chat" element={<ChatPage />} />
+                <Route path="privacy" element={<PrivacyPolicyPage />} />
+                <Route path="termini" element={<TerminiCondizioniPage />} />
             </Route>
         </Routes>
     );
