@@ -189,4 +189,4 @@ annuncioSchema.pre("validate", function (next) {
     next();
 });
 
-module.exports = mongoose.model("Annuncio", annuncioSchema);
+module.exports = mongoose.model("Annuncio", annuncioSchema, "annunci");
