@@ -9,6 +9,7 @@ import ProfiloPage from '../pages/Profilo/ProfiloPage.jsx'
 import ChatPage from '../pages/Chat/ChatPage.jsx'
 import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage.jsx'
 import TerminiCondizioniPage from '../pages/Legal/TerminiCondizioniPage.jsx'
+import PubblicaAnnuncioPage from '../pages/Annunci/PubblicaAnnuncio/PubblicaAnnuncioPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
 
 /**
@@ -38,6 +39,7 @@ function AppRoutes() {
                 <Route path="chat" element={<ChatPage />} />
                 <Route path="privacy" element={<PrivacyPolicyPage />} />
                 <Route path="termini" element={<TerminiCondizioniPage />} />
+                <Route path="annunci/nuovo" element={<PubblicaAnnuncioPage />} />
             </Route>
         </Routes>
     );

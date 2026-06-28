@@ -14,11 +14,13 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
+import AddIcon from "@mui/icons-material/Add";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
@@ -76,6 +78,7 @@ function applicaFiltri(lista, filtri) {
 }
 
 function AnnunciLavoratoriPage() {
+    const navigate = useNavigate();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [filtriDrawerOpen, setFiltriDrawerOpen] = useState(false);
     const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
@@ -103,7 +106,7 @@ function AnnunciLavoratoriPage() {
 
     return (
         <Box sx={{ px: { xs: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
-            <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 4 }}>
+            <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 4, flexWrap: "wrap" }}>
                 <Typography
                     variant="h3"
                     component="h1"
@@ -120,8 +123,16 @@ function AnnunciLavoratoriPage() {
                     Cerca personale
                 </Typography>
 
-                {/* Toggle lista / mappa — solo su desktop, su mobile è nella toolbar */}
+                {/* Toggle lista / mappa + pulsante pubblica — solo su desktop */}
                 <Stack direction="row" spacing={1} sx={{ ml: "auto", display: { xs: "none", md: "flex" } }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddIcon />}
+                        onClick={() => navigate("/annunci/nuovo")}
+                    >
+                        Pubblica annuncio
+                    </Button>
                     <Button
                         variant={vistaLista ? "contained" : "outlined"}
                         color="primary"
@@ -175,7 +186,7 @@ function AnnunciLavoratoriPage() {
                 </FormControl>
             </Stack>
 
-            {/* Toolbar mobile: hamburger filtri a sinistra + toggle lista/mappa a destra */}
+            {/* Toolbar mobile: hamburger filtri a sinistra + toggle lista/mappa + pubblica a destra */}
             <Stack direction="row" alignItems="center" sx={{ display: { xs: "flex", md: "none" }, mb: 2 }}>
                 <IconButton
                     onClick={() => setFiltriDrawerOpen(true)}
@@ -184,6 +195,9 @@ function AnnunciLavoratoriPage() {
                     <MenuIcon />
                 </IconButton>
                 <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+                    <Button variant="contained" color="primary" onClick={() => navigate("/annunci/nuovo")} sx={{ minWidth: 44, px: 1 }}>
+                        <AddIcon fontSize="small" />
+                    </Button>
                     <Button variant={vistaLista ? "contained" : "outlined"} color="primary" onClick={() => setVistaLista(true)} sx={{ minWidth: 44, px: 1 }}>
                         <ViewListIcon fontSize="small" />
                     </Button>
