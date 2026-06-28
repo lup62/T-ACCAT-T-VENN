@@ -158,16 +158,21 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
             {/* Stato annuncio */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>Stato</Typography>
             <FormGroup sx={{ mb: 2 }}>
-                {["attivo", "chiuso"].map((stato) => (
+                {[
+                    { valore: 'aperto', label: 'Aperto' },
+                    { valore: 'in_corso', label: 'In corso' },
+                    { valore: 'concluso', label: 'Concluso' },
+                    { valore: 'chiuso', label: 'Chiuso' },
+                ].map(({ valore, label }) => (
                     <FormControlLabel
-                        key={stato}
-                        label={stato.charAt(0).toUpperCase() + stato.slice(1)}
+                        key={valore}
+                        label={label}
                         control={
                             <Checkbox
                                 size="small"
                                 color={color}
-                                checked={filtri.stati.includes(stato)}
-                                onChange={() => toggleCheckbox("stati", stato)}
+                                checked={filtri.stati.includes(valore)}
+                                onChange={() => toggleCheckbox("stati", valore)}
                             />
                         }
                     />

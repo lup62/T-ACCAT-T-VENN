@@ -67,19 +67,23 @@ function formatPeriodo(periodo) {
     return `${fmt(periodo.dataInizio)} – ${fmt(periodo.dataFine)}`;
 }
 
-// Formatta la fascia di prezzo: "75 – 85 €/giorno" oppure "80 €/giorno" se uguali
+const LABEL_UNITA = { giornata: '€/giorno', lavoro_completo: '€/lavoro' };
+const LABEL_STATO = { aperto: 'Attivo', in_corso: 'In corso', concluso: 'Concluso', chiuso: 'Chiuso' };
+const COLOR_STATO = { aperto: 'success', in_corso: 'warning', concluso: 'default', chiuso: 'error' };
+const LABEL_RUOLO = { lavoratore: 'Lavoratore', imprenditore: 'Imprenditore' };
+
 function formatPrezzo(prezzo) {
-    if (prezzo.min === prezzo.max) return `${prezzo.min} ${prezzo.unita}`;
-    return `${prezzo.min} – ${prezzo.max} ${prezzo.unita}`;
+    const unita = LABEL_UNITA[prezzo.unita] ?? prezzo.unita;
+    if (prezzo.min === prezzo.max) return `${prezzo.min} ${unita}`;
+    return `${prezzo.min} – ${prezzo.max} ${unita}`;
 }
 
 function DettaglioAnnuncioPage() {
-    const { id } = useParams();         // id stringa dall'URL
+    const { id } = useParams();
     const navigate = useNavigate();
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    // Number(id) perché i mock hanno id numerici, l'URL li passa come stringa
-    const annuncio = mockAnnunci.find((a) => a.id === Number(id));
+    const annuncio = mockAnnunci.find((a) => a._id === id);
 
     // Stato di errore: annuncio inesistente o URL digitato a mano
     if (!annuncio) {
@@ -130,12 +134,12 @@ function DettaglioAnnuncioPage() {
                 Torna agli annunci
             </Button>
 
-            {/* Chip tipo annuncio + chip stato (attivo/chiuso) */}
+            {/* Chip tipo annuncio + chip stato */}
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
                 <Chip label={tipoLabel} color={tipoColor} size="small" />
                 <Chip
-                    label={annuncio.stato === "attivo" ? "Attivo" : "Chiuso"}
-                    color="success"
+                    label={LABEL_STATO[annuncio.stato] ?? annuncio.stato}
+                    color={COLOR_STATO[annuncio.stato] ?? 'default'}
                     variant="outlined"
                     size="small"
                 />
@@ -189,7 +193,10 @@ function DettaglioAnnuncioPage() {
                         <Typography variant="h6" sx={{ mb: 2 }}>Posizione</Typography>
                         <Box sx={{ borderRadius: 3, overflow: "hidden", boxShadow: 2, height: 300 }}>
                             <MapContainer
-                                center={[annuncio.luogo.lat, annuncio.luogo.lng]}
+                                center={[
+                                    annuncio.luogo.posizione.coordinates[1],
+                                    annuncio.luogo.posizione.coordinates[0],
+                                ]}
                                 zoom={12}
                                 style={{ width: "100%", height: "100%" }}
                                 scrollWheelZoom={false}
@@ -199,7 +206,10 @@ function DettaglioAnnuncioPage() {
                                     url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                                 />
                                 <Marker
-                                    position={[annuncio.luogo.lat, annuncio.luogo.lng]}
+                                    position={[
+                                        annuncio.luogo.posizione.coordinates[1],
+                                        annuncio.luogo.posizione.coordinates[0],
+                                    ]}
                                     icon={creaMarkerIcon(COLORI_TEMA[tipoColor])}
                                 >
                                     <Popup>{annuncio.luogo.testo}</Popup>
@@ -253,7 +263,7 @@ function DettaglioAnnuncioPage() {
                         </Stack>
 
                         {/* Mostrato solo per le richieste di manodopera */}
-                        {annuncio.numeroLavoratoriRichiesti && (
+                        {annuncio.nLavoratoriRichiesti && (
                             <Stack direction="row" spacing={1.5} alignItems="flex-start">
                                 <GroupIcon sx={{ color: "primary.main", mt: 0.3 }} />
                                 <Box>
@@ -261,7 +271,7 @@ function DettaglioAnnuncioPage() {
                                         Lavoratori richiesti
                                     </Typography>
                                     <Typography variant="body2">
-                                        {annuncio.numeroLavoratoriRichiesti}
+                                        {annuncio.nLavoratoriRichiesti}
                                     </Typography>
                                 </Box>
                             </Stack>
@@ -272,6 +282,7 @@ function DettaglioAnnuncioPage() {
                         {/* Autore dell'annuncio con avatar e ruolo */}
                         <Stack direction="row" spacing={1.5} alignItems="center">
                             <Avatar
+                                src={annuncio.autore.immagineProfilo}
                                 sx={{
                                     bgcolor: `${tipoColor}.main`,
                                     width: 40,
@@ -283,10 +294,10 @@ function DettaglioAnnuncioPage() {
                             </Avatar>
                             <Box>
                                 <Typography variant="body2" fontWeight={600}>
-                                    {annuncio.autore.nome}
+                                    {annuncio.autore.nome} {annuncio.autore.cognome}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                    {annuncio.autore.ruolo}
+                                    {LABEL_RUOLO[annuncio.autore.ruolo] ?? annuncio.autore.ruolo}
                                 </Typography>
                             </Box>
                         </Stack>

@@ -27,7 +27,7 @@ import MappaAnnunci from "./MappaAnnunci";
 import { mockAnnunci } from "../../services/mockAnnunci";
 
 // Numero massimo di card visibili senza filtri attivi
-const ANNUNCI_VISIBILI = 3;
+const ANNUNCI_VISIBILI = 5;
 
 // offerte di lavoro = richieste dei datori, non disponibilità dei lavoratori
 const annunci = mockAnnunci.filter((a) => a.tipo === "richiesta_manodopera");
@@ -96,7 +96,8 @@ function AnnunciLavoroPage() {
     // true = vista lista (default), false = vista mappa
     const [vistaLista, setVistaLista] = useState(true);
 
-    const filtriAttivi = hasFiltriAttivi(filtri) || ricerca.trim() !== "";
+    // TODO: collegare all'auth reale
+    const isLoggedIn = false;
 
     const annunciCercati = ricerca.trim() === ""
         ? annunci
@@ -107,8 +108,8 @@ function AnnunciLavoroPage() {
 
     const annunciFiltrati = applicaOrdinamento(applicaFiltri(annunciCercati, filtri), ordinamento);
 
-    // Con filtri attivi mostra tutti i risultati; senza, applica il limite
-    const annunciDaMostrare = filtriAttivi
+    // Gli utenti non autenticati vedono solo i primi ANNUNCI_VISIBILI risultati
+    const annunciDaMostrare = isLoggedIn
         ? annunciFiltrati
         : annunciFiltrati.slice(0, ANNUNCI_VISIBILI);
 
@@ -241,15 +242,15 @@ function AnnunciLavoroPage() {
                                 >
                                     {annunciDaMostrare.map((annuncio) => (
                                         <AnnuncioCard
-                                            key={annuncio.id}
+                                            key={annuncio._id}
                                             annuncio={annuncio}
                                             color="secondary"
                                         />
                                     ))}
                                 </Box>
 
-                                {/* Bottone "Vedi altri" solo senza filtri attivi */}
-                                {!filtriAttivi && annunciFiltrati.length > ANNUNCI_VISIBILI && (
+                                {/* Bottone "Vedi altri" per utenti non autenticati */}
+                                {!isLoggedIn && annunciFiltrati.length > ANNUNCI_VISIBILI && (
                                     <Box sx={{ textAlign: "center", mt: 4 }}>
                                         <Button
                                             variant="outlined"
@@ -264,8 +265,8 @@ function AnnunciLavoroPage() {
                             </>
                         )
                     ) : (
-                        /* Vista mappa: mostra tutti gli annunci filtrati come marker */
-                        <MappaAnnunci annunci={annunciFiltrati} color="secondary" />
+                        /* Vista mappa: rispetta lo stesso limite della lista */
+                        <MappaAnnunci annunci={annunciDaMostrare} color="secondary" />
                     )}
                 </Box>
             </Box>
