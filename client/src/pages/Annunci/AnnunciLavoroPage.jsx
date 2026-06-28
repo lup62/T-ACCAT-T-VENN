@@ -13,7 +13,6 @@
  *   - In vista mappa: tutti gli annunci filtrati compaiono come marker.
  */
 
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
@@ -25,84 +24,27 @@ import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import FiltriAnnunci from "./FiltriAnnunci";
-import { FILTRI_INIZIALI } from "./annunciConstants";
 import MappaAnnunci from "./MappaAnnunci";
 import { mockAnnunci } from "../../services/mockAnnunci";
-
-// Numero massimo di card visibili senza filtri attivi
-const ANNUNCI_VISIBILI = 5;
+import { useAnnunciFiltrati } from "../../hooks/useAnnunciFiltrati";
 
 // offerte di lavoro = richieste dei datori, non disponibilità dei lavoratori
 const annunci = mockAnnunci.filter((a) => a.tipo === "richiesta_manodopera");
 
-function applicaOrdinamento(lista, ordinamento) {
-    const copia = [...lista];
-    switch (ordinamento) {
-        case "recenti":  return copia.sort((a, b) => b.periodo.dataInizio.localeCompare(a.periodo.dataInizio));
-        case "vecchi":   return copia.sort((a, b) => a.periodo.dataInizio.localeCompare(b.periodo.dataInizio));
-        case "prezzoAsc":  return copia.sort((a, b) => a.prezzo.min - b.prezzo.min);
-        case "prezzoDesc": return copia.sort((a, b) => b.prezzo.max - a.prezzo.max);
-        default: return copia;
-    }
-}
-
-// Applica tutti i filtri attivi all'array degli annunci
-function applicaFiltri(lista, filtri) {
-    return lista.filter((a) => {
-        if (filtri.tipiLavoro.length > 0 && !filtri.tipiLavoro.includes(a.tipoLavoro))
-            return false;
-
-        if (filtri.province.length > 0) {
-            const match = a.luogo.testo.match(/\(([A-Z]+)\)/);
-            const prov = match ? match[1] : "";
-            if (!filtri.province.includes(prov)) return false;
-        }
-
-        // Include l'annuncio solo se la sua fascia di prezzo si sovrappone al range selezionato
-        if (a.prezzo.max < filtri.prezzoRange[0] || a.prezzo.min > filtri.prezzoRange[1])
-            return false;
-
-        if (filtri.stati.length > 0 && !filtri.stati.includes(a.stato))
-            return false;
-
-        // Esclude gli annunci terminati prima dell'inizio del periodo cercato
-        if (filtri.periodoInizio && a.periodo.dataFine < filtri.periodoInizio)
-            return false;
-
-        // Esclude gli annunci che iniziano dopo la fine del periodo cercato
-        if (filtri.periodoFine && a.periodo.dataInizio > filtri.periodoFine)
-            return false;
-
-        return true;
-    });
-}
-
 function AnnunciLavoroPage() {
     const navigate = useNavigate();
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [filtriDrawerOpen, setFiltriDrawerOpen] = useState(false);
-    const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
-    const [ricerca, setRicerca] = useState("");
-    const [ordinamento, setOrdinamento] = useState("recenti");
-    // true = vista lista (default), false = vista mappa
-    const [vistaLista, setVistaLista] = useState(true);
-
-    // TODO: collegare all'auth reale
-    const isLoggedIn = false;
-
-    const annunciCercati = ricerca.trim() === ""
-        ? annunci
-        : annunci.filter((a) =>
-            a.titolo.toLowerCase().includes(ricerca.toLowerCase()) ||
-            a.descrizione.toLowerCase().includes(ricerca.toLowerCase())
-        );
-
-    const annunciFiltrati = applicaOrdinamento(applicaFiltri(annunciCercati, filtri), ordinamento);
-
-    // Gli utenti non autenticati vedono solo i primi ANNUNCI_VISIBILI risultati
-    const annunciDaMostrare = isLoggedIn
-        ? annunciFiltrati
-        : annunciFiltrati.slice(0, ANNUNCI_VISIBILI);
+    const {
+        filtri, setFiltri,
+        ricerca, setRicerca,
+        ordinamento, setOrdinamento,
+        vistaLista, setVistaLista,
+        filtriDrawerOpen, setFiltriDrawerOpen,
+        dialogOpen, setDialogOpen,
+        isLoggedIn,
+        annunciFiltrati,
+        annunciDaMostrare,
+        hasMore,
+    } = useAnnunciFiltrati(annunci);
 
     return (
         <Box sx={{ px: { xs: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
@@ -252,7 +194,7 @@ function AnnunciLavoroPage() {
                                 </Box>
 
                                 {/* Bottone "Vedi altri" per utenti non autenticati */}
-                                {!isLoggedIn && annunciFiltrati.length > ANNUNCI_VISIBILI && (
+                                {hasMore && (
                                     <Box sx={{ textAlign: "center", mt: 4 }}>
                                         <Button
                                             variant="outlined"

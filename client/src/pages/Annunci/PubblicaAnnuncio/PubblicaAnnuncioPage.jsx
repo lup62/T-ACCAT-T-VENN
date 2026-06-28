@@ -116,14 +116,13 @@ function valida(form) {
         segna("dataFine", "Inserisci la data di fine");
     if (form.dataInizio && form.dataFine && form.dataFine < form.dataInizio)
         segna("dataFine", "La data di fine non può essere precedente alla data di inizio");
-    if (form.prezzoMin === "" || Number(form.prezzoMin) < 0)
-        segna("prezzoMin", "Inserisci un prezzo minimo valido (≥ 0)");
-    if (form.prezzoMax === "" || Number(form.prezzoMax) < 0)
-        segna("prezzoMax", "Inserisci un prezzo massimo valido (≥ 0)");
+    // Compenso opzionale: se compilato parzialmente segnala incongruenze
+    if (form.prezzoMin !== "" && Number(form.prezzoMin) < 0)
+        segna("prezzoMin", "Il prezzo minimo non può essere negativo");
+    if (form.prezzoMax !== "" && Number(form.prezzoMax) < 0)
+        segna("prezzoMax", "Il prezzo massimo non può essere negativo");
     if (form.prezzoMin !== "" && form.prezzoMax !== "" && Number(form.prezzoMax) < Number(form.prezzoMin))
         segna("prezzoMax", "Il prezzo massimo non può essere minore del minimo");
-    if (!form.unitaPrezzo)
-        segna("unitaPrezzo", "Seleziona l'unità di prezzo");
     if (form.tipo === "richiesta_manodopera" && (!form.nLavoratoriRichiesti || Number(form.nLavoratoriRichiesti) < 1))
         segna("nLavoratoriRichiesti", "Inserisci il numero di lavoratori (almeno 1)");
 
@@ -154,11 +153,14 @@ function costruisciPayload(form) {
         orarioLavorativo: form.orarioLavorativo.trim(),
         tipoLavoro: form.tipoLavoro.trim(),
         competenze: form.competenze,
-        prezzo: {
-            min: Number(form.prezzoMin),
-            max: Number(form.prezzoMax),
-            unita: form.unitaPrezzo,
-        },
+        // Se nessun campo prezzo è compilato → da concordare
+        prezzo: (form.prezzoMin === "" && form.prezzoMax === "" && !form.unitaPrezzo)
+            ? { min: null, max: null, unita: "da_concordare" }
+            : {
+                min: form.prezzoMin !== "" ? Number(form.prezzoMin) : null,
+                max: form.prezzoMax !== "" ? Number(form.prezzoMax) : null,
+                unita: form.unitaPrezzo || "da_concordare",
+            },
         stato: "aperto",
     };
 
@@ -463,18 +465,16 @@ function PubblicaAnnuncioPage() {
                                 <TextField
                                     label="Compenso minimo (€)"
                                     type="number"
-                                    required
                                     fullWidth
                                     value={form.prezzoMin}
                                     onChange={aggiorna("prezzoMin")}
                                     error={!!errori.prezzoMin}
-                                    helperText={errori.prezzoMin}
+                                    helperText={errori.prezzoMin || "Facoltativo — lascia vuoto per \"da concordare\""}
                                     slotProps={{ htmlInput: { min: 0 } }}
                                 />
                                 <TextField
                                     label="Compenso massimo (€)"
                                     type="number"
-                                    required
                                     fullWidth
                                     value={form.prezzoMax}
                                     onChange={aggiorna("prezzoMax")}
@@ -486,7 +486,7 @@ function PubblicaAnnuncioPage() {
 
                             <Box>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                    Unità di prezzo <Typography component="span" color="error">*</Typography>
+                                    Unità di prezzo
                                 </Typography>
                                 <ToggleButtonGroup
                                     exclusive
