@@ -45,6 +45,7 @@ import SendIcon from "@mui/icons-material/Send";
 import SelettoreTipoAnnuncio from "./SelettoreTipoAnnuncio";
 import InputCompetenze from "./InputCompetenze";
 import SelettorePosizioneMappa from "./SelettorePosizioneMappa";
+import { useAuth } from "../../../hooks/useAuth";
 
 // ─── Stato iniziale ───────────────────────────────────────────────────────────
 
@@ -194,8 +195,7 @@ function PubblicaAnnuncioPage() {
     const [geocodingLoading, setGeocodingLoading] = useState(false);
     const [geocodingErrore, setGeocodingErrore] = useState("");
 
-    // TODO: collegare all'auth reale (context o store)
-    const isLoggedIn = false;
+    const { isLoggedIn } = useAuth();
 
     const aggiorna = (campo) => (e) =>
         setForm((prev) => ({ ...prev, [campo]: e.target.value }));
