@@ -55,6 +55,7 @@ const STATO_INIZIALE = {
     descrizione: "",
     tipoLavoro: "",
     luogoTesto: "",
+    raggioKm: "",
     posizione: null,       // { lat, lng } — impostato via geocoding o click mappa
     dataInizio: "",
     dataFine: "",
@@ -105,8 +106,12 @@ function valida(form) {
         segna("tipo", "Seleziona il tipo di annuncio");
     if (!form.titolo || form.titolo.length < 5)
         segna("titolo", "Il titolo deve avere almeno 5 caratteri");
+    if (form.titolo && form.titolo.length > 120)
+        segna("titolo", "Il titolo non può superare i 120 caratteri");
     if (!form.descrizione || form.descrizione.length < 10)
         segna("descrizione", "La descrizione deve avere almeno 10 caratteri");
+    if (form.descrizione && form.descrizione.length > 2000)
+        segna("descrizione", "La descrizione non può superare i 2000 caratteri");
     if (!form.tipoLavoro)
         segna("tipoLavoro", "Inserisci il tipo di lavoro");
     if (!form.luogoTesto)
@@ -124,6 +129,9 @@ function valida(form) {
         segna("prezzoMax", "Il prezzo massimo non può essere negativo");
     if (form.prezzoMin !== "" && form.prezzoMax !== "" && Number(form.prezzoMax) < Number(form.prezzoMin))
         segna("prezzoMax", "Il prezzo massimo non può essere minore del minimo");
+    const prezziCompilati = form.prezzoMin !== "" || form.prezzoMax !== "";
+    if (prezziCompilati && !form.unitaPrezzo)
+        segna("unitaPrezzo", "Seleziona l'unità di prezzo");
     if (form.tipo === "richiesta_manodopera" && (!form.nLavoratoriRichiesti || Number(form.nLavoratoriRichiesti) < 1))
         segna("nLavoratoriRichiesti", "Inserisci il numero di lavoratori (almeno 1)");
 
@@ -134,12 +142,14 @@ function valida(form) {
 
 function costruisciPayload(form) {
     const luogo = { testo: form.luogoTesto.trim() };
-    // Includi posizione solo se disponibile (geocoding o selezione manuale)
     if (form.posizione) {
         luogo.posizione = {
             type: "Point",
-            coordinates: [form.posizione.lng, form.posizione.lat], // GeoJSON: [lng, lat]
+            coordinates: [form.posizione.lng, form.posizione.lat],
         };
+    }
+    if (form.raggioKm !== "") {
+        luogo.raggioKm = Number(form.raggioKm);
     }
 
     const payload = {
@@ -405,6 +415,18 @@ function PubblicaAnnuncioPage() {
                                     },
                                 }}
                             />
+
+                            {form.tipo === "disponibilita_lavoro" && (
+                                <TextField
+                                    label="Raggio di disponibilità (km)"
+                                    type="number"
+                                    fullWidth
+                                    value={form.raggioKm}
+                                    onChange={aggiorna("raggioKm")}
+                                    helperText="Facoltativo — distanza massima che sei disposto a percorrere (0–200 km)"
+                                    slotProps={{ htmlInput: { min: 0, max: 200 } }}
+                                />
+                            )}
 
                             {geocodingErrore && (
                                 <Alert severity="warning" variant="outlined" sx={{ py: 0.5 }}>

@@ -252,7 +252,7 @@ function DettaglioAnnuncioPage() {
                                     {annuncio.autore.nome} {annuncio.autore.cognome}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                    {LABEL_RUOLO[annuncio.autore.ruolo] ?? annuncio.autore.ruolo}
+                                    {LABEL_RUOLO[annuncio.autore.ruoli?.[0]] ?? annuncio.autore.ruoli?.[0]}
                                 </Typography>
                             </Box>
                         </Stack>
