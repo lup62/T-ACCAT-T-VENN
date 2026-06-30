@@ -154,7 +154,7 @@ const annuncioSchema = new mongoose.Schema(
 annuncioSchema.index({ "luogo.posizione": "2dsphere" });
 
 // Controlli che coinvolgono più campi.
-annuncioSchema.pre("validate", function (next) {
+annuncioSchema.pre("validate", function () {
     // La data di fine non può essere prima della data di inizio.
     if (
         this.periodo?.dataInizio &&
@@ -210,9 +210,7 @@ if (prezzoDaConcordare) {
             "nLavoratoriRichiesti",
             "Per una richiesta di manodopera devi indicare il numero di lavoratori richiesti."
         );
-    }
-
-    next();
+    };
 });
 
 module.exports = mongoose.model("Annuncio", annuncioSchema, "annunci");

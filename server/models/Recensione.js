@@ -60,7 +60,7 @@ recensioneSchema.index(
 );
 
 // Nessuno può recensire sé stesso.
-recensioneSchema.pre("validate", function (next) {
+recensioneSchema.pre("validate", function () {
     if (
         this.autore &&
         this.destinatario &&
@@ -70,9 +70,7 @@ recensioneSchema.pre("validate", function (next) {
             "destinatario",
             "Non puoi lasciare una recensione a te stesso."
         );
-    }
-
-    next();
+    };
 });
 
 module.exports = mongoose.model(

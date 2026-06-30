@@ -68,7 +68,7 @@ propostaSchema.index(
 );
 
 // Un utente non può inviare una proposta al proprio annuncio.
-propostaSchema.pre("validate", function (next) {
+propostaSchema.pre("validate", function () {
     if (
         this.proponente &&
         this.destinatario &&
@@ -78,9 +78,7 @@ propostaSchema.pre("validate", function (next) {
             "destinatario",
             "Non puoi inviare una proposta al tuo stesso annuncio."
         );
-    }
-
-    next();
+    };
 });
 
 module.exports = mongoose.model("Proposta", propostaSchema, "proposte");
