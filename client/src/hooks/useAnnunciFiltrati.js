@@ -26,8 +26,16 @@ function applicaOrdinamento(lista, ordinamento) {
     switch (ordinamento) {
         case "recenti":    return copia.sort((a, b) => b.periodo.dataInizio.localeCompare(a.periodo.dataInizio));
         case "vecchi":     return copia.sort((a, b) => a.periodo.dataInizio.localeCompare(b.periodo.dataInizio));
-        case "prezzoAsc":  return copia.sort((a, b) => a.prezzo.min - b.prezzo.min);
-        case "prezzoDesc": return copia.sort((a, b) => b.prezzo.max - a.prezzo.max);
+        case "prezzoAsc":  return copia.sort((a, b) => {
+            const aMin = a.prezzo.unita === "da_concordare" ? Infinity : a.prezzo.min;
+            const bMin = b.prezzo.unita === "da_concordare" ? Infinity : b.prezzo.min;
+            return aMin - bMin;
+        });
+        case "prezzoDesc": return copia.sort((a, b) => {
+            const aMax = a.prezzo.unita === "da_concordare" ? -Infinity : a.prezzo.max;
+            const bMax = b.prezzo.unita === "da_concordare" ? -Infinity : b.prezzo.max;
+            return bMax - aMax;
+        });
         default: return copia;
     }
 }
@@ -43,8 +51,9 @@ function applicaFiltri(lista, filtri) {
             if (!filtri.province.includes(prov)) return false;
         }
 
-        // Include l'annuncio solo se la sua fascia di prezzo si sovrappone al range selezionato
-        if (a.prezzo.max < filtri.prezzoRange[0] || a.prezzo.min > filtri.prezzoRange[1])
+        // Gli annunci "da concordare" passano sempre il filtro prezzo (non hanno fascia)
+        if (a.prezzo.unita !== "da_concordare" &&
+            (a.prezzo.max < filtri.prezzoRange[0] || a.prezzo.min > filtri.prezzoRange[1]))
             return false;
 
         if (filtri.stati.length > 0 && !filtri.stati.includes(a.stato))
