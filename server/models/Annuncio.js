@@ -70,9 +70,8 @@ const annuncioSchema = new mongoose.Schema(
             },
 
             posizione: {
-                type: posizioneSchema,
-                required: true,
-            },
+    type: posizioneSchema,
+},
 
             // Utile soprattutto per l'annuncio di disponibilità:
             // il lavoratore può indicare una zona raggiungibile.
@@ -120,24 +119,25 @@ const annuncioSchema = new mongoose.Schema(
         },
 
         prezzo: {
-            min: {
-                type: Number,
-                required: true,
-                min: 0,
-            },
+    min: {
+        type: Number,
+        min: 0,
+        default: null,
+    },
 
-            max: {
-                type: Number,
-                required: true,
-                min: 0,
-            },
+    max: {
+        type: Number,
+        min: 0,
+        default: null,
+    },
 
-            unita: {
-                type: String,
-                enum: ["giornata", "lavoro_completo"],
-                required: true,
-            },
-        },
+    unita: {
+        type: String,
+        enum: ["giornata", "lavoro_completo", "da_concordare"],
+        required: true,
+        default: "da_concordare",
+    },
+},
 
         stato: {
             type: String,
@@ -167,13 +167,39 @@ annuncioSchema.pre("validate", function (next) {
         );
     }
 
-    // Il prezzo massimo non può essere minore del prezzo minimo.
+    const prezzoDaConcordare =
+    this.prezzo?.unita === "da_concordare";
+
+if (prezzoDaConcordare) {
+    if (
+        this.prezzo.min !== null ||
+        this.prezzo.max !== null
+    ) {
+        this.invalidate(
+            "prezzo",
+            "Se il prezzo è da concordare, minimo e massimo devono essere null."
+        );
+    }
+} else {
+    if (
+        this.prezzo?.min === null ||
+        this.prezzo?.min === undefined ||
+        this.prezzo?.max === null ||
+        this.prezzo?.max === undefined
+    ) {
+        this.invalidate(
+            "prezzo",
+            "Per un prezzo definito devi indicare minimo e massimo."
+        );
+    }
+
     if (this.prezzo?.min > this.prezzo?.max) {
         this.invalidate(
             "prezzo.max",
             "Il prezzo massimo non può essere minore del prezzo minimo."
         );
     }
+}
 
     // Solo un imprenditore che pubblica una richiesta deve indicare quanti lavoratori cerca.
     if (
