@@ -6,7 +6,7 @@ function generaAccessToken(user) {
     return jwt.sign(
         {
             userId: user._id.toString(),
-            ruolo: user.ruolo,
+            ruoli: user.ruoli,
         },
         process.env.JWT_ACCESS_SECRET,
         {
@@ -14,10 +14,11 @@ function generaAccessToken(user) {
         }
     );
 }
+
 async function registrati(req, res) {
     try {
         const {
-            ruolo,
+            ruoli,
             nome,
             cognome,
             dataNascita,
@@ -31,7 +32,7 @@ async function registrati(req, res) {
         } = req.body;
 
         if (
-            !ruolo ||
+            !ruoli ||
             !nome ||
             !cognome ||
             !dataNascita ||
@@ -45,9 +46,19 @@ async function registrati(req, res) {
             });
         }
 
-        if (!["lavoratore", "imprenditore"].includes(ruolo)) {
+        const ruoliValidi = ["lavoratore", "imprenditore"];
+
+        const ruoliNonValidi =
+            !Array.isArray(ruoli) ||
+            ruoli.length === 0 ||
+            ruoli.length > 2 ||
+            ruoli.some((ruolo) => !ruoliValidi.includes(ruolo)) ||
+            new Set(ruoli).size !== ruoli.length;
+
+        if (ruoliNonValidi) {
             return res.status(400).json({
-                message: "Il ruolo deve essere lavoratore oppure imprenditore.",
+                message:
+                    "Seleziona almeno un ruolo valido, senza duplicati.",
             });
         }
 
@@ -56,7 +67,12 @@ async function registrati(req, res) {
                 message: "La password deve contenere almeno 8 caratteri.",
             });
         }
-                const utenteEsistente = await User.findOne({ email });
+
+        const emailNormalizzata = email.trim().toLowerCase();
+
+        const utenteEsistente = await User.findOne({
+            email: emailNormalizzata,
+        });
 
         if (utenteEsistente) {
             return res.status(409).json({
@@ -67,28 +83,31 @@ async function registrati(req, res) {
         const passwordHash = await bcrypt.hash(password, 12);
 
         const utente = await User.create({
-            ruolo,
+            ruoli,
             nome,
             cognome,
             dataNascita,
-            email,
+            email: emailNormalizzata,
             telefono,
             passwordHash,
             indirizzo,
             immagineProfilo: immagineProfilo || "",
-            datiLavoratore:
-                ruolo === "lavoratore" ? datiLavoratore || {} : undefined,
-            datiImprenditore:
-                ruolo === "imprenditore" ? datiImprenditore || {} : undefined,
+            datiLavoratore: ruoli.includes("lavoratore")
+                ? datiLavoratore || {}
+                : undefined,
+            datiImprenditore: ruoli.includes("imprenditore")
+                ? datiImprenditore || {}
+                : undefined,
         });
-                const accessToken = generaAccessToken(utente);
+
+        const accessToken = generaAccessToken(utente);
 
         return res.status(201).json({
             message: "Registrazione completata con successo.",
             accessToken,
             utente: {
                 id: utente._id,
-                ruolo: utente.ruolo,
+                ruoli: utente.ruoli,
                 nome: utente.nome,
                 cognome: utente.cognome,
                 email: utente.email,
@@ -102,7 +121,9 @@ async function registrati(req, res) {
         if (error.name === "ValidationError") {
             return res.status(400).json({
                 message: "Dati di registrazione non validi.",
-                errors: Object.values(error.errors).map((errore) => errore.message),
+                errors: Object.values(error.errors).map(
+                    (errore) => errore.message
+                ),
             });
         }
 
