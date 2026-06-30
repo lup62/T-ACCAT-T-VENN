@@ -172,8 +172,7 @@ const userSchema = new mongoose.Schema(
 // Indice geografico necessario per ricerca per distanza e mappa Leaflet.
 userSchema.index({ "indirizzo.posizione": "2dsphere" });
 
-// Un utente deve avere password oppure credenziali OAuth Google.
-userSchema.pre("validate", function (next) {
+userSchema.pre("validate", function () {
     const haPassword = Boolean(this.passwordHash);
     const haOAuth = Boolean(this.oauth?.provider && this.oauth?.providerId);
 
@@ -183,8 +182,6 @@ userSchema.pre("validate", function (next) {
             "L'utente deve avere una password oppure credenziali OAuth."
         );
     }
-
-    next();
 });
 
 module.exports = mongoose.model("User", userSchema);
