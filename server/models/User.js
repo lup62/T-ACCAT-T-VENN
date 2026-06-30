@@ -34,11 +34,27 @@ const posizioneSchema = new mongoose.Schema(
 
 const userSchema = new mongoose.Schema(
     {
-        ruolo: {
+        ruoli: {
+    type: [
+        {
             type: String,
             enum: ["lavoratore", "imprenditore"],
-            required: true,
         },
+    ],
+    required: true,
+    validate: {
+        validator: function (value) {
+            return (
+                Array.isArray(value) &&
+                value.length > 0 &&
+                value.length <= 2 &&
+                new Set(value).size === value.length
+            );
+        },
+        message:
+            "L'utente deve avere almeno un ruolo e non può selezionare lo stesso ruolo due volte.",
+    },
+},
 
         nome: {
             type: String,
