@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom'
 import HomePage from '../pages/Home/HomePage.jsx'
 import LoginPage from '../pages/Login/LoginPage.jsx'
@@ -21,9 +22,6 @@ import MainLayout from '../layouts/MainLayout.jsx'
  *   /annunci/offerte  → offerte di lavoro pubblicate dai datori
  *   /annunci/cercasi  → profili di lavoratori disponibili
  *   /annunci/:id      → dettaglio di un singolo annuncio
- *
- * React Router v7 dà priorità ai path statici (offerte, cercasi) rispetto
- * al parametro dinamico (:id), quindi non c'è rischio di conflitto.
  */
 function AppRoutes() {
     return (

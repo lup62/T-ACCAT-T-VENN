@@ -1,3 +1,10 @@
+/**
+ * HomePage.jsx  —  rotta: /
+ *
+ * Landing page pubblica: hero full-bleed, sezione "L'iniziativa" a due
+ * colonne e sezione "Come funziona" (componente HowItWorks).
+ */
+
 import { Box, Typography, Stack, Button, Card, CardContent } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 

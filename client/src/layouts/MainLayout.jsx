@@ -1,3 +1,5 @@
+// MainLayout.jsx — struttura comune a tutte le pagine (Navbar + contenuto + Footer).
+// Le pagine vengono renderizzate al posto di <Outlet /> tramite le rotte figlie in AppRoutes.
 import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
 import Navbar from "../components/Navbar";

@@ -1,3 +1,5 @@
+// RegistratiDialog.jsx — dialog riutilizzabile mostrato agli utenti non autenticati
+// che provano a usare una funzionalità protetta (filtri, invio proposta, ecc.).
 import {
     Button,
     Dialog,

@@ -1,3 +1,11 @@
+/**
+ * RegisterPage.jsx  —  rotta: /register
+ *
+ * Form di registrazione: supporta uno o entrambi i ruoli (lavoratore/imprenditore)
+ * e usa geocodifica al blur sul campo indirizzo per ottenere le coordinate
+ * richieste dal backend (indirizzo.posizione, GeoJSON [lng, lat]).
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
