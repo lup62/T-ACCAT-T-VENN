@@ -180,7 +180,7 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
                     label="Da"
                     size="small"
                     fullWidth
-                    InputLabelProps={{ shrink: true }}
+                    slotProps={{ inputLabel: { shrink: true } }}
                     value={filtri.periodoInizio}
                     onChange={(e) => onFiltriChange({ ...filtri, periodoInizio: e.target.value })}
                 />
@@ -189,7 +189,7 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
                     label="A"
                     size="small"
                     fullWidth
-                    InputLabelProps={{ shrink: true }}
+                    slotProps={{ inputLabel: { shrink: true } }}
                     value={filtri.periodoFine}
                     onChange={(e) => onFiltriChange({ ...filtri, periodoFine: e.target.value })}
                 />

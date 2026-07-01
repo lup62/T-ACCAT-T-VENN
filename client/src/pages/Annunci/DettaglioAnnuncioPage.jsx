@@ -26,6 +26,7 @@
 
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import {
     Avatar,
     Box,
@@ -102,6 +103,7 @@ function RigaInfo({ Icon, label, valore }) {
 function DettaglioAnnuncioPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { isLoggedIn } = useAuth();
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const annuncio = mockAnnunci.find((a) => a._id === id);
@@ -187,9 +189,9 @@ function DettaglioAnnuncioPage() {
                         color={tipoColor}
                         size="large"
                         fullWidth
-                        onClick={() => setDialogOpen(true)}
+                        onClick={() => !isLoggedIn && setDialogOpen(true)}
                     >
-                        Accedi per inviare una proposta
+                        {isLoggedIn ? "Invia una proposta" : "Accedi per inviare una proposta"}
                     </Button>
 
                     <Box sx={{ mt: 5 }}>
