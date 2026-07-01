@@ -13,97 +13,42 @@
  *   - In vista mappa: tutti gli annunci filtrati compaiono come marker.
  */
 
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
+import AddIcon from "@mui/icons-material/Add";
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import FiltriAnnunci from "./FiltriAnnunci";
-import { FILTRI_INIZIALI } from "./annunciConstants";
 import MappaAnnunci from "./MappaAnnunci";
 import { mockAnnunci } from "../../services/mockAnnunci";
-
-// Numero massimo di card visibili senza filtri attivi
-const ANNUNCI_VISIBILI = 5;
+import { useAnnunciFiltrati } from "../../hooks/useAnnunciFiltrati";
 
 // cerca personale = lavoratori che si propongono, non richieste di datori
 const annunci = mockAnnunci.filter((a) => a.tipo === "disponibilita_lavoro");
 
-function applicaOrdinamento(lista, ordinamento) {
-    const copia = [...lista];
-    switch (ordinamento) {
-        case "recenti":  return copia.sort((a, b) => b.periodo.dataInizio.localeCompare(a.periodo.dataInizio));
-        case "vecchi":   return copia.sort((a, b) => a.periodo.dataInizio.localeCompare(b.periodo.dataInizio));
-        case "prezzoAsc":  return copia.sort((a, b) => a.prezzo.min - b.prezzo.min);
-        case "prezzoDesc": return copia.sort((a, b) => b.prezzo.max - a.prezzo.max);
-        default: return copia;
-    }
-}
-
-// Applica tutti i filtri attivi all'array degli annunci
-function applicaFiltri(lista, filtri) {
-    return lista.filter((a) => {
-        if (filtri.tipiLavoro.length > 0 && !filtri.tipiLavoro.includes(a.tipoLavoro))
-            return false;
-
-        if (filtri.province.length > 0) {
-            const match = a.luogo.testo.match(/\(([A-Z]+)\)/);
-            const prov = match ? match[1] : "";
-            if (!filtri.province.includes(prov)) return false;
-        }
-
-        // Include l'annuncio solo se la sua fascia di prezzo si sovrappone al range selezionato
-        if (a.prezzo.max < filtri.prezzoRange[0] || a.prezzo.min > filtri.prezzoRange[1])
-            return false;
-
-        if (filtri.stati.length > 0 && !filtri.stati.includes(a.stato))
-            return false;
-
-        // Esclude gli annunci terminati prima dell'inizio del periodo cercato
-        if (filtri.periodoInizio && a.periodo.dataFine < filtri.periodoInizio)
-            return false;
-
-        // Esclude gli annunci che iniziano dopo la fine del periodo cercato
-        if (filtri.periodoFine && a.periodo.dataInizio > filtri.periodoFine)
-            return false;
-
-        return true;
-    });
-}
-
 function AnnunciLavoratoriPage() {
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [filtriDrawerOpen, setFiltriDrawerOpen] = useState(false);
-    const [filtri, setFiltri] = useState(FILTRI_INIZIALI);
-    const [ricerca, setRicerca] = useState("");
-    const [ordinamento, setOrdinamento] = useState("recenti");
-    // true = vista lista (default), false = vista mappa
-    const [vistaLista, setVistaLista] = useState(true);
-
-    // TODO: collegare all'auth reale
-    const isLoggedIn = false;
-
-    const annunciCercati = ricerca.trim() === ""
-        ? annunci
-        : annunci.filter((a) =>
-            a.titolo.toLowerCase().includes(ricerca.toLowerCase()) ||
-            a.descrizione.toLowerCase().includes(ricerca.toLowerCase())
-        );
-
-    const annunciFiltrati = applicaOrdinamento(applicaFiltri(annunciCercati, filtri), ordinamento);
-
-    // Gli utenti non autenticati vedono solo i primi ANNUNCI_VISIBILI risultati
-    const annunciDaMostrare = isLoggedIn
-        ? annunciFiltrati
-        : annunciFiltrati.slice(0, ANNUNCI_VISIBILI);
+    const navigate = useNavigate();
+    const {
+        filtri, setFiltri,
+        ricerca, setRicerca,
+        ordinamento, setOrdinamento,
+        vistaLista, setVistaLista,
+        filtriDrawerOpen, setFiltriDrawerOpen,
+        dialogOpen, setDialogOpen,
+        isLoggedIn,
+        annunciFiltrati,
+        annunciDaMostrare,
+        hasMore,
+    } = useAnnunciFiltrati(annunci);
 
     return (
         <Box sx={{ px: { xs: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
-            <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 4 }}>
+            <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 4, flexWrap: "wrap" }}>
                 <Typography
                     variant="h3"
                     component="h1"
@@ -120,8 +65,16 @@ function AnnunciLavoratoriPage() {
                     Cerca personale
                 </Typography>
 
-                {/* Toggle lista / mappa — solo su desktop, su mobile è nella toolbar */}
+                {/* Toggle lista / mappa + pulsante pubblica — solo su desktop */}
                 <Stack direction="row" spacing={1} sx={{ ml: "auto", display: { xs: "none", md: "flex" } }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddIcon />}
+                        onClick={() => navigate("/annunci/nuovo")}
+                    >
+                        Pubblica annuncio
+                    </Button>
                     <Button
                         variant={vistaLista ? "contained" : "outlined"}
                         color="primary"
@@ -175,7 +128,7 @@ function AnnunciLavoratoriPage() {
                 </FormControl>
             </Stack>
 
-            {/* Toolbar mobile: hamburger filtri a sinistra + toggle lista/mappa a destra */}
+            {/* Toolbar mobile: hamburger filtri a sinistra + toggle lista/mappa + pubblica a destra */}
             <Stack direction="row" alignItems="center" sx={{ display: { xs: "flex", md: "none" }, mb: 2 }}>
                 <IconButton
                     onClick={() => setFiltriDrawerOpen(true)}
@@ -184,6 +137,9 @@ function AnnunciLavoratoriPage() {
                     <MenuIcon />
                 </IconButton>
                 <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+                    <Button variant="contained" color="primary" onClick={() => navigate("/annunci/nuovo")} sx={{ minWidth: 44, px: 1 }}>
+                        <AddIcon fontSize="small" />
+                    </Button>
                     <Button variant={vistaLista ? "contained" : "outlined"} color="primary" onClick={() => setVistaLista(true)} sx={{ minWidth: 44, px: 1 }}>
                         <ViewListIcon fontSize="small" />
                     </Button>
@@ -195,13 +151,13 @@ function AnnunciLavoratoriPage() {
 
             {/* Layout: sidebar filtri a sinistra + contenuto a destra */}
             <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4, alignItems: { md: "stretch" } }}>
-                {/* isLoggedIn=false finché non è implementato il sistema auth */}
+                {/* isLoggedIn viene da useAuth (via useAnnunciFiltrati) */}
                 <FiltriAnnunci
                     annunci={annunci}
                     filtri={filtri}
                     onFiltriChange={setFiltri}
                     color="primary"
-                    isLoggedIn={false}
+                    isLoggedIn={isLoggedIn}
                     drawerOpen={filtriDrawerOpen}
                     onDrawerClose={() => setFiltriDrawerOpen(false)}
                 />
@@ -238,7 +194,7 @@ function AnnunciLavoratoriPage() {
                                 </Box>
 
                                 {/* Bottone "Vedi altri" per utenti non autenticati */}
-                                {!isLoggedIn && annunciFiltrati.length > ANNUNCI_VISIBILI && (
+                                {hasMore && (
                                     <Box sx={{ textAlign: "center", mt: 4 }}>
                                         <Button
                                             variant="outlined"
