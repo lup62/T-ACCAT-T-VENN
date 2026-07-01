@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 
@@ -9,7 +10,7 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-// In futuro servirà per leggere i dati inviati dal frontend in formato JSON.
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
