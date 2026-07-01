@@ -38,9 +38,10 @@ function formatPeriodo(periodo) {
     return `${fmt(periodo.dataInizio)} – ${fmt(periodo.dataFine)}`;
 }
 
-const LABEL_UNITA = { giornata: '€/giorno', lavoro_completo: '€/lavoro' };
+const LABEL_UNITA = { giornata: '€/giorno', lavoro_completo: '€/lavoro', da_concordare: 'Da concordare' };
 
 function formatPrezzo(prezzo) {
+    if (!prezzo || prezzo.unita === 'da_concordare' || prezzo.min == null) return 'Da concordare';
     const unita = LABEL_UNITA[prezzo.unita] ?? prezzo.unita;
     if (prezzo.min === prezzo.max) return `${prezzo.min} ${unita}`;
     return `${prezzo.min} – ${prezzo.max} ${unita}`;
