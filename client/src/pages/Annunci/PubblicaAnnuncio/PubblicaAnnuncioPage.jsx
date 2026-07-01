@@ -46,6 +46,7 @@ import SelettoreTipoAnnuncio from "./SelettoreTipoAnnuncio";
 import InputCompetenze from "./InputCompetenze";
 import SelettorePosizioneMappa from "./SelettorePosizioneMappa";
 import { useAuth } from "../../../hooks/useAuth";
+import { geocodificaLuogo } from "../../../services/geocoding";
 
 // ─── Stato iniziale ───────────────────────────────────────────────────────────
 
@@ -80,16 +81,6 @@ const ERRORI_INIZIALI = {
     unitaPrezzo: "",
     nLavoratoriRichiesti: "",
 };
-
-// ─── Geocoding tramite Nominatim (OpenStreetMap) ─────────────────────────────
-
-async function geocodificaLuogo(testo) {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(testo)}&format=json&limit=1&countrycodes=it`;
-    const res = await fetch(url, { headers: { "Accept-Language": "it" } });
-    const dati = await res.json();
-    if (dati.length === 0) return null;
-    return { lat: parseFloat(dati[0].lat), lng: parseFloat(dati[0].lon) };
-}
 
 // ─── Validazione ─────────────────────────────────────────────────────────────
 
