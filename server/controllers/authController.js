@@ -138,7 +138,61 @@ async function registrati(req, res) {
         });
     }
 }
+async function accedi(req, res) {
+    try {
+        const { email, password } = req.body;
 
-module.exports = {
-    registrati,
-};
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email e password sono obbligatorie.",
+            });
+        }
+
+        const emailNormalizzata = email.trim().toLowerCase();
+
+        const utente = await User.findOne({
+            email: emailNormalizzata,
+        }).select("+passwordHash");
+
+        if (!utente || !utente.passwordHash) {
+            return res.status(401).json({
+                message: "Email o password non corretti.",
+            });
+        }
+
+        const passwordCorretta = await bcrypt.compare(
+            password,
+            utente.passwordHash
+        );
+
+        if (!passwordCorretta) {
+            return res.status(401).json({
+                message: "Email o password non corretti.",
+            });
+        }
+
+        const accessToken = generaAccessToken(utente);
+
+        return res.status(200).json({
+            message: "Accesso effettuato con successo.",
+            accessToken,
+            utente: {
+                id: utente._id,
+                ruoli: utente.ruoli,
+                nome: utente.nome,
+                cognome: utente.cognome,
+                email: utente.email,
+                immagineProfilo: utente.immagineProfilo,
+                ratingMedio: utente.ratingMedio,
+            },
+        });
+    } catch (error) {
+        console.error("Errore durante il login:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
+module.exports = { registrati, accedi };
