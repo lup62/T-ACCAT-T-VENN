@@ -194,5 +194,11 @@ async function accedi(req, res) {
         });
     }
 }
+function utenteCorrente(req, res) {
+    return res.status(200).json({
+        message: "Utente autenticato correttamente.",
+        utente: req.utente,
+    });
+}
 
-module.exports = { registrati, accedi };
+module.exports = { registrati, accedi, utenteCorrente };
