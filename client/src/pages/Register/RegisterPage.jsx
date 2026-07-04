@@ -1,3 +1,11 @@
+/**
+ * RegisterPage.jsx  —  rotta: /register
+ *
+ * Form di registrazione: supporta uno o entrambi i ruoli (lavoratore/imprenditore)
+ * e usa geocodifica al blur sul campo indirizzo per ottenere le coordinate
+ * richieste dal backend (indirizzo.posizione, GeoJSON [lng, lat]).
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,7 +26,7 @@ import {
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 
 import { useAuth } from "../../hooks/useAuth";
-import { geocodificaLuogo } from "../../services/geocoding";
+import { useGeocodingLuogo } from "../../hooks/useGeocodingLuogo";
 import InputCompetenze from "../Annunci/PubblicaAnnuncio/InputCompetenze";
 
 const STATO_INIZIALE = {
@@ -113,8 +121,6 @@ function RegisterPage() {
 
     const [form, setForm] = useState(STATO_INIZIALE);
     const [errori, setErrori] = useState(ERRORI_INIZIALI);
-    const [geocodingLoading, setGeocodingLoading] = useState(false);
-    const [geocodingErrore, setGeocodingErrore] = useState("");
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitErrore, setSubmitErrore] = useState("");
 
@@ -123,6 +129,21 @@ function RegisterPage() {
 
     const aggiornaValore = (campo, valore) =>
         setForm((prev) => ({ ...prev, [campo]: valore }));
+
+    // Geocoding al blur sul campo indirizzo. Qui la posizione è obbligatoria
+    // per la validazione, quindi in caso di fallimento viene azzerata.
+    const {
+        loading: geocodingLoading,
+        errore: geocodingErrore,
+        geocodifica,
+    } = useGeocodingLuogo({
+        onTrovata: (pos) => aggiornaValore("posizione", pos),
+        onNonTrovata: () => aggiornaValore("posizione", null),
+        messaggi: {
+            nonTrovato: "Indirizzo non trovato — controlla e riprova (es. \"Bari (BA)\")",
+            errore: "Errore nella ricerca dell'indirizzo — riprova",
+        },
+    });
 
     // I ruoli sono un array (l'utente può selezionarne uno o entrambi):
     // clic su una checkbox già selezionata la toglie, altrimenti la aggiunge.
@@ -133,30 +154,6 @@ function RegisterPage() {
                 ? prev.ruoli.filter((r) => r !== ruolo)
                 : [...prev.ruoli, ruolo],
         }));
-
-    // Chiamato quando l'utente lascia il campo indirizzo (onBlur):
-    // trasforma il testo in coordinate GPS, richieste dal backend.
-    const handleIndirizzoBlur = async () => {
-        const testo = form.indirizzoTesto.trim();
-        if (!testo || testo.length < 3) return;
-
-        setGeocodingLoading(true);
-        setGeocodingErrore("");
-        try {
-            const pos = await geocodificaLuogo(testo);
-            if (pos) {
-                aggiornaValore("posizione", pos);
-            } else {
-                aggiornaValore("posizione", null);
-                setGeocodingErrore("Indirizzo non trovato — controlla e riprova (es. \"Bari (BA)\")");
-            }
-        } catch {
-            aggiornaValore("posizione", null);
-            setGeocodingErrore("Errore nella ricerca dell'indirizzo — riprova");
-        } finally {
-            setGeocodingLoading(false);
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -310,7 +307,7 @@ function RegisterPage() {
                         label="Indirizzo"
                         value={form.indirizzoTesto}
                         onChange={aggiorna("indirizzoTesto")}
-                        onBlur={handleIndirizzoBlur}
+                        onBlur={() => geocodifica(form.indirizzoTesto)}
                         error={!!errori.indirizzoTesto}
                         helperText={errori.indirizzoTesto || "Es. Bari (BA) — usato per calcolare la posizione"}
                         placeholder="Città (Provincia)"

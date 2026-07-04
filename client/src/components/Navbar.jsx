@@ -1,3 +1,11 @@
+/**
+ * Navbar.jsx
+ *
+ * Barra di navigazione globale, sempre visibile (sticky).
+ * Su desktop/tablet (lg+) mostra i link e i bottoni Accedi/Registrati inline;
+ * su mobile mostra solo l'icona menu che apre un Drawer laterale con le stesse voci.
+ */
+
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {

@@ -1,3 +1,4 @@
+// main.jsx — entry point Vite: monta l'app con tema MUI, router e AuthProvider globali.
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'

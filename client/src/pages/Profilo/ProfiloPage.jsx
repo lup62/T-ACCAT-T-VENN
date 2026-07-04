@@ -1,3 +1,5 @@
+// ProfiloPage.jsx — rotta: /profilo
+// Placeholder: profilo pubblico/privato reale da implementare.
 function ProfiloPage() {
   return (
     <div>

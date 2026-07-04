@@ -13,7 +13,7 @@
  *   onChange — callback chiamata con il nuovo valore al click sulla card
  */
 
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Paper, Stack, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";

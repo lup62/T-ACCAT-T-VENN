@@ -1,3 +1,4 @@
+// StatoVuoto.jsx — empty state riutilizzabile per liste annunci senza risultati.
 import { Box, Typography } from "@mui/material";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
 import ImmagineEasterEgg from "../../assets/pasqualeEasterEgg.jpeg"
