@@ -7,7 +7,7 @@
  */
 
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
     AppBar,
     Toolbar,
@@ -26,6 +26,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import WorkIcon from "@mui/icons-material/Work";
 import farmerIcon from "../assets/farmerIcon.png"
+import { useAuth } from "../hooks/useAuth";
 
 
 
@@ -38,6 +39,14 @@ const navLinks = [
 
 function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { isLoggedIn, utente, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        setMobileMenuOpen(false);
+        navigate("/");
+    };
 
     return (
         <AppBar
@@ -110,48 +119,81 @@ function Navbar() {
                         gap: 1,
                     }}
                 >
-                    <Button
-                        component={RouterLink}
-                        to="/login"
-                        color="inherit"
-                        sx={{
-                            display: {
-                                xs: "none",
-                                lg: "inline-flex",
-                            },
-                        }}
-                    >
-                        Accedi
-                    </Button>
-
-                    <Button
-                        component={RouterLink}
-                        to="/register"
-                        variant="contained"
-                        color="secondary"
-                        sx={{
-                            display: {
-                                xs: "none",
-                                lg: "inline-flex",
-                            },
-                            "&:hover": {
-                                color: "#FFFFFF",
-                            },
-                        }}
-                        startIcon={
-                            <Box
-                                component="img"
-                                src={farmerIcon}
-                                alt=""
+                    {isLoggedIn ? (
+                        <>
+                            <Button
+                                component={RouterLink}
+                                to="/profilo"
+                                color="inherit"
                                 sx={{
-                                    width: 22,
-                                    height: 22,
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
                                 }}
-                            />
-                        }
-                    >
-                        Registrati
-                    </Button>
+                            >
+                                {utente?.nome}
+                            </Button>
+
+                            <Button
+                                onClick={handleLogout}
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Esci
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                component={RouterLink}
+                                to="/login"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Accedi
+                            </Button>
+
+                            <Button
+                                component={RouterLink}
+                                to="/register"
+                                variant="contained"
+                                color="secondary"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                    "&:hover": {
+                                        color: "#FFFFFF",
+                                    },
+                                }}
+                                startIcon={
+                                    <Box
+                                        component="img"
+                                        src={farmerIcon}
+                                        alt=""
+                                        sx={{
+                                            width: 22,
+                                            height: 22,
+                                        }}
+                                    />
+                                }
+                            >
+                                Registrati
+                            </Button>
+                        </>
+                    )}
 
 
                     {/*Modifiche per il mobile*/}
@@ -228,46 +270,67 @@ function Navbar() {
 
                     <Divider />
 
-                    <List>
-                        <ListItem disablePadding>
-                            <ListItemButton
-                                component={RouterLink}
-                                to="/login"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <ListItemText primary="Accedi" />
-                            </ListItemButton>
-                        </ListItem>
-                    </List>
+                    {isLoggedIn ? (
+                        <List>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/profilo"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary={`Profilo (${utente?.nome ?? ""})`} />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={handleLogout}>
+                                    <ListItemText primary="Esci" />
+                                </ListItemButton>
+                            </ListItem>
+                        </List>
+                    ) : (
+                        <>
+                            <List>
+                                <ListItem disablePadding>
+                                    <ListItemButton
+                                        component={RouterLink}
+                                        to="/login"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        <ListItemText primary="Accedi" />
+                                    </ListItemButton>
+                                </ListItem>
+                            </List>
 
-                    <Box sx={{ px: 2, py: 1 }}>
-                        <Button
-                            component={RouterLink}
-                            to="/register"
-                            onClick={() => setMobileMenuOpen(false)}
-                            variant="contained"
-                            color="secondary"
-                            fullWidth
-                            sx={{
-                                "&:hover": {
-                                    color: "#FFFFFF",
-                                },
-                            }}
-                            startIcon={
-                                <Box
-                                    component="img"
-                                    src={farmerIcon}
-                                    alt=""
+                            <Box sx={{ px: 2, py: 1 }}>
+                                <Button
+                                    component={RouterLink}
+                                    to="/register"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    variant="contained"
+                                    color="secondary"
+                                    fullWidth
                                     sx={{
-                                        width: 22,
-                                        height: 22,
+                                        "&:hover": {
+                                            color: "#FFFFFF",
+                                        },
                                     }}
-                                />
-                            }
-                        >
-                            Registrati
-                        </Button>
-                    </Box>
+                                    startIcon={
+                                        <Box
+                                            component="img"
+                                            src={farmerIcon}
+                                            alt=""
+                                            sx={{
+                                                width: 22,
+                                                height: 22,
+                                            }}
+                                        />
+                                    }
+                                >
+                                    Registrati
+                                </Button>
+                            </Box>
+                        </>
+                    )}
                 </Box>
             </Drawer>
         </AppBar>

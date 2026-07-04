@@ -20,7 +20,6 @@
  *   color           "primary" | "secondary" — colore tema della pagina
  *   isLoggedIn      se false i filtri sono bloccati (default: false)
  *
- * TODO: sostituire isLoggedIn con lo stato auth reale quando sarà implementato.
  */
 
 import { useState, useMemo } from "react";

@@ -28,7 +28,6 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
-    Avatar,
     Box,
     Button,
     Chip,
@@ -243,12 +242,6 @@ function DettaglioAnnuncioPage() {
                         <Divider />
 
                         <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Avatar
-                                src={annuncio.autore.immagineProfilo}
-                                sx={{ bgcolor: `${tipoColor}.main`, width: 40, height: 40, fontSize: "1rem", flexShrink: 0 }}
-                            >
-                                {annuncio.autore.nome.charAt(0)}
-                            </Avatar>
                             <Box sx={{ minWidth: 0, flex: 1 }}>
                                 <Typography variant="body2" fontWeight={600} sx={{ wordBreak: "break-word" }}>
                                     {annuncio.autore.nome} {annuncio.autore.cognome}

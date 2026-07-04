@@ -40,8 +40,11 @@ const STATO_INIZIALE = {
     indirizzoTesto: "",
     posizione: null, // { lat, lng } — impostata via geocoding al blur
     competenze: [],
+    certificazioni: [],
     pIva: "",
     nomeAzienda: "",
+    sitoWeb: "",
+    social: [],
 };
 
 const ERRORI_INIZIALI = {
@@ -103,12 +106,17 @@ function costruisciPayload(form) {
     };
 
     if (form.ruoli.includes("lavoratore")) {
-        payload.datiLavoratore = { competenze: form.competenze };
+        payload.datiLavoratore = {
+            competenze: form.competenze,
+            certificazioni: form.certificazioni,
+        };
     }
     if (form.ruoli.includes("imprenditore")) {
         payload.datiImprenditore = {
             pIva: form.pIva.trim(),
             nomeAzienda: form.nomeAzienda.trim(),
+            sitoWeb: form.sitoWeb.trim(),
+            social: form.social,
         };
     }
 
@@ -273,15 +281,28 @@ function RegisterPage() {
                     )}
 
                     {form.ruoli.includes("lavoratore") && (
-                        <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                Competenze
-                            </Typography>
-                            <InputCompetenze
-                                valore={form.competenze}
-                                onChange={(nuove) => aggiornaValore("competenze", nuove)}
-                            />
-                        </Box>
+                        <>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                    Competenze
+                                </Typography>
+                                <InputCompetenze
+                                    valore={form.competenze}
+                                    onChange={(nuove) => aggiornaValore("competenze", nuove)}
+                                />
+                            </Box>
+
+                            <Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                    Certificazioni
+                                </Typography>
+                                <InputCompetenze
+                                    valore={form.certificazioni}
+                                    onChange={(nuove) => aggiornaValore("certificazioni", nuove)}
+                                    placeholder="Es. Patentino fitosanitario, HACCP..."
+                                />
+                            </Box>
+                        </>
                     )}
 
                     {form.ruoli.includes("imprenditore") && (
@@ -298,6 +319,23 @@ function RegisterPage() {
                                 onChange={aggiorna("pIva")}
                                 fullWidth
                             />
+                            <TextField
+                                label="Sito web"
+                                value={form.sitoWeb}
+                                onChange={aggiorna("sitoWeb")}
+                                placeholder="https://..."
+                                fullWidth
+                            />
+                            <Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                    Social
+                                </Typography>
+                                <InputCompetenze
+                                    valore={form.social}
+                                    onChange={(nuove) => aggiornaValore("social", nuove)}
+                                    placeholder="Link a Facebook, Instagram, LinkedIn..."
+                                />
+                            </Box>
                         </>
                     )}
 
