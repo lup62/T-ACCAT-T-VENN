@@ -26,8 +26,8 @@
 
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import {
-    Avatar,
     Box,
     Button,
     Chip,
@@ -102,6 +102,7 @@ function RigaInfo({ Icon, label, valore }) {
 function DettaglioAnnuncioPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { isLoggedIn } = useAuth();
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const annuncio = mockAnnunci.find((a) => a._id === id);
@@ -187,9 +188,9 @@ function DettaglioAnnuncioPage() {
                         color={tipoColor}
                         size="large"
                         fullWidth
-                        onClick={() => setDialogOpen(true)}
+                        onClick={() => !isLoggedIn && setDialogOpen(true)}
                     >
-                        Accedi per inviare una proposta
+                        {isLoggedIn ? "Invia una proposta" : "Accedi per inviare una proposta"}
                     </Button>
 
                     <Box sx={{ mt: 5 }}>
@@ -241,12 +242,6 @@ function DettaglioAnnuncioPage() {
                         <Divider />
 
                         <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Avatar
-                                src={annuncio.autore.immagineProfilo}
-                                sx={{ bgcolor: `${tipoColor}.main`, width: 40, height: 40, fontSize: "1rem", flexShrink: 0 }}
-                            >
-                                {annuncio.autore.nome.charAt(0)}
-                            </Avatar>
                             <Box sx={{ minWidth: 0, flex: 1 }}>
                                 <Typography variant="body2" fontWeight={600} sx={{ wordBreak: "break-word" }}>
                                     {annuncio.autore.nome} {annuncio.autore.cognome}

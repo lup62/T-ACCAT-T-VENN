@@ -1,18 +1,20 @@
 /**
  * useAuth.js
  *
- * Hook centralizzato per lo stato di autenticazione.
- * Tutti i componenti che devono sapere se l'utente è loggato
- * lo leggono da qui — così quando il backend sarà pronto
- * basterà aggiornare questo file solo.
- *
- * TODO: sostituire i valori hardcoded con la lettura reale
- *       da context/store/token JWT quando il backend sarà pronto.
+ * Hook per leggere lo stato di autenticazione (isLoggedIn, utente,
+ * accessToken) e le azioni (registrati, logout) da AuthContext.
+ * Deve essere usato all'interno di <AuthProvider>.
  */
 
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
+
 export function useAuth() {
-    return {
-        isLoggedIn: false,
-        utente: null,
-    };
+    const context = useContext(AuthContext);
+
+    if (!context) {
+        throw new Error("useAuth deve essere usato dentro <AuthProvider>.");
+    }
+
+    return context;
 }

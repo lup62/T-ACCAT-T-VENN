@@ -1,3 +1,5 @@
+// TerminiCondizioniPage.jsx — rotta: /termini
+// Testo statico dei termini e condizioni, definito in SEZIONI e renderizzato via .map().
 import { Box, Divider, Typography } from "@mui/material";
 
 const SEZIONI = [

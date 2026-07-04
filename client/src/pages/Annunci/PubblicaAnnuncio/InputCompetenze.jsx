@@ -10,15 +10,16 @@
  *   - Ogni chip ha il bottone di eliminazione (onDelete)
  *
  * Props:
- *   valore   — array di stringhe corrente (es. ["Olivicoltura", "Guida trattore"])
- *   onChange — callback chiamata con il nuovo array aggiornato
+ *   valore      — array di stringhe corrente (es. ["Olivicoltura", "Guida trattore"])
+ *   onChange    — callback chiamata con il nuovo array aggiornato
+ *   placeholder — testo del campo di input (facoltativo, riusabile per altre liste di tag)
  */
 
 import { useState } from "react";
 import { Box, Button, Chip, Stack, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-function InputCompetenze({ valore, onChange }) {
+function InputCompetenze({ valore, onChange, placeholder = "Es. Potatura, Guida trattore, Raccolta olive..." }) {
     const [input, setInput] = useState("");
 
     const aggiungi = () => {
@@ -47,7 +48,7 @@ function InputCompetenze({ valore, onChange }) {
                 <TextField
                     fullWidth
                     size="small"
-                    placeholder="Es. Potatura, Guida trattore, Raccolta olive..."
+                    placeholder={placeholder}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}

@@ -1,3 +1,4 @@
+// theme.js — tema MUI condiviso da tutta l'app (palette, tipografia, override bottoni).
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({

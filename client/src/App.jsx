@@ -1,3 +1,4 @@
+// App.jsx — componente radice: monta solo il router dell'applicazione.
 import AppRoutes from './routes/AppRoutes.jsx'
 
 function App() {

@@ -1,3 +1,10 @@
+/**
+ * HowItWorks.jsx
+ *
+ * Sezione "Come funziona" della home page: 3 step (cerca, proponi, collabora)
+ * generati ciclando sull'array `steps` con il componente interno StepCard.
+ */
+
 import {
     Box,
     Typography,

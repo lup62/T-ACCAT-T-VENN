@@ -1,3 +1,5 @@
+// PrivacyPolicyPage.jsx — rotta: /privacy
+// Testo statico dell'informativa privacy, definito in SEZIONI e renderizzato via .map().
 import { Box, Divider, Typography } from "@mui/material";
 
 const SEZIONI = [

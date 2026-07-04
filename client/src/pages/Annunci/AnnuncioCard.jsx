@@ -6,8 +6,8 @@
  *
  * Props:
  *   annuncio  oggetto completo proveniente da mockAnnunci.js
- *   color     "primary" | "secondary" — colore MUI usato per bordi,
- *             avatar e bottone; viene passato dalla pagina padre in base
+ *   color     "primary" | "secondary" — colore MUI usato per bordi e
+ *             bottone; viene passato dalla pagina padre in base
  *             alla sezione (offerte = secondary, cercasi = primary)
  *
  * Al click di "Visualizza dettagli" naviga a /annunci/:id
@@ -16,7 +16,6 @@
 
 import { useNavigate } from "react-router-dom";
 import {
-    Avatar,
     Box,
     Button,
     Card,
@@ -111,20 +110,7 @@ function AnnuncioCard({ annuncio, color }) {
 
                 <Divider sx={{ mb: 2 }} />
 
-                {/* Avatar con iniziale del nome dell'autore */}
-                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
-                    <Avatar
-                        src={annuncio.autore.immagineProfilo}
-                        alt={annuncio.autore.nome}
-                        sx={{
-                            width: 32,
-                            height: 32,
-                            bgcolor: `${color}.main`,
-                            fontSize: "0.85rem",
-                        }}
-                    >
-                        {annuncio.autore.nome.charAt(0)}
-                    </Avatar>
+                <Stack direction="row" alignItems="center" sx={{ mb: 3 }}>
                     <Typography variant="body2" fontWeight={600}>
                         {annuncio.autore.nome} {annuncio.autore.cognome}
                     </Typography>

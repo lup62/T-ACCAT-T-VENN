@@ -1,3 +1,4 @@
+// Footer.jsx — piè di pagina globale con link a Privacy Policy e Termini e Condizioni.
 import { Box, Container, Link, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
