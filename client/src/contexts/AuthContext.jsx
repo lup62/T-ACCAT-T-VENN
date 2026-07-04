@@ -32,6 +32,13 @@ export const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
     const [sessione, setSessione] = useState(leggiSessioneSalvata);
 
+    function avviaSessione(data) {
+        const nuovaSessione = { accessToken: data.accessToken, utente: data.utente };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nuovaSessione));
+        setSessione(nuovaSessione);
+        return data.utente;
+    }
+
     // Registra l'utente e apre subito la sessione con i dati restituiti
     // dal backend (nessun login separato dopo la registrazione).
     async function registrati(datiRegistrazione) {
@@ -47,11 +54,23 @@ export function AuthProvider({ children }) {
             throw new Error(data.message || "Registrazione fallita.");
         }
 
-        const nuovaSessione = { accessToken: data.accessToken, utente: data.utente };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(nuovaSessione));
-        setSessione(nuovaSessione);
+        return avviaSessione(data);
+    }
 
-        return data.utente;
+    async function accedi(email, password) {
+        const res = await fetch(`${API_URL}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.message || "Accesso fallito.");
+        }
+
+        return avviaSessione(data);
     }
 
     function logout() {
@@ -64,6 +83,7 @@ export function AuthProvider({ children }) {
         utente: sessione?.utente ?? null,
         accessToken: sessione?.accessToken ?? null,
         registrati,
+        accedi,
         logout,
     };
 
