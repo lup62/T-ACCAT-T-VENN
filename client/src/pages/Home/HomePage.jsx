@@ -9,7 +9,7 @@ import { Box, Typography, Stack, Button, Card, CardContent } from "@mui/material
 import { useNavigate } from "react-router-dom";
 
 
-import sfondoHero from "../../assets/sfondoHero.png";
+import sfondoHero from "../../assets/sfondoHero.webp";
 import fotoPasquale from "../../assets/fotoPasquale.jpeg"
 
 import HowItWorks from "../../components/HowItWorks";
