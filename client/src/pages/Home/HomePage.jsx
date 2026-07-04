@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 
 import sfondoHero from "../../assets/sfondoHero.webp";
+import logoTaccat from "../../assets/logoTaccat.svg";
 import fotoPasquale from "../../assets/fotoPasquale.jpeg"
 
 import HowItWorks from "../../components/HowItWorks";
@@ -56,29 +57,20 @@ function HomePage() {
                 backgroundRepeat: "no-repeat",
             }}
         >
-            {/* variant="h2" definisce la dimensione visiva, component="h1" definisce
-                il tag HTML reale — importante per SEO e accessibilità */}
-            <Typography
-                variant="h2"
-                component="h1"
-                sx={{
-                    mb: 2,
-                    color: "#FFFFFF",
-                    maxWidth: 650,
-                }}
-            >
-                T&apos;accat &amp; T&apos;venn
-            </Typography>
-
-            <Typography
-                variant="h5"
-                component="p"
-                sx={{
-                    color: "#FFFFFF",
-                    maxWidth: 620,
-                }}
-            >
-                Coltiviamo nuove opportunità di lavoro
+            {/* Logo completo (icona + scritta + payoff) al posto del titolo testuale.
+                component="h1" sull'elemento wrapper mantiene la semantica per SEO;
+                l'alt dell'immagine fa da testo per screen reader e motori di ricerca.
+                Il drop-shadow chiaro stacca il verde scuro del logo dalla foto. */}
+            <Typography component="h1" sx={{ m: 0 }}>
+                <Box
+                    component="img"
+                    src={logoTaccat}
+                    alt="T'accat & T'venn — Coltiviamo nuove opportunità di lavoro"
+                    sx={{
+                        width: { xs: 260, sm: 340, md: 420 },
+                        filter: "drop-shadow(0 0 24px rgba(250, 247, 239, 0.85)) drop-shadow(0 0 8px rgba(250, 247, 239, 0.9))",
+                    }}
+                />
             </Typography>
 
             {/* Stack gestisce il layout dei bottoni: affiancati da sm in su,
