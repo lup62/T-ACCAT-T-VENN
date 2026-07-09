@@ -30,6 +30,42 @@ JWT_ACCESS_SECRET=your_jwt_access_secret
 
 Il file `.env` contiene valori privati e non deve essere caricato su GitHub.
 
+## Database con Docker
+
+Il progetto può avviare MongoDB tramite Docker Compose.
+
+Prima di eseguire i comandi Docker, assicurarsi che Docker Desktop sia aperto e in esecuzione.
+
+Avviare MongoDB:
+
+```bash
+docker compose up -d
+```
+
+Verificare che il container sia attivo:
+
+```bash
+docker ps
+```
+
+Il container MongoDB si chiama:
+
+```text
+taccat-mongo
+```
+
+Con backend avviato fuori da Docker, usare nel file `server/.env`:
+
+```env
+MONGODB_URI=mongodb://localhost:27017/taccat
+```
+
+Fermare i servizi Docker:
+
+```bash
+docker compose down
+```
+
 ## Avvio backend
 
 Entrare nella cartella `server`:
