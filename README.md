@@ -7,6 +7,36 @@ Il progetto è diviso in due parti principali:
 - `client`: frontend React/Vite
 - `server`: backend Node.js/Express collegato a MongoDB
 
+## Frontend
+
+Il frontend si trova nella cartella `client`.
+
+Entrare nella cartella `client`:
+
+```bash
+cd client
+```
+
+Installare le dipendenze:
+
+```bash
+npm install
+```
+
+Avviare il frontend in modalità sviluppo:
+
+```bash
+npm run dev
+```
+
+Una volta avviato, il frontend sarà disponibile di solito su:
+
+```text
+http://localhost:5173
+```
+
+Il frontend deve rimanere avviato mentre si lavora sull'interfaccia utente.
+
 ## Backend
 
 Il backend si trova nella cartella `server`.
