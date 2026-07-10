@@ -121,3 +121,102 @@ Una volta avviato, il backend sarà disponibile su:
 ```text
 http://localhost:3000
 ```
+
+## Avvio completo in locale
+
+Per avviare tutto il progetto in locale servono tre componenti:
+
+- MongoDB tramite Docker
+- backend Express
+- frontend React/Vite
+
+### 1. Avviare MongoDB con Docker
+
+Prima di tutto aprire Docker Desktop e assicurarsi che sia in esecuzione.
+
+Dalla cartella principale del progetto:
+
+```bash
+docker compose up -d
+```
+
+Verificare che il container MongoDB sia attivo:
+
+```bash
+docker ps
+```
+
+Il container dovrebbe chiamarsi:
+
+```text
+taccat-mongo
+```
+
+### 2. Avviare il backend
+
+Aprire un terminale ed entrare nella cartella `server`:
+
+```bash
+cd server
+```
+
+Installare le dipendenze, se non sono già state installate:
+
+```bash
+npm install
+```
+
+Avviare il backend:
+
+```bash
+npm run dev
+```
+
+Il backend sarà disponibile su:
+
+```text
+http://localhost:3000
+```
+
+### 3. Avviare il frontend
+
+Aprire un secondo terminale ed entrare nella cartella `client`:
+
+```bash
+cd client
+```
+
+Installare le dipendenze, se non sono già state installate:
+
+```bash
+npm install
+```
+
+Avviare il frontend:
+
+```bash
+npm run dev
+```
+
+Il frontend sarà disponibile su:
+
+```text
+http://localhost:5173
+```
+
+### 4. Aprire il progetto
+
+Una volta avviati MongoDB, backend e frontend, aprire nel browser:
+
+```text
+http://localhost:5173
+```
+
+## Checklist di controllo
+
+Per verificare che il progetto sia avviato correttamente:
+
+- MongoDB deve essere attivo nel container `taccat-mongo`.
+- Il backend deve rispondere su `http://localhost:3000`.
+- Il frontend deve essere disponibile su `http://localhost:5173`.
+- Il file `server/.env` deve esistere solo in locale.
