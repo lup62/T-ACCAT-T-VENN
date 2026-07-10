@@ -4,11 +4,13 @@ const {
     creaAnnuncio,
     listaAnnunci,
     dettaglioAnnuncio,
+    modificaAnnuncio,
 } = require("../controllers/annuncioController");
 const router = express.Router();
 
 router.post("/", requireAuth, creaAnnuncio);
 router.get("/", listaAnnunci);
 router.get("/:id", dettaglioAnnuncio);
+router.patch("/:id", requireAuth, modificaAnnuncio);
 
 module.exports = router;

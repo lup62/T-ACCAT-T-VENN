@@ -141,8 +141,84 @@ async function dettaglioAnnuncio(req, res) {
         });
     }
 }
+async function modificaAnnuncio(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "ID annuncio non valido.",
+            });
+        }
+
+        const annuncio = await Annuncio.findById(id);
+
+        if (!annuncio) {
+            return res.status(404).json({
+                message: "Annuncio non trovato.",
+            });
+        }
+
+        if (annuncio.autore.toString() !== req.utente.id) {
+            return res.status(403).json({
+                message: "Puoi modificare solo i tuoi annunci.",
+            });
+        }
+
+        const campiAggiornabili = [
+            "titolo",
+            "descrizione",
+            "luogo",
+            "periodo",
+            "orario",
+            "tipoLavoro",
+            "competenzeRichieste",
+            "numeroLavoratoriRichiesti",
+            "prezzo",
+        ];
+
+        const datiAggiornamento = req.body || {};
+
+const campiPresenti = campiAggiornabili.filter(
+    (campo) => datiAggiornamento[campo] !== undefined
+);
+
+if (campiPresenti.length === 0) {
+    return res.status(400).json({
+        message: "Indica almeno un campo da aggiornare.",
+    });
+}
+
+campiPresenti.forEach((campo) => {
+    annuncio[campo] = datiAggiornamento[campo];
+});
+
+await annuncio.save();
+
+        return res.status(200).json({
+            message: "Annuncio aggiornato con successo.",
+            annuncio,
+        });
+    } catch (error) {
+        console.error("Errore durante la modifica dell'annuncio:", error);
+
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                message: "Dati dell'annuncio non validi.",
+                errors: Object.values(error.errors).map(
+                    (errore) => errore.message
+                ),
+            });
+        }
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 module.exports = {
     creaAnnuncio,
     listaAnnunci,
     dettaglioAnnuncio,
+    modificaAnnuncio,
 };
