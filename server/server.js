@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const annuncioRoutes = require("./routes/annuncioRoutes");
+const propostaRoutes = require("./routes/propostaRoutes");
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/annunci", annuncioRoutes);
+app.use("/api/proposte", propostaRoutes);
 // Collega il backend al database MongoDB.
 connectDB();
 
