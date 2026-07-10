@@ -2,7 +2,7 @@
  * AnnunciLavoroPage.jsx  —  rotta: /annunci/offerte
  *
  * Mostra le offerte di lavoro pubblicate dai datori di lavoro
- * (tipo "richiesta_manodopera" in mockAnnunci.js).
+ * (tipo "richiesta_manodopera", da GET /api/annunci).
  *
  * Comportamento:
  *   - Toggle Lista/Mappa: boolean vistaLista controlla cosa viene mostrato.
@@ -13,8 +13,9 @@
  *   - In vista mappa: tutti gli annunci filtrati compaiono come marker.
  */
 
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
@@ -25,14 +26,23 @@ import RegistratiDialog from "./RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import FiltriAnnunci from "./FiltriAnnunci";
 import MappaAnnunci from "./MappaAnnunci";
-import { mockAnnunci } from "../../services/mockAnnunci";
+import { getAnnunci } from "../../services/annunci";
 import { useAnnunciFiltrati } from "../../hooks/useAnnunciFiltrati";
-
-// offerte di lavoro = richieste dei datori, non disponibilità dei lavoratori
-const annunci = mockAnnunci.filter((a) => a.tipo === "richiesta_manodopera");
 
 function AnnunciLavoroPage() {
     const navigate = useNavigate();
+
+    // offerte di lavoro = richieste dei datori, non disponibilità dei lavoratori
+    const [annunci, setAnnunci] = useState([]);
+    const [caricamento, setCaricamento] = useState(true);
+    const [errore, setErrore] = useState(null);
+
+    useEffect(() => {
+        getAnnunci("richiesta_manodopera")
+            .then(setAnnunci)
+            .catch((err) => setErrore(err.message))
+            .finally(() => setCaricamento(false));
+    }, []);
     const {
         filtri, setFiltri,
         ricerca, setRicerca,
@@ -163,7 +173,17 @@ function AnnunciLavoroPage() {
                 />
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                    {vistaLista ? (
+                    {caricamento ? (
+                        /* Caricamento dal backend in corso */
+                        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                            <CircularProgress color="secondary" />
+                        </Box>
+                    ) : errore ? (
+                        <StatoVuoto
+                            titolo="Impossibile caricare gli annunci"
+                            descrizione={errore}
+                        />
+                    ) : vistaLista ? (
                         /* Vista lista: griglia di card */
                         annunciFiltrati.length === 0 ? (
                             <StatoVuoto

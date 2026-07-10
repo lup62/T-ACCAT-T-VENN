@@ -15,7 +15,7 @@
  *      e mostrata una Snackbar di conferma (TODO: POST /api/annunci)
  *
  * Campi condizionali:
- *   - nLavoratoriRichiesti: visibile solo per tipo "richiesta_manodopera"
+ *   - numeroLavoratoriRichiesti: visibile solo per tipo "richiesta_manodopera"
  *   - posizione: facoltativa, auto-impostata dal geocoding
  */
 
@@ -399,8 +399,8 @@ function PubblicaAnnuncioPage() {
                             <TextField
                                 label="Orario lavorativo"
                                 fullWidth
-                                value={form.orarioLavorativo}
-                                onChange={aggiorna("orarioLavorativo")}
+                                value={form.orario}
+                                onChange={aggiorna("orario")}
                                 placeholder="Es. 7:00 – 14:00, flessibile, turni..."
                                 helperText="Facoltativo"
                             />
@@ -410,8 +410,8 @@ function PubblicaAnnuncioPage() {
                                     Competenze richieste / offerte
                                 </Typography>
                                 <InputCompetenze
-                                    valore={form.competenze}
-                                    onChange={(nuove) => aggiornaValore("competenze", nuove)}
+                                    valore={form.competenzeRichieste}
+                                    onChange={(nuove) => aggiornaValore("competenzeRichieste", nuove)}
                                 />
                             </Box>
 
@@ -421,10 +421,10 @@ function PubblicaAnnuncioPage() {
                                     type="number"
                                     required
                                     fullWidth
-                                    value={form.nLavoratoriRichiesti}
-                                    onChange={aggiorna("nLavoratoriRichiesti")}
-                                    error={!!errori.nLavoratoriRichiesti}
-                                    helperText={errori.nLavoratoriRichiesti || "Quante persone stai cercando?"}
+                                    value={form.numeroLavoratoriRichiesti}
+                                    onChange={aggiorna("numeroLavoratoriRichiesti")}
+                                    error={!!errori.numeroLavoratoriRichiesti}
+                                    helperText={errori.numeroLavoratoriRichiesti || "Quante persone stai cercando?"}
                                     slotProps={{ htmlInput: { min: 1 } }}
                                 />
                             )}

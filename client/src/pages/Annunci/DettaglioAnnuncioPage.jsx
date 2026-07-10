@@ -6,7 +6,7 @@
  *
  * Flusso:
  *   1. Legge il parametro :id dall'URL (es. /annunci/4 → id = 4)
- *   2. Cerca l'annuncio in mockAnnunci.js confrontando l'id come stringa
+ *   2. Richiede l'annuncio al backend con GET /api/annunci/:id
  *   3. Se non trovato → mostra stato di errore con bottone per tornare indietro
  *   4. Se trovato → mostra il dettaglio completo
  *
@@ -24,13 +24,14 @@
  *   - flexWrap e gap vanno in sx, non come prop dirette (MUI v9 li ignora)
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
     Box,
     Button,
     Chip,
+    CircularProgress,
     Divider,
     Paper,
     Stack,
@@ -48,7 +49,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { mockAnnunci } from "../../services/mockAnnunci";
+import { getAnnuncio } from "../../services/annunci";
 import RegistratiDialog from "./RegistratiDialog";
 
 const COLORI_TEMA = { primary: "#387347", secondary: "#69A62D" };
@@ -105,7 +106,23 @@ function DettaglioAnnuncioPage() {
     const { isLoggedIn } = useAuth();
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    const annuncio = mockAnnunci.find((a) => a._id === id);
+    const [annuncio, setAnnuncio] = useState(null);
+    const [caricamento, setCaricamento] = useState(true);
+
+    useEffect(() => {
+        getAnnuncio(id)
+            .then(setAnnuncio)
+            .catch(() => setAnnuncio(null))
+            .finally(() => setCaricamento(false));
+    }, [id]);
+
+    if (caricamento) {
+        return (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     if (!annuncio) {
         return (
@@ -193,6 +210,8 @@ function DettaglioAnnuncioPage() {
                         {isLoggedIn ? "Invia una proposta" : "Accedi per inviare una proposta"}
                     </Button>
 
+                    {/* la posizione non è obbligatoria nel modello backend */}
+                    {annuncio.luogo?.posizione && (
                     <Box sx={{ mt: 5 }}>
                         <Typography variant="h6" sx={{ mb: 2 }}>Posizione</Typography>
                         <Box sx={{ borderRadius: 3, overflow: "hidden", boxShadow: 2, height: { xs: 220, sm: 300 } }}>
@@ -221,6 +240,7 @@ function DettaglioAnnuncioPage() {
                             </MapContainer>
                         </Box>
                     </Box>
+                    )}
                 </Box>
 
                 {/* Sidebar */}
@@ -231,11 +251,12 @@ function DettaglioAnnuncioPage() {
                         <RigaInfo Icon={EuroIcon} label="Compenso" valore={formatPrezzo(annuncio.prezzo)} />
                         <RigaInfo Icon={AgricultureIcon} label="Tipo di lavoro" valore={annuncio.tipoLavoro} />
 
-                        {annuncio.nLavoratoriRichiesti && (
+                        {/* il backend chiama il campo numeroLavoratoriRichiesti */}
+                        {annuncio.numeroLavoratoriRichiesti && (
                             <RigaInfo
                                 Icon={GroupIcon}
                                 label="Lavoratori richiesti"
-                                valore={annuncio.nLavoratoriRichiesti}
+                                valore={annuncio.numeroLavoratoriRichiesti}
                             />
                         )}
 
