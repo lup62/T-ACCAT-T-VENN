@@ -1,6 +1,34 @@
 const Annuncio = require("../models/Annuncio");
 const mongoose = require("mongoose");
 
+function normalizzaOrario(orario) {
+    if (!orario) {
+        return undefined;
+    }
+
+    if (typeof orario === "string") {
+        return orario;
+    }
+
+    if (typeof orario === "object") {
+        const { inizio, fine } = orario;
+
+        if (inizio && fine) {
+            return `${inizio} - ${fine}`;
+        }
+
+        if (inizio) {
+            return `Dalle ${inizio}`;
+        }
+
+        if (fine) {
+            return `Fino alle ${fine}`;
+        }
+    }
+
+    return undefined;
+}
+
 function utentePuoCreareTipoAnnuncio(utente, tipoAnnuncio) {
     if (tipoAnnuncio === "richiesta_manodopera") {
         return utente.ruoli.includes("imprenditore");
@@ -35,18 +63,18 @@ async function creaAnnuncio(req, res) {
         }
 
         const annuncio = await Annuncio.create({
-            tipo,
-            autore: req.utente.id,
-            titolo,
-            descrizione,
-            luogo,
-            periodo,
-            orario,
-            tipoLavoro,
-            competenzeRichieste,
-            numeroLavoratoriRichiesti,
-            prezzo,
-        });
+        tipo,
+        autore: req.utente.id,
+        titolo,
+        descrizione,
+        luogo,
+        periodo,
+        orarioLavorativo: normalizzaOrario(orario),
+        tipoLavoro,
+        competenze: competenzeRichieste,
+        numeroLavoratoriRichiesti,
+        prezzo,
+ });
 
         return res.status(201).json({
             message: "Annuncio creato con successo.",
@@ -166,22 +194,32 @@ async function modificaAnnuncio(req, res) {
         }
 
         const campiAggiornabili = [
-            "titolo",
-            "descrizione",
-            "luogo",
-            "periodo",
-            "orario",
-            "tipoLavoro",
-            "competenzeRichieste",
-            "numeroLavoratoriRichiesti",
-            "prezzo",
-        ];
+    "titolo",
+    "descrizione",
+    "luogo",
+    "periodo",
+    "orario",
+    "tipoLavoro",
+    "competenzeRichieste",
+    "numeroLavoratoriRichiesti",
+    "prezzo",
+];
 
         const datiAggiornamento = req.body || {};
 
-const campiPresenti = campiAggiornabili.filter(
-    (campo) => datiAggiornamento[campo] !== undefined
-);
+campiPresenti.forEach((campo) => {
+    if (campo === "orario") {
+    annuncio.orarioLavorativo = normalizzaOrario(datiAggiornamento.orario);
+    return;
+}
+
+    if (campo === "competenzeRichieste") {
+        annuncio.competenze = datiAggiornamento.competenzeRichieste;
+        return;
+    }
+
+    annuncio[campo] = datiAggiornamento[campo];
+});
 
 if (campiPresenti.length === 0) {
     return res.status(400).json({
