@@ -68,7 +68,43 @@ async function creaAnnuncio(req, res) {
         });
     }
 }
+async function listaAnnunci(req, res) {
+    try {
+        const { tipo, tipoLavoro } = req.query;
 
+        const filtri = {
+            stato: "aperto",
+        };
+
+        if (tipo) {
+            filtri.tipo = tipo;
+        }
+
+        if (tipoLavoro) {
+            filtri.tipoLavoro = tipoLavoro;
+        }
+
+        const annunci = await Annuncio.find(filtri)
+            .populate(
+                "autore",
+                "nome cognome ruoli immagineProfilo ratingMedio"
+            )
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: "Annunci recuperati con successo.",
+            count: annunci.length,
+            annunci,
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero degli annunci:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 module.exports = {
     creaAnnuncio,
+    listaAnnunci,
 };
