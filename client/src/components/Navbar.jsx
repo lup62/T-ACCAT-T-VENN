@@ -23,10 +23,12 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import farmerIcon from "../assets/farmerIcon.png"
+import PersonIcon from "@mui/icons-material/Person";
+import AgricultureIcon from '@mui/icons-material/Agriculture';
 import iconaTaccat from "../assets/iconaTaccat.svg"
 import scrittaTaccat from "../assets/scrittaTaccat.svg"
 import { useAuth } from "../hooks/useAuth";
+
 
 
 
@@ -41,7 +43,6 @@ function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isLoggedIn, utente, logout } = useAuth();
     const navigate = useNavigate();
-
     const handleLogout = () => {
         logout();
         setMobileMenuOpen(false);
@@ -119,15 +120,20 @@ function Navbar() {
                             <Button
                                 component={RouterLink}
                                 to="/profilo"
-                                color="inherit"
+                                color="primary"
+                                variant="contained"
                                 sx={{
                                     display: {
                                         xs: "none",
                                         lg: "inline-flex",
                                     },
                                 }}
+                                startIcon={
+                                   <PersonIcon />
+                                }
                             >
                                 {utente?.nome}
+
                             </Button>
 
                             <Button
@@ -174,15 +180,7 @@ function Navbar() {
                                     },
                                 }}
                                 startIcon={
-                                    <Box
-                                        component="img"
-                                        src={farmerIcon}
-                                        alt=""
-                                        sx={{
-                                            width: 22,
-                                            height: 22,
-                                        }}
-                                    />
+                                    <AgricultureIcon />
                                 }
                             >
                                 Registrati
