@@ -1,0 +1,74 @@
+const Annuncio = require("../models/Annuncio");
+
+function utentePuoCreareTipoAnnuncio(utente, tipoAnnuncio) {
+    if (tipoAnnuncio === "richiesta_manodopera") {
+        return utente.ruoli.includes("imprenditore");
+    }
+
+    if (tipoAnnuncio === "disponibilita_lavoro") {
+        return utente.ruoli.includes("lavoratore");
+    }
+
+    return false;
+}
+
+async function creaAnnuncio(req, res) {
+    try {
+        const {
+            tipo,
+            titolo,
+            descrizione,
+            luogo,
+            periodo,
+            orario,
+            tipoLavoro,
+            competenzeRichieste,
+            numeroLavoratoriRichiesti,
+            prezzo,
+        } = req.body;
+
+        if (!utentePuoCreareTipoAnnuncio(req.utente, tipo)) {
+            return res.status(403).json({
+                message: "Non hai i permessi per creare questo tipo di annuncio.",
+            });
+        }
+
+        const annuncio = await Annuncio.create({
+            tipo,
+            autore: req.utente.id,
+            titolo,
+            descrizione,
+            luogo,
+            periodo,
+            orario,
+            tipoLavoro,
+            competenzeRichieste,
+            numeroLavoratoriRichiesti,
+            prezzo,
+        });
+
+        return res.status(201).json({
+            message: "Annuncio creato con successo.",
+            annuncio,
+        });
+    } catch (error) {
+        console.error("Errore durante la creazione dell'annuncio:", error);
+
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                message: "Dati dell'annuncio non validi.",
+                errors: Object.values(error.errors).map(
+                    (errore) => errore.message
+                ),
+            });
+        }
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
+module.exports = {
+    creaAnnuncio,
+};
