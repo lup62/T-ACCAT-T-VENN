@@ -1,4 +1,5 @@
 const Annuncio = require("../models/Annuncio");
+const mongoose = require("mongoose");
 
 function utentePuoCreareTipoAnnuncio(utente, tipoAnnuncio) {
     if (tipoAnnuncio === "richiesta_manodopera") {
@@ -104,7 +105,44 @@ async function listaAnnunci(req, res) {
         });
     }
 }
+async function dettaglioAnnuncio(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "ID annuncio non valido.",
+            });
+        }
+
+        const annuncio = await Annuncio.findOne({
+            _id: id,
+            stato: "aperto",
+        }).populate(
+            "autore",
+            "nome cognome ruoli immagineProfilo ratingMedio"
+        );
+
+        if (!annuncio) {
+            return res.status(404).json({
+                message: "Annuncio non trovato.",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Annuncio recuperato con successo.",
+            annuncio,
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero dell'annuncio:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 module.exports = {
     creaAnnuncio,
     listaAnnunci,
+    dettaglioAnnuncio,
 };
