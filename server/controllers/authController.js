@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const crypto = require("crypto");
+const RefreshToken = require("../models/RefreshToken");
 
 function generaAccessToken(user) {
     return jwt.sign(
@@ -12,6 +14,56 @@ function generaAccessToken(user) {
         {
             expiresIn: "15m",
         }
+    );
+}
+const DURATA_REFRESH_TOKEN_MS = 7 * 24 * 60 * 60 * 1000;
+
+function generaRefreshToken() {
+    return crypto.randomBytes(64).toString("hex");
+}
+
+function hashToken(token) {
+    return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+function calcolaScadenzaRefreshToken() {
+    return new Date(Date.now() + DURATA_REFRESH_TOKEN_MS);
+}
+
+function opzioniCookieRefreshToken() {
+    const produzione = process.env.NODE_ENV === "production";
+
+    return {
+        httpOnly: true,
+        secure: produzione,
+        sameSite: produzione ? "none" : "lax",
+        maxAge: DURATA_REFRESH_TOKEN_MS,
+    };
+}
+function opzioniClearCookieRefreshToken() {
+    const produzione = process.env.NODE_ENV === "production";
+
+    return {
+        httpOnly: true,
+        secure: produzione,
+        sameSite: produzione ? "none" : "lax",
+    };
+}
+
+async function creaRefreshToken(utente, res) {
+    const refreshToken = generaRefreshToken();
+    const tokenHash = hashToken(refreshToken);
+
+    await RefreshToken.create({
+        utente: utente._id,
+        tokenHash,
+        scadenza: calcolaScadenzaRefreshToken(),
+    });
+
+    res.cookie(
+        "refreshToken",
+        refreshToken,
+        opzioniCookieRefreshToken()
     );
 }
 
@@ -101,6 +153,7 @@ async function registrati(req, res) {
         });
 
         const accessToken = generaAccessToken(utente);
+        await creaRefreshToken(utente, res);
 
         return res.status(201).json({
             message: "Registrazione completata con successo.",
@@ -172,6 +225,7 @@ async function accedi(req, res) {
         }
 
         const accessToken = generaAccessToken(utente);
+        await creaRefreshToken(utente, res);
 
         return res.status(200).json({
             message: "Accesso effettuato con successo.",
@@ -194,6 +248,96 @@ async function accedi(req, res) {
         });
     }
 }
+async function rinnovaAccessToken(req, res) {
+    try {
+        const refreshToken = req.cookies?.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(401).json({
+                message: "Refresh token mancante.",
+            });
+        }
+
+        const tokenHash = hashToken(refreshToken);
+
+        const sessione = await RefreshToken.findOne({
+            tokenHash,
+        });
+
+        if (!sessione) {
+            return res.status(401).json({
+                message: "Refresh token non valido.",
+            });
+        }
+
+        if (sessione.revocatoIl) {
+            return res.status(401).json({
+                message: "Refresh token revocato.",
+            });
+        }
+
+        if (sessione.scadenza < new Date()) {
+            return res.status(401).json({
+                message: "Refresh token scaduto.",
+            });
+        }
+
+        const utente = await User.findById(sessione.utente);
+
+        if (!utente) {
+            return res.status(401).json({
+                message: "Utente non trovato o non più valido.",
+            });
+        }
+
+        const accessToken = generaAccessToken(utente);
+
+        return res.status(200).json({
+            message: "Access token rinnovato con successo.",
+            accessToken,
+        });
+    } catch (error) {
+        console.error("Errore durante il refresh del token:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+async function logout(req, res) {
+    try {
+        const refreshToken = req.cookies?.refreshToken;
+
+        if (refreshToken) {
+            const tokenHash = hashToken(refreshToken);
+
+            await RefreshToken.findOneAndUpdate(
+                {
+                    tokenHash,
+                    revocatoIl: null,
+                },
+                {
+                    revocatoIl: new Date(),
+                }
+            );
+        }
+
+        res.clearCookie(
+            "refreshToken",
+            opzioniClearCookieRefreshToken()
+        );
+
+        return res.status(200).json({
+            message: "Logout effettuato con successo.",
+        });
+    } catch (error) {
+        console.error("Errore durante il logout:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 function utenteCorrente(req, res) {
     return res.status(200).json({
         message: "Utente autenticato correttamente.",
@@ -201,4 +345,10 @@ function utenteCorrente(req, res) {
     });
 }
 
-module.exports = { registrati, accedi, utenteCorrente };
+module.exports = {
+    registrati,
+    accedi,
+    rinnovaAccessToken,
+    logout,
+    utenteCorrente,
+};
