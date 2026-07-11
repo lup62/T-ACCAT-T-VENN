@@ -127,9 +127,133 @@ async function listaProposteInviate(req, res) {
         });
     }
 }
+async function accettaProposta(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "ID proposta non valido.",
+            });
+        }
+
+        const proposta = await Proposta.findById(id).populate("annuncio");
+
+        if (!proposta) {
+            return res.status(404).json({
+                message: "Proposta non trovata.",
+            });
+        }
+
+        if (proposta.destinatario.toString() !== req.utente.id) {
+            return res.status(403).json({
+                message: "Puoi accettare solo le proposte ricevute da te.",
+            });
+        }
+
+        if (proposta.stato !== "in_attesa") {
+            return res.status(400).json({
+                message: "Puoi rispondere solo a proposte ancora in attesa.",
+            });
+        }
+
+        if (!proposta.annuncio) {
+            return res.status(404).json({
+                message: "Annuncio collegato alla proposta non trovato.",
+            });
+        }
+
+        if (proposta.annuncio.stato !== "aperto") {
+            return res.status(400).json({
+                message: "Puoi accettare proposte solo su annunci ancora aperti.",
+            });
+        }
+
+        proposta.stato = "accettata";
+        proposta.dataRisposta = new Date();
+
+        proposta.annuncio.stato = "in_corso";
+
+        await proposta.save();
+        await proposta.annuncio.save();
+
+        await Proposta.updateMany(
+            {
+                annuncio: proposta.annuncio._id,
+                _id: { $ne: proposta._id },
+                stato: "in_attesa",
+            },
+            {
+                stato: "rifiutata",
+                dataRisposta: new Date(),
+            }
+        );
+
+        return res.status(200).json({
+            message: "Proposta accettata con successo.",
+            proposta,
+        });
+    } catch (error) {
+        console.error("Errore durante l'accettazione della proposta:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
+async function rifiutaProposta(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "ID proposta non valido.",
+            });
+        }
+
+        const proposta = await Proposta.findById(id);
+
+        if (!proposta) {
+            return res.status(404).json({
+                message: "Proposta non trovata.",
+            });
+        }
+
+        if (proposta.destinatario.toString() !== req.utente.id) {
+            return res.status(403).json({
+                message: "Puoi rifiutare solo le proposte ricevute da te.",
+            });
+        }
+
+        if (proposta.stato !== "in_attesa") {
+            return res.status(400).json({
+                message: "Puoi rispondere solo a proposte ancora in attesa.",
+            });
+        }
+
+        proposta.stato = "rifiutata";
+        proposta.dataRisposta = new Date();
+
+        await proposta.save();
+
+        return res.status(200).json({
+            message: "Proposta rifiutata con successo.",
+            proposta,
+        });
+    } catch (error) {
+        console.error("Errore durante il rifiuto della proposta:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 
 module.exports = {
     creaProposta,
     listaProposteRicevute,
-    listaProposteInviate
+    listaProposteInviate,
+    accettaProposta,
+    rifiutaProposta
 };
