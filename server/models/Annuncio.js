@@ -113,7 +113,7 @@ const annuncioSchema = new mongoose.Schema(
         },
 
         // Obbligatorio solo se l'annuncio è una richiesta di manodopera.
-        nLavoratoriRichiesti: {
+        numeroLavoratoriRichiesti: {
             type: Number,
             min: 1,
         },
@@ -204,10 +204,10 @@ if (prezzoDaConcordare) {
     // Solo un imprenditore che pubblica una richiesta deve indicare quanti lavoratori cerca.
     if (
         this.tipo === "richiesta_manodopera" &&
-        !this.nLavoratoriRichiesti
+        !this.numeroLavoratoriRichiesti
     ) {
         this.invalidate(
-            "nLavoratoriRichiesti",
+            "numeroLavoratoriRichiesti",
             "Per una richiesta di manodopera devi indicare il numero di lavoratori richiesti."
         );
     };
