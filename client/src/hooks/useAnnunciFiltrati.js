@@ -46,8 +46,9 @@ function applicaFiltri(lista, filtri) {
             return false;
 
         if (filtri.province.length > 0) {
-            const match = a.luogo.testo.match(/\(([A-Z]+)\)/);
-            const prov = match ? match[1] : "";
+            // Sigla provincia da "Città (XX)", tollerante alle minuscole
+            const match = a.luogo.testo.match(/\(([A-Za-z]{2})\)/);
+            const prov = match ? match[1].toUpperCase() : "";
             if (!filtri.province.includes(prov)) return false;
         }
 
