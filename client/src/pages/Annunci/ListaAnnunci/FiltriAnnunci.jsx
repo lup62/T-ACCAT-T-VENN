@@ -41,8 +41,8 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import RegistratiDialog from "./RegistratiDialog";
-import { FILTRI_INIZIALI, PROVINCE_PUGLIA } from "./annunciConstants";
+import RegistratiDialog from "../RegistratiDialog";
+import { FILTRI_INIZIALI, PROVINCE_PUGLIA } from "../annunciConstants";
 
 function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isLoggedIn = false, drawerOpen = false, onDrawerClose = () => {} }) {
     const theme = useTheme();

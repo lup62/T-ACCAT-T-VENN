@@ -22,12 +22,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import AnnuncioCard from "./AnnuncioCard";
-import RegistratiDialog from "./RegistratiDialog";
+import RegistratiDialog from "../RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import FiltriAnnunci from "./FiltriAnnunci";
 import MappaAnnunci from "./MappaAnnunci";
-import { getAnnunci } from "../../services/annunci";
-import { useAnnunciFiltrati } from "../../hooks/useAnnunciFiltrati";
+import { getAnnunci } from "../../../services/annunci";
+import { useAnnunciFiltrati } from "../../../hooks/useAnnunciFiltrati";
 
 function AnnunciLavoroPage() {
     const navigate = useNavigate();
