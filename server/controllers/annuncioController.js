@@ -172,6 +172,7 @@ async function dettaglioAnnuncio(req, res) {
 async function modificaAnnuncio(req, res) {
     try {
         const { id } = req.params;
+        const datiAggiornamento = req.body || {};
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
@@ -194,60 +195,56 @@ async function modificaAnnuncio(req, res) {
         }
 
         const campiAggiornabili = [
-    "titolo",
-    "descrizione",
-    "luogo",
-    "periodo",
-    "orario",
-    "tipoLavoro",
-    "competenzeRichieste",
-    "numeroLavoratoriRichiesti",
-    "prezzo",
-];
+            "titolo",
+            "descrizione",
+            "luogo",
+            "periodo",
+            "orario",
+            "tipoLavoro",
+            "competenzeRichieste",
+            "numeroLavoratoriRichiesti",
+            "prezzo",
+        ];
 
-        const datiAggiornamento = req.body || {};
+        const campiPresenti = campiAggiornabili.filter(
+            (campo) => datiAggiornamento[campo] !== undefined
+        );
 
-campiPresenti.forEach((campo) => {
-    if (campo === "orario") {
-    annuncio.orarioLavorativo = normalizzaOrario(datiAggiornamento.orario);
-    return;
-}
+        if (campiPresenti.length === 0) {
+            return res.status(400).json({
+                message: "Indica almeno un campo da aggiornare.",
+            });
+        }
 
-    if (campo === "competenzeRichieste") {
-        annuncio.competenze = datiAggiornamento.competenzeRichieste;
-        return;
-    }
+        campiPresenti.forEach((campo) => {
+            if (campo === "orario") {
+                annuncio.orarioLavorativo = normalizzaOrario(datiAggiornamento.orario);
+                return;
+            }
 
-    annuncio[campo] = datiAggiornamento[campo];
-});
+            if (campo === "competenzeRichieste") {
+                annuncio.competenze = datiAggiornamento.competenzeRichieste;
+                return;
+            }
 
-if (campiPresenti.length === 0) {
-    return res.status(400).json({
-        message: "Indica almeno un campo da aggiornare.",
-    });
-}
+            annuncio[campo] = datiAggiornamento[campo];
+        });
 
-campiPresenti.forEach((campo) => {
-    annuncio[campo] = datiAggiornamento[campo];
-});
-
-await annuncio.save();
+        await annuncio.save();
 
         return res.status(200).json({
             message: "Annuncio aggiornato con successo.",
             annuncio,
         });
     } catch (error) {
-        console.error("Errore durante la modifica dell'annuncio:", error);
-
         if (error.name === "ValidationError") {
             return res.status(400).json({
-                message: "Dati dell'annuncio non validi.",
-                errors: Object.values(error.errors).map(
-                    (errore) => errore.message
-                ),
+                message: "Dati annuncio non validi.",
+                errors: Object.values(error.errors).map((err) => err.message),
             });
         }
+
+        console.error("Errore durante la modifica dell'annuncio:", error);
 
         return res.status(500).json({
             message: "Errore interno del server.",
