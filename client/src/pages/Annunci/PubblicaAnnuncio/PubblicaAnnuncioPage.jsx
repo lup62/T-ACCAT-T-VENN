@@ -72,7 +72,7 @@ function PubblicaAnnuncioPage() {
     const [invioInCorso, setInvioInCorso] = useState(false);
     const [erroreInvio, setErroreInvio] = useState("");
 
-    const { isLoggedIn, accessToken } = useAuth();
+    const { isLoggedIn, accessToken, inizializzazione } = useAuth();
 
     const aggiorna = (campo) => (e) =>
         setForm((prev) => ({ ...prev, [campo]: e.target.value }));
@@ -122,6 +122,15 @@ function PubblicaAnnuncioPage() {
             setInvioInCorso(false);
         }
     };
+
+    // ── Guard: ripristino sessione in corso (evita il flash del blocco login) ──
+    if (inizializzazione) {
+        return (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+                <CircularProgress color="primary" />
+            </Box>
+        );
+    }
 
     // ── Guard: utente non autenticato ─────────────────────────────────────────
     if (!isLoggedIn) {
