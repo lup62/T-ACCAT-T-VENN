@@ -119,6 +119,20 @@ function Navbar() {
                         <>
                             <Button
                                 component={RouterLink}
+                                to="/proposte"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Le mie proposte
+                            </Button>
+
+                            <Button
+                                component={RouterLink}
                                 to="/profilo"
                                 color="primary"
                                 variant="contained"
@@ -265,6 +279,15 @@ function Navbar() {
 
                     {isLoggedIn ? (
                         <List>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/proposte"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="Le mie proposte" />
+                                </ListItemButton>
+                            </ListItem>
                             <ListItem disablePadding>
                                 <ListItemButton
                                     component={RouterLink}
