@@ -307,17 +307,7 @@ function Navbar() {
                                             color: "#FFFFFF",
                                         },
                                     }}
-                                    startIcon={
-                                        <Box
-                                            component="img"
-                                            src={farmerIcon}
-                                            alt=""
-                                            sx={{
-                                                width: 22,
-                                                height: 22,
-                                            }}
-                                        />
-                                    }
+                                    startIcon={<AgricultureIcon />}
                                 >
                                     Registrati
                                 </Button>
