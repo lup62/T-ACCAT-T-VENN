@@ -20,6 +20,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/annunci", annuncioRoutes);
 app.use("/api/proposte", propostaRoutes);
+
 // Collega il backend al database MongoDB.
 connectDB();
 
