@@ -28,12 +28,14 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import {
+    Alert,
     Box,
     Button,
     Chip,
     CircularProgress,
     Divider,
     Paper,
+    Snackbar,
     Stack,
     Typography,
 } from "@mui/material";
@@ -51,6 +53,7 @@ import "leaflet/dist/leaflet.css";
 
 import { getAnnuncio } from "../../../services/annunci";
 import RegistratiDialog from "../RegistratiDialog";
+import InviaPropostaDialog from "./InviaPropostaDialog";
 
 const COLORI_TEMA = { primary: "#387347", secondary: "#69A62D" };
 
@@ -103,8 +106,10 @@ function RigaInfo({ Icon, label, valore }) {
 function DettaglioAnnuncioPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, utente } = useAuth();
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [propostaDialogOpen, setPropostaDialogOpen] = useState(false);
+    const [propostaInviata, setPropostaInviata] = useState(false);
 
     const [annuncio, setAnnuncio] = useState(null);
     const [caricamento, setCaricamento] = useState(true);
@@ -142,6 +147,10 @@ function DettaglioAnnuncioPage() {
     const tipoLabel = isRichiesta ? "Ricerca manodopera" : "Offerta di lavoro";
     const tipoColor = isRichiesta ? "secondary" : "primary";
     const backPath = isRichiesta ? "/annunci/offerte" : "/annunci/cercasi";
+
+    // L'autore non può candidarsi al proprio annuncio (il backend risponderebbe
+    // 403): al posto del bottone proposta mostriamo un'informativa.
+    const isAutore = isLoggedIn && utente?.id === annuncio.autore?._id;
 
     return (
         <Box sx={{ px: { xs: 2, sm: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
@@ -200,15 +209,23 @@ function DettaglioAnnuncioPage() {
                         ))}
                     </Stack>
 
-                    <Button
-                        variant="contained"
-                        color={tipoColor}
-                        size="large"
-                        fullWidth
-                        onClick={() => !isLoggedIn && setDialogOpen(true)}
-                    >
-                        {isLoggedIn ? "Invia una proposta" : "Accedi per inviare una proposta"}
-                    </Button>
+                    {isAutore ? (
+                        <Alert severity="info" variant="outlined">
+                            Questo è un tuo annuncio: non puoi inviarti una proposta.
+                        </Alert>
+                    ) : (
+                        <Button
+                            variant="contained"
+                            color={tipoColor}
+                            size="large"
+                            fullWidth
+                            onClick={() =>
+                                isLoggedIn ? setPropostaDialogOpen(true) : setDialogOpen(true)
+                            }
+                        >
+                            {isLoggedIn ? "Invia una proposta" : "Accedi per inviare una proposta"}
+                        </Button>
+                    )}
 
                     {/* la posizione non è obbligatoria nel modello backend */}
                     {annuncio.luogo?.posizione && (
@@ -277,6 +294,33 @@ function DettaglioAnnuncioPage() {
             </Box>
 
             <RegistratiDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+
+            <InviaPropostaDialog
+                open={propostaDialogOpen}
+                onClose={() => setPropostaDialogOpen(false)}
+                onInviata={() => {
+                    setPropostaDialogOpen(false);
+                    setPropostaInviata(true);
+                }}
+                annuncioId={annuncio._id}
+                color={tipoColor}
+            />
+
+            <Snackbar
+                open={propostaInviata}
+                autoHideDuration={5000}
+                onClose={() => setPropostaInviata(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert
+                    onClose={() => setPropostaInviata(false)}
+                    severity="success"
+                    variant="filled"
+                    sx={{ width: "100%" }}
+                >
+                    Proposta inviata con successo!
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
