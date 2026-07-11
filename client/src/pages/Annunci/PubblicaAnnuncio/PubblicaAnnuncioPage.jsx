@@ -82,13 +82,24 @@ function PubblicaAnnuncioPage() {
 
     // Geocoding al blur sul campo luogo. In caso di fallimento la posizione
     // già presente viene mantenuta: l'utente può affinarla sulla mappa.
+    // Se Nominatim riconosce la provincia e l'utente non ha scritto la sigla,
+    // il testo viene completato in "Città (XX)" — formato su cui si basa
+    // il filtro provincia delle liste annunci.
     const {
         loading: geocodingLoading,
         errore: geocodingErrore,
         azzeraErrore: azzeraErroreGeocoding,
         geocodifica,
     } = useGeocodingLuogo({
-        onTrovata: (pos) => aggiornaValore("posizione", pos),
+        onTrovata: (pos) =>
+            setForm((prev) => ({
+                ...prev,
+                posizione: { lat: pos.lat, lng: pos.lng },
+                luogoTesto:
+                    pos.provincia && !/\([A-Za-z]{2}\)/.test(prev.luogoTesto)
+                        ? `${prev.luogoTesto.trim()} (${pos.provincia})`
+                        : prev.luogoTesto,
+            })),
         messaggi: {
             nonTrovato: "Luogo non trovato sulla mappa — puoi selezionarlo manualmente",
             errore: "Errore nella ricerca del luogo — prova a selezionarlo manualmente",
