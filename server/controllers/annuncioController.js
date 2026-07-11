@@ -297,10 +297,57 @@ async function chiudiAnnuncio(req, res) {
         });
     }
 }
+async function concludiAnnuncio(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "ID annuncio non valido.",
+            });
+        }
+
+        const annuncio = await Annuncio.findById(id);
+
+        if (!annuncio) {
+            return res.status(404).json({
+                message: "Annuncio non trovato.",
+            });
+        }
+
+        if (annuncio.autore.toString() !== req.utente.id) {
+            return res.status(403).json({
+                message: "Puoi concludere solo i tuoi annunci.",
+            });
+        }
+
+        if (annuncio.stato !== "in_corso") {
+            return res.status(400).json({
+                message: "Puoi concludere solo annunci in corso.",
+            });
+        }
+
+        annuncio.stato = "concluso";
+
+        await annuncio.save();
+
+        return res.status(200).json({
+            message: "Annuncio concluso con successo.",
+            annuncio,
+        });
+    } catch (error) {
+        console.error("Errore durante la conclusione dell'annuncio:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 module.exports = {
     creaAnnuncio,
     listaAnnunci,
     dettaglioAnnuncio,
     modificaAnnuncio,
     chiudiAnnuncio,
+    concludiAnnuncio,
 };
