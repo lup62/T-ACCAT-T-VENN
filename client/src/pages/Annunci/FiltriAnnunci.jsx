@@ -42,7 +42,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import RegistratiDialog from "./RegistratiDialog";
-import { FILTRI_INIZIALI } from "./annunciConstants";
+import { FILTRI_INIZIALI, PROVINCE_PUGLIA } from "./annunciConstants";
 
 function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isLoggedIn = false, drawerOpen = false, onDrawerClose = () => {} }) {
     const theme = useTheme();
@@ -54,15 +54,6 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
         () => [...new Set(annunci.map((a) => a.tipoLavoro))].sort(),
         [annunci]
     );
-
-    // Estrae il codice provincia da "Città (XX)" → "XX"
-    const opzioniProvincia = useMemo(() => {
-        const province = annunci.map((a) => {
-            const match = a.luogo.testo.match(/\(([A-Z]+)\)/);
-            return match ? match[1] : a.luogo.testo;
-        });
-        return [...new Set(province)].sort();
-    }, [annunci]);
 
     const toggleCheckbox = (campo, valore) => {
         const corrente = filtri[campo];
@@ -107,19 +98,19 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
 
             <Divider sx={{ mb: 2 }} />
 
-            {/* Provincia */}
+            {/* Provincia: lista fissa delle province pugliesi, non dipende dagli annunci */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>Provincia</Typography>
             <FormGroup sx={{ mb: 2 }}>
-                {opzioniProvincia.map((prov) => (
+                {PROVINCE_PUGLIA.map(({ codice, nome }) => (
                     <FormControlLabel
-                        key={prov}
-                        label={prov}
+                        key={codice}
+                        label={`${nome} (${codice})`}
                         control={
                             <Checkbox
                                 size="small"
                                 color={color}
-                                checked={filtri.province.includes(prov)}
-                                onChange={() => toggleCheckbox("province", prov)}
+                                checked={filtri.province.includes(codice)}
+                                onChange={() => toggleCheckbox("province", codice)}
                             />
                         }
                     />
