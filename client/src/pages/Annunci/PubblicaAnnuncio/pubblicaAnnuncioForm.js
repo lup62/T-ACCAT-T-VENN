@@ -67,13 +67,18 @@ export function valida(form) {
         segna("dataFine", "Inserisci la data di fine");
     if (form.dataInizio && form.dataFine && form.dataFine < form.dataInizio)
         segna("dataFine", "La data di fine non può essere precedente alla data di inizio");
-    // Compenso opzionale: se compilato parzialmente segnala incongruenze
+    // Compenso opzionale, ma il backend accetta solo "entrambi i prezzi"
+    // oppure "nessuno" (= da concordare): la compilazione parziale va bloccata qui.
     if (form.prezzoMin !== "" && Number(form.prezzoMin) < 0)
         segna("prezzoMin", "Il prezzo minimo non può essere negativo");
     if (form.prezzoMax !== "" && Number(form.prezzoMax) < 0)
         segna("prezzoMax", "Il prezzo massimo non può essere negativo");
     if (form.prezzoMin !== "" && form.prezzoMax !== "" && Number(form.prezzoMax) < Number(form.prezzoMin))
         segna("prezzoMax", "Il prezzo massimo non può essere minore del minimo");
+    if (form.prezzoMin !== "" && form.prezzoMax === "")
+        segna("prezzoMax", "Indica anche il prezzo massimo (o lascia entrambi vuoti)");
+    if (form.prezzoMax !== "" && form.prezzoMin === "")
+        segna("prezzoMin", "Indica anche il prezzo minimo (o lascia entrambi vuoti)");
     const prezziCompilati = form.prezzoMin !== "" || form.prezzoMax !== "";
     if (prezziCompilati && !form.unitaPrezzo)
         segna("unitaPrezzo", "Seleziona l'unità di prezzo");
@@ -107,13 +112,14 @@ export function costruisciPayload(form) {
         orario: form.orario.trim(),
         tipoLavoro: form.tipoLavoro.trim(),
         competenzeRichieste: form.competenzeRichieste,
-        // Se nessun campo prezzo è compilato → da concordare
-        prezzo: (form.prezzoMin === "" && form.prezzoMax === "" && !form.unitaPrezzo)
+        // Se nessun campo prezzo è compilato → da concordare (anche se
+        // l'utente ha toccato l'unità: il backend vuole min+max null in quel caso)
+        prezzo: (form.prezzoMin === "" && form.prezzoMax === "")
             ? { min: null, max: null, unita: "da_concordare" }
             : {
-                min: form.prezzoMin !== "" ? Number(form.prezzoMin) : null,
-                max: form.prezzoMax !== "" ? Number(form.prezzoMax) : null,
-                unita: form.unitaPrezzo || "da_concordare",
+                min: Number(form.prezzoMin),
+                max: Number(form.prezzoMax),
+                unita: form.unitaPrezzo,
             },
     };
 
