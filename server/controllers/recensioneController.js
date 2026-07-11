@@ -194,7 +194,90 @@ async function creaRecensione(req, res) {
         });
     }
 }
+async function listaRecensioniUtente(req, res) {
+    try {
+        const { utenteId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(utenteId)) {
+            return res.status(400).json({
+                message: "ID utente non valido.",
+            });
+        }
+
+        const recensioni = await Recensione.find({
+            destinatario: utenteId,
+        })
+            .populate(
+                "autore",
+                "nome cognome ruoli immagineProfilo ratingMedio"
+            )
+            .populate(
+                "destinatario",
+                "nome cognome ruoli immagineProfilo ratingMedio"
+            )
+            .populate(
+                "annuncio",
+                "tipo titolo tipoLavoro luogo periodo stato"
+            )
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: "Recensioni utente recuperate con successo.",
+            count: recensioni.length,
+            recensioni,
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero delle recensioni utente:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
+async function listaRecensioniAnnuncio(req, res) {
+    try {
+        const { annuncioId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(annuncioId)) {
+            return res.status(400).json({
+                message: "ID annuncio non valido.",
+            });
+        }
+
+        const recensioni = await Recensione.find({
+            annuncio: annuncioId,
+        })
+            .populate(
+                "autore",
+                "nome cognome ruoli immagineProfilo ratingMedio"
+            )
+            .populate(
+                "destinatario",
+                "nome cognome ruoli immagineProfilo ratingMedio"
+            )
+            .populate(
+                "annuncio",
+                "tipo titolo tipoLavoro luogo periodo stato"
+            )
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: "Recensioni annuncio recuperate con successo.",
+            count: recensioni.length,
+            recensioni,
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero delle recensioni annuncio:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 
 module.exports = {
     creaRecensione,
+    listaRecensioniUtente,
+    listaRecensioniAnnuncio,
 };
