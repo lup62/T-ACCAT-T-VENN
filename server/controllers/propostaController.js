@@ -70,7 +70,66 @@ async function creaProposta(req, res) {
         });
     }
 }
+async function listaProposteRicevute(req, res) {
+    try {
+        const proposte = await Proposta.find({
+            destinatario: req.utente.id,
+        })
+            .populate(
+                "annuncio",
+                "tipo titolo descrizione luogo periodo orarioLavorativo tipoLavoro competenze numeroLavoratoriRichiesti prezzo stato"
+            )
+            .populate(
+                "proponente",
+                "nome cognome email ruoli immagineProfilo ratingMedio"
+            )
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: "Proposte ricevute recuperate con successo.",
+            count: proposte.length,
+            proposte,
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero delle proposte ricevute:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
+async function listaProposteInviate(req, res) {
+    try {
+        const proposte = await Proposta.find({
+            proponente: req.utente.id,
+        })
+            .populate(
+                "annuncio",
+                "tipo titolo descrizione luogo periodo orarioLavorativo tipoLavoro competenze numeroLavoratoriRichiesti prezzo stato"
+            )
+            .populate(
+                "destinatario",
+                "nome cognome email ruoli immagineProfilo ratingMedio"
+            )
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: "Proposte inviate recuperate con successo.",
+            count: proposte.length,
+            proposte,
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero delle proposte inviate:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 
 module.exports = {
     creaProposta,
+    listaProposteRicevute,
+    listaProposteInviate
 };
