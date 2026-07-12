@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 
 import sfondoHero from "../../assets/sfondoHero.webp";
-import logoTaccat from "../../assets/logoTaccat.svg";
+import scrittaTaccat from "../../assets/scrittaTaccat.svg";
 import fotoPasquale from "../../assets/fotoPasquale.jpeg"
 
 import HowItWorks from "../../components/HowItWorks";
@@ -22,85 +22,53 @@ function HomePage() {
         <>
 
         {/* ===== SEZIONE HERO =====
-            Occupa tutta la larghezza dello schermo (full-bleed) anche se il layout
-            principale ha un contenitore con larghezza limitata. Il trick funziona così:
-            - width: 100vw → larghezza pari alla viewport
-            - position: relative + left: 50% + marginLeft: -50vw → sposta l'elemento
-              al bordo sinistro della schermata indipendentemente dal contenitore padre
-            L'immagine di sfondo usa un gradient scuro a sinistra per rendere
-            leggibile il testo bianco sovrapposto. */}
+            width: 100% basta per il full-bleed: MainLayout non limita la larghezza
+            del main.
+            Su mobile il hero è più basso: c'è solo la scritta, un'intera schermata
+            di foto allontanerebbe troppo i contenuti; svh tiene conto della barra
+            degli indirizzi dei browser mobile. */}
         <Box
             component="section"
             sx={{
-                width: "100vw",
-                position: "relative",
-                left: "50%",
-                marginLeft: "-50vw",
-                minHeight: "calc(100vh - 72px)", // 72px = altezza navbar
+                width: "100%",
+                minHeight: { xs: "55svh", md: "calc(100vh - 72px)" }, // 72px = altezza navbar
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-start",
-                pt: { xs: 12, md: 18 },
+                pt: { xs: 8, md: 18 },
                 px: { xs: 3, md: 10 },
 
                 backgroundImage: `
-                    linear-gradient(
-                        90deg,
-                        rgba(0, 0, 0, 0.62) 0%,
-                        rgba(0, 0, 0, 0.42) 42%,
-                        rgba(0, 0, 0, 0.12) 100%
-                    ),
                     url(${sfondoHero})
                 `,
                 backgroundSize: "cover",
-                backgroundPosition: "center right",
+                backgroundPosition: "83%",
                 backgroundRepeat: "no-repeat",
             }}
         >
-            {/* Logo completo (icona + scritta + payoff) al posto del titolo testuale.
-                component="h1" sull'elemento wrapper mantiene la semantica per SEO;
-                l'alt dell'immagine fa da testo per screen reader e motori di ricerca.
-                Il drop-shadow chiaro stacca il verde scuro del logo dalla foto. */}
+            {/* Scritta + payoff (stessa della Navbar) al posto del titolo testuale,
+                component="h1" sull'elemento wrapper mantiene la
+                semantica per SEO; l'alt dell'immagine fa da testo per screen reader
+                e motori di ricerca. Il drop-shadow chiaro stacca il verde scuro
+                della scritta dalla foto. */}
             <Typography component="h1" sx={{ m: 0 }}>
                 <Box
                     component="img"
-                    src={logoTaccat}
+                    src={scrittaTaccat}
                     alt="T'accat & T'venn — Coltiviamo nuove opportunità di lavoro"
                     sx={{
-                        width: { xs: 260, sm: 340, md: 420 },
-                        filter: "drop-shadow(0 0 24px rgba(250, 247, 239, 0.85)) drop-shadow(0 0 8px rgba(250, 247, 239, 0.9))",
+                        width: { xs: "100%", sm: 480, md: 620 },
+                        maxWidth: 620,
+                        // Solo su mobile: alone crema dietro la scritta, perché senza
+                        // gradient il verde si perde sul cielo/alberi della foto.
+                        filter: {
+                            xs: "drop-shadow(0 0 18px rgba(250, 247, 239, 0.9)) drop-shadow(0 0 6px rgba(250, 247, 239, 0.95))",
+                            md: "none",
+                        },
                     }}
                 />
             </Typography>
 
-            {/* Stack gestisce il layout dei bottoni: affiancati da sm in su,
-                in colonna su mobile con larghezza piena (stretch) */}
-            <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={2}
-                sx={{
-                    mt: 4,
-                    alignItems: { xs: "stretch", sm: "flex-start" },
-                }}
-            >
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    size="large"
-                    onClick={() => navigate("/annunci/offerte")}
-                >
-                    Cerco lavoro
-                </Button>
-
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={() => navigate("/annunci/cercasi")}
-                >
-                    Cerco lavoratori
-                </Button>
-            </Stack>
         </Box>
 
         {/* ===== SEZIONE L'INIZIATIVA =====
@@ -124,7 +92,9 @@ function HomePage() {
                 oltre il suo limite (problema comune con flex e testo lungo). */}
             <Box sx={{ flex: 1, minWidth: 0 }}>
 
-                {/* Titolo sezione con stile "badge": inline-block + sfondo colorato */}
+                {/* Titolo sezione con stile "badge": inline-block + sfondo colorato.
+                    Il fontSize di h3 (3rem) è troppo grande su mobile e manda il
+                    badge su due righe: si scala sotto md. */}
                 <Typography
                     variant="h3"
                     component="h2"
@@ -132,9 +102,10 @@ function HomePage() {
                         display: "inline-block",
                         bgcolor: "primary.main",
                         color: "#FFFFFF",
-                        px: 3,
+                        px: { xs: 2, md: 3 },
                         py: 1,
                         borderRadius: 1,
+                        fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" },
                     }}
                 >
                     L'iniziativa
@@ -147,6 +118,7 @@ function HomePage() {
                         mt: 3,
                         color: "text.secondary",
                         lineHeight: 1.8,
+                        fontSize: { xs: "1rem", md: "1.25rem" },
                     }}
                 >
                     T&apos;accat &amp; T&apos;venn è la piattaforma che mette in contatto
@@ -159,12 +131,12 @@ function HomePage() {
                     flex:1 su ogni card le rende della stessa larghezza. */}
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 4 }}>
                     <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3 }}>
-                        <CardContent sx={{ p: 4 }}>
+                        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
                             <Typography
                                 variant="h4"
                                 component="h3"
                                 color="secondary"
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 2, fontSize: { xs: "1.5rem", md: "2.125rem" } }}
                             >
                                 Per chi cerca lavoro
                             </Typography>
@@ -174,19 +146,25 @@ function HomePage() {
                                 aziende agricole che cercano lavoratori nella tua zona.
                             </Typography>
 
-                            <Button variant="outlined" color="secondary">
-                                Scopri le opportunità
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                size="large"
+                                onClick={() => navigate("/annunci/offerte")}
+                                sx={{ width: { xs: "100%", sm: "auto" } }}
+                            >
+                                Cerco lavoro
                             </Button>
                         </CardContent>
                     </Card>
 
                     <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3 }}>
-                        <CardContent sx={{ p: 4 }}>
+                        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
                             <Typography
                                 variant="h4"
                                 component="h3"
                                 color="primary"
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 2, fontSize: { xs: "1.5rem", md: "2.125rem" } }}
                             >
                                 Per chi cerca lavoratori
                             </Typography>
@@ -196,8 +174,14 @@ function HomePage() {
                                 tue esigenze e organizza il lavoro in modo più rapido.
                             </Typography>
 
-                            <Button variant="outlined" color="primary">
-                                Pubblica una richiesta
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                size="large"
+                                onClick={() => navigate("/annunci/cercasi")}
+                                sx={{ width: { xs: "100%", sm: "auto" } }}
+                            >
+                                Cerco lavoratori
                             </Button>
                         </CardContent>
                     </Card>
