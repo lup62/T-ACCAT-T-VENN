@@ -16,7 +16,7 @@
  */
 
 import { useState, useMemo } from "react";
-import { FILTRI_INIZIALI } from "../pages/Annunci/annunciConstants";
+import { FILTRI_INIZIALI, categoriaTipoLavoro } from "../pages/Annunci/annunciConstants";
 import { useAuth } from "./useAuth";
 
 const ANNUNCI_VISIBILI = 5;
@@ -42,7 +42,9 @@ function applicaOrdinamento(lista, ordinamento) {
 
 function applicaFiltri(lista, filtri) {
     return lista.filter((a) => {
-        if (filtri.tipiLavoro.length > 0 && !filtri.tipiLavoro.includes(a.tipoLavoro))
+        // Il confronto passa per la categoria: i tipiLavoro fuori lista
+        // (dati vecchi a testo libero) ricadono in "Altro".
+        if (filtri.tipiLavoro.length > 0 && !filtri.tipiLavoro.includes(categoriaTipoLavoro(a.tipoLavoro)))
             return false;
 
         if (filtri.province.length > 0) {

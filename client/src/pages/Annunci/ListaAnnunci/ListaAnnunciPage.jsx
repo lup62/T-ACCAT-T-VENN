@@ -187,7 +187,6 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                 }}
             >
                 <FiltriAnnunci
-                    annunci={annunci}
                     filtri={filtri}
                     onFiltriChange={setFiltri}
                     color={color}
