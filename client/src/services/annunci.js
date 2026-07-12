@@ -2,9 +2,10 @@
  * annunci.js — chiamate API verso il backend per gli annunci.
  *
  * Endpoint disponibili (server/routes/annuncioRoutes.js):
- *   GET  /api/annunci?tipo=...  → { message, count, annunci }
- *   GET  /api/annunci/:id       → { message, annuncio }
- *   POST /api/annunci           → { message, annuncio }   (richiede Bearer token)
+ *   GET   /api/annunci?tipo=...        → { message, count, annunci }
+ *   GET   /api/annunci/:id             → { message, annuncio }
+ *   POST  /api/annunci                 → { message, annuncio }   (richiede Bearer token)
+ *   PATCH /api/annunci/:id/concludi    → { message, annuncio }   (richiede Bearer token)
  *
  * Stesso pattern di AuthContext: base URL da VITE_API_URL
  * con fallback su localhost per lo sviluppo.
@@ -42,6 +43,22 @@ export async function creaAnnuncio(payload, accessToken) {
         // dei singoli errori: li mostriamo tutti, non solo il messaggio.
         const dettagli = Array.isArray(data.errors) ? ` ${data.errors.join(" ")}` : "";
         throw new Error((data.message || "Errore nella pubblicazione dell'annuncio.") + dettagli);
+    }
+    return data.annuncio;
+}
+
+// Segna un annuncio come concluso. Solo l'autore può farlo e solo
+// se l'annuncio è "in_corso" (cioè dopo aver accettato una proposta).
+export async function concludiAnnuncio(id, accessToken) {
+    const res = await fetch(`${API_URL}/api/annunci/${id}/concludi`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Errore nella conclusione dell'annuncio.");
     }
     return data.annuncio;
 }

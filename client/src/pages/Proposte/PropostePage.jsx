@@ -6,7 +6,15 @@
  *     Accettando, il backend mette l'annuncio "in corso" e rifiuta in
  *     automatico le altre proposte in attesa: per questo dopo ogni azione
  *     la lista viene ricaricata invece di aggiornare la singola card.
+ *     Sulla proposta accettata compare poi "Concludi lavoro"
+ *     (PATCH /api/annunci/:id/concludi, solo autore dell'annuncio).
  *   - Inviate: le proprie candidature, con lo stato della risposta.
+ *
+ * Ad annuncio concluso entrambe le tab mostrano "Lascia una recensione"
+ * (RecensioneDialog). Non esiste ancora un GET delle recensioni, quindi
+ * ricordiamo solo in memoria di sessione le proposte già recensite: dopo
+ * un reload il bottone ricompare e un eventuale doppio invio viene
+ * comunque bloccato dal backend con un 409.
  *
  * Accessibile solo agli utenti autenticati (stesso guard di PubblicaAnnuncio).
  */
@@ -35,7 +43,9 @@ import {
     accettaProposta,
     rifiutaProposta,
 } from "../../services/proposte";
+import { concludiAnnuncio } from "../../services/annunci";
 import PropostaCard from "./PropostaCard";
+import RecensioneDialog from "./RecensioneDialog";
 
 // Stato vuoto minimale per le due tab.
 function NessunaProposta({ testo }) {
@@ -59,6 +69,10 @@ function PropostePage() {
     const [erroreCaricamento, setErroreCaricamento] = useState("");
     const [azioneInCorsoId, setAzioneInCorsoId] = useState(null);
     const [notifica, setNotifica] = useState(null);    // { severity, testo }
+    // Recensione in corso: { proposta, persona } — null = dialog chiuso.
+    const [recensione, setRecensione] = useState(null);
+    // Id delle proposte recensite in questa sessione (vedi commento in testa).
+    const [proposteRecensite, setProposteRecensite] = useState(() => new Set());
 
     const carica = useCallback(
         () =>
@@ -100,6 +114,39 @@ function PropostePage() {
         } finally {
             setAzioneInCorsoId(null);
         }
+    };
+
+    // Conclude il lavoro dell'annuncio collegato alla proposta accettata.
+    // Ricarica le liste così il chip passa a "Lavoro concluso" e compare
+    // il bottone per la recensione.
+    const concludi = async (proposta) => {
+        setAzioneInCorsoId(proposta._id);
+        try {
+            await concludiAnnuncio(proposta.annuncio._id, accessToken);
+            setNotifica({
+                severity: "success",
+                testo: "Lavoro concluso! Ora puoi lasciare una recensione.",
+            });
+            await carica();
+        } catch (err) {
+            setNotifica({ severity: "error", testo: err.message });
+        } finally {
+            setAzioneInCorsoId(null);
+        }
+    };
+
+    // Chi va recensito: nelle ricevute il proponente, nelle inviate
+    // il destinatario (cioè l'autore dell'annuncio).
+    const apriRecensione = (proposta) =>
+        setRecensione({
+            proposta,
+            persona: tab === 0 ? proposta.proponente : proposta.destinatario,
+        });
+
+    const recensioneInviata = () => {
+        setProposteRecensite((prev) => new Set(prev).add(recensione.proposta._id));
+        setRecensione(null);
+        setNotifica({ severity: "success", testo: "Recensione inviata, grazie!" });
     };
 
     // ── Guard: ripristino sessione in corso ───────────────────────────────────
@@ -183,10 +230,23 @@ function PropostePage() {
                             tipo={tab === 0 ? "ricevuta" : "inviata"}
                             onAccetta={(p) => rispondi(p, "accetta")}
                             onRifiuta={(p) => rispondi(p, "rifiuta")}
+                            onConcludi={concludi}
+                            onRecensisci={apriRecensione}
+                            recensioneLasciata={proposteRecensite.has(proposta._id)}
                             azioneInCorso={azioneInCorsoId === proposta._id}
                         />
                     ))}
                 </Stack>
+            )}
+
+            {recensione && (
+                <RecensioneDialog
+                    open
+                    onClose={() => setRecensione(null)}
+                    onInviata={recensioneInviata}
+                    annuncioId={recensione.proposta.annuncio._id}
+                    destinatario={recensione.persona}
+                />
             )}
 
             <Snackbar

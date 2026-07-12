@@ -4,11 +4,14 @@
  * Card di una singola proposta, usata in PropostePage per entrambe le tab.
  *
  * Props:
- *   proposta       la proposta (con annuncio e proponente/destinatario popolati)
- *   tipo           "ricevuta" | "inviata" — decide chi mostrare e se ci sono azioni
- *   onAccetta      callback(proposta) — solo per le ricevute in attesa
- *   onRifiuta      callback(proposta) — solo per le ricevute in attesa
- *   azioneInCorso  true mentre una accetta/rifiuta è in volo (disabilita i bottoni)
+ *   proposta            la proposta (con annuncio e proponente/destinatario popolati)
+ *   tipo                "ricevuta" | "inviata" — decide chi mostrare e se ci sono azioni
+ *   onAccetta           callback(proposta) — solo per le ricevute in attesa
+ *   onRifiuta           callback(proposta) — solo per le ricevute in attesa
+ *   onConcludi          callback(proposta) — ricevute accettate con annuncio "in_corso"
+ *   onRecensisci        callback(proposta) — proposte accettate con annuncio "concluso"
+ *   recensioneLasciata  true se in questa sessione è già stata inviata la recensione
+ *   azioneInCorso       true mentre un'azione è in volo (disabilita i bottoni)
  */
 
 import {
@@ -25,6 +28,8 @@ import { Link as RouterLink } from "react-router-dom";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 const LABEL_STATO = {
     in_attesa: "In attesa",
@@ -38,6 +43,14 @@ const COLOR_STATO = {
     rifiutata: "error",
 };
 
+// Stato del lavoro mostrato accanto allo stato della proposta,
+// solo quando la proposta è stata accettata (prima non è rilevante).
+const LABEL_STATO_ANNUNCIO = {
+    in_corso: "Lavoro in corso",
+    concluso: "Lavoro concluso",
+    chiuso: "Annuncio chiuso",
+};
+
 function formatData(iso) {
     if (!iso) return "";
     return new Date(iso).toLocaleDateString("it-IT", {
@@ -47,11 +60,27 @@ function formatData(iso) {
     });
 }
 
-function PropostaCard({ proposta, tipo, onAccetta, onRifiuta, azioneInCorso = false }) {
+function PropostaCard({
+    proposta,
+    tipo,
+    onAccetta,
+    onRifiuta,
+    onConcludi,
+    onRecensisci,
+    recensioneLasciata = false,
+    azioneInCorso = false,
+}) {
     const isRicevuta = tipo === "ricevuta";
     // Per le ricevute mostriamo chi si è candidato, per le inviate il destinatario.
     const persona = isRicevuta ? proposta.proponente : proposta.destinatario;
     const inAttesa = proposta.stato === "in_attesa";
+    const accettata = proposta.stato === "accettata";
+    const statoAnnuncio = proposta.annuncio?.stato;
+
+    // Solo l'autore dell'annuncio (tab Ricevute) può concludere il lavoro.
+    const puoConcludere = isRicevuta && accettata && statoAnnuncio === "in_corso";
+    // A lavoro concluso entrambe le parti possono recensire l'altra.
+    const puoRecensire = accettata && statoAnnuncio === "concluso" && !recensioneLasciata;
 
     return (
         <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
@@ -64,6 +93,14 @@ function PropostaCard({ proposta, tipo, onAccetta, onRifiuta, azioneInCorso = fa
                         color={COLOR_STATO[proposta.stato] ?? "default"}
                         size="small"
                     />
+                    {accettata && LABEL_STATO_ANNUNCIO[statoAnnuncio] && (
+                        <Chip
+                            label={LABEL_STATO_ANNUNCIO[statoAnnuncio]}
+                            color={statoAnnuncio === "concluso" ? "primary" : "default"}
+                            variant="outlined"
+                            size="small"
+                        />
+                    )}
                     <Typography variant="caption" color="text.secondary">
                         {isRicevuta ? "Ricevuta" : "Inviata"} il {formatData(proposta.dataProposta ?? proposta.createdAt)}
                         {proposta.dataRisposta && ` — risposta il ${formatData(proposta.dataRisposta)}`}
@@ -145,6 +182,47 @@ function PropostaCard({ proposta, tipo, onAccetta, onRifiuta, azioneInCorso = fa
                             >
                                 Rifiuta
                             </Button>
+                        </Stack>
+                    </>
+                )}
+
+                {/* A proposta accettata: concludi il lavoro (autore annuncio),
+                    poi recensione reciproca ad annuncio concluso */}
+                {(puoConcludere || puoRecensire || recensioneLasciata) && (
+                    <>
+                        <Divider />
+                        <Stack
+                            direction={{ xs: "column", sm: "row" }}
+                            spacing={1.5}
+                            alignItems={{ sm: "center" }}
+                        >
+                            {puoConcludere && (
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={azioneInCorso ? <CircularProgress size={16} color="inherit" /> : <TaskAltIcon />}
+                                    disabled={azioneInCorso}
+                                    onClick={() => onConcludi(proposta)}
+                                >
+                                    Concludi lavoro
+                                </Button>
+                            )}
+                            {puoRecensire && (
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    startIcon={<StarBorderIcon />}
+                                    disabled={azioneInCorso}
+                                    onClick={() => onRecensisci(proposta)}
+                                >
+                                    Lascia una recensione
+                                </Button>
+                            )}
+                            {recensioneLasciata && (
+                                <Typography variant="body2" color="text.secondary">
+                                    Recensione inviata, grazie!
+                                </Typography>
+                            )}
                         </Stack>
                     </>
                 )}
