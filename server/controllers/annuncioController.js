@@ -1,5 +1,6 @@
 const Annuncio = require("../models/Annuncio");
 const mongoose = require("mongoose");
+const Proposta = require("../models/Proposta");
 
 function normalizzaOrario(orario) {
     if (!orario) {
@@ -143,10 +144,7 @@ async function dettaglioAnnuncio(req, res) {
             });
         }
 
-        const annuncio = await Annuncio.findOne({
-            _id: id,
-            stato: "aperto",
-        }).populate(
+        const annuncio = await Annuncio.findById(id).populate(
             "autore",
             "nome cognome ruoli immagineProfilo ratingMedio"
         );
@@ -157,12 +155,47 @@ async function dettaglioAnnuncio(req, res) {
             });
         }
 
+        if (annuncio.stato === "aperto") {
+            return res.status(200).json({
+                message: "Annuncio recuperato con successo.",
+                annuncio,
+            });
+        }
+
+        if (!req.utente) {
+            return res.status(401).json({
+                message: "Devi effettuare l'accesso per visualizzare questo annuncio.",
+            });
+        }
+
+        const utenteId = req.utente.id;
+        const autoreId = annuncio.autore._id.toString();
+
+        if (utenteId === autoreId) {
+            return res.status(200).json({
+                message: "Annuncio recuperato con successo.",
+                annuncio,
+            });
+        }
+
+        const propostaAccettata = await Proposta.findOne({
+            annuncio: annuncio._id,
+            proponente: utenteId,
+            stato: "accettata",
+        });
+
+        if (!propostaAccettata) {
+            return res.status(403).json({
+                message: "Non puoi visualizzare questo annuncio.",
+            });
+        }
+
         return res.status(200).json({
             message: "Annuncio recuperato con successo.",
             annuncio,
         });
     } catch (error) {
-        console.error("Errore durante il recupero dell'annuncio:", error);
+        console.error("Errore durante il recupero del dettaglio annuncio:", error);
 
         return res.status(500).json({
             message: "Errore interno del server.",
