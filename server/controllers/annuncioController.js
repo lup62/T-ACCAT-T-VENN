@@ -308,9 +308,9 @@ async function chiudiAnnuncio(req, res) {
             });
         }
 
-        if (annuncio.stato === "chiuso") {
+        if (annuncio.stato !== "aperto") {
             return res.status(400).json({
-                message: "L'annuncio è già chiuso.",
+                message: "Puoi chiudere solo annunci aperti.",
             });
         }
 
@@ -318,9 +318,21 @@ async function chiudiAnnuncio(req, res) {
 
         await annuncio.save();
 
+        const risultatoProposte = await Proposta.updateMany(
+            {
+                annuncio: annuncio._id,
+                stato: "in_attesa",
+            },
+            {
+                stato: "rifiutata",
+                dataRisposta: new Date(),
+            }
+        );
+
         return res.status(200).json({
             message: "Annuncio chiuso con successo.",
             annuncio,
+            proposteRifiutate: risultatoProposte.modifiedCount,
         });
     } catch (error) {
         console.error("Errore durante la chiusura dell'annuncio:", error);
