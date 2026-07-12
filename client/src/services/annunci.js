@@ -3,7 +3,7 @@
  *
  * Endpoint disponibili (server/routes/annuncioRoutes.js):
  *   GET   /api/annunci?tipo=...        → { message, count, annunci }
- *   GET   /api/annunci/:id             → { message, annuncio }
+ *   GET   /api/annunci/:id             → { message, annuncio }   (Bearer token facoltativo)
  *   POST  /api/annunci                 → { message, annuncio }   (richiede Bearer token)
  *   PATCH /api/annunci/:id/concludi    → { message, annuncio }   (richiede Bearer token)
  *
@@ -63,9 +63,13 @@ export async function concludiAnnuncio(id, accessToken) {
     return data.annuncio;
 }
 
-// Dettaglio di un singolo annuncio per id.
-export async function getAnnuncio(id) {
-    const res = await fetch(`${API_URL}/api/annunci/${id}`);
+// Dettaglio di un singolo annuncio per id. Il token è facoltativo (optionalAuth):
+// senza, si vedono solo gli annunci aperti; con il token, autore e proponente
+// accettato vedono anche i propri annunci in corso o conclusi.
+export async function getAnnuncio(id, accessToken) {
+    const res = await fetch(`${API_URL}/api/annunci/${id}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    });
     const data = await res.json();
     if (!res.ok) {
         throw new Error(data.message || "Annuncio non trovato.");

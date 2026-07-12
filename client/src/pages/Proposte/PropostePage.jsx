@@ -11,9 +11,10 @@
  *   - Inviate: le proprie candidature, con lo stato della risposta.
  *
  * Ad annuncio concluso entrambe le tab mostrano "Lascia una recensione"
- * (RecensioneDialog). Non esiste ancora un GET delle recensioni, quindi
- * ricordiamo solo in memoria di sessione le proposte già recensite: dopo
- * un reload il bottone ricompare e un eventuale doppio invio viene
+ * (RecensioneDialog). Per sapere se è già stata lasciata si leggono le
+ * recensioni degli annunci conclusi (GET /api/recensioni/annuncio/:id)
+ * e si controlla se tra gli autori c'è l'utente loggato. Se la lettura
+ * fallisce il bottone resta visibile: un eventuale doppio invio viene
  * comunque bloccato dal backend con un 409.
  *
  * Accessibile solo agli utenti autenticati (stesso guard di PubblicaAnnuncio).
@@ -44,6 +45,7 @@ import {
     rifiutaProposta,
 } from "../../services/proposte";
 import { concludiAnnuncio } from "../../services/annunci";
+import { getRecensioniAnnuncio } from "../../services/recensioni";
 import PropostaCard from "./PropostaCard";
 import RecensioneDialog from "./RecensioneDialog";
 
@@ -61,7 +63,7 @@ function NessunaProposta({ testo }) {
 
 function PropostePage() {
     const navigate = useNavigate();
-    const { isLoggedIn, accessToken, inizializzazione } = useAuth();
+    const { isLoggedIn, accessToken, inizializzazione, utente } = useAuth();
 
     const [tab, setTab] = useState(0);
     const [ricevute, setRicevute] = useState(null);   // null = in caricamento
@@ -71,27 +73,51 @@ function PropostePage() {
     const [notifica, setNotifica] = useState(null);    // { severity, testo }
     // Recensione in corso: { proposta, persona } — null = dialog chiuso.
     const [recensione, setRecensione] = useState(null);
-    // Id delle proposte recensite in questa sessione (vedi commento in testa).
-    const [proposteRecensite, setProposteRecensite] = useState(() => new Set());
+    // Id degli annunci conclusi che l'utente ha già recensito (vedi commento in testa).
+    const [annunciRecensiti, setAnnunciRecensiti] = useState(() => new Set());
 
-    const carica = useCallback(
-        () =>
-            Promise.all([
+    const carica = useCallback(async () => {
+        try {
+            const [ric, inv] = await Promise.all([
                 getProposteRicevute(accessToken),
                 getProposteInviate(accessToken),
-            ])
-                .then(([ric, inv]) => {
-                    setRicevute(ric);
-                    setInviate(inv);
-                    setErroreCaricamento("");
-                })
-                .catch((err) => {
-                    setErroreCaricamento(err.message);
-                    setRicevute([]);
-                    setInviate([]);
-                }),
-        [accessToken]
-    );
+            ]);
+
+            // Per le collaborazioni concluse si controlla se abbiamo già
+            // recensito. Se la lettura fallisce si lascia il set vuoto:
+            // meglio un bottone di troppo (il backend blocca i doppi invii)
+            // che nascondere le proposte per un errore secondario.
+            let recensiti = new Set();
+            try {
+                const idAnnunciConclusi = [
+                    ...new Set(
+                        [...ric, ...inv]
+                            .filter((p) => p.stato === "accettata" && p.annuncio?.stato === "concluso")
+                            .map((p) => p.annuncio._id)
+                    ),
+                ];
+                const recensioniPerAnnuncio = await Promise.all(
+                    idAnnunciConclusi.map(getRecensioniAnnuncio)
+                );
+                recensiti = new Set(
+                    idAnnunciConclusi.filter((idAnnuncio, i) =>
+                        recensioniPerAnnuncio[i].some((r) => r.autore?._id === utente?.id)
+                    )
+                );
+            } catch {
+                // ignorato: vedi commento sopra
+            }
+
+            setRicevute(ric);
+            setInviate(inv);
+            setAnnunciRecensiti(recensiti);
+            setErroreCaricamento("");
+        } catch (err) {
+            setErroreCaricamento(err.message);
+            setRicevute([]);
+            setInviate([]);
+        }
+    }, [accessToken, utente?.id]);
 
     useEffect(() => {
         if (accessToken) carica();
@@ -144,7 +170,7 @@ function PropostePage() {
         });
 
     const recensioneInviata = () => {
-        setProposteRecensite((prev) => new Set(prev).add(recensione.proposta._id));
+        setAnnunciRecensiti((prev) => new Set(prev).add(recensione.proposta.annuncio._id));
         setRecensione(null);
         setNotifica({ severity: "success", testo: "Recensione inviata, grazie!" });
     };
@@ -232,7 +258,7 @@ function PropostePage() {
                             onRifiuta={(p) => rispondi(p, "rifiuta")}
                             onConcludi={concludi}
                             onRecensisci={apriRecensione}
-                            recensioneLasciata={proposteRecensite.has(proposta._id)}
+                            recensioneLasciata={annunciRecensiti.has(proposta.annuncio?._id)}
                             azioneInCorso={azioneInCorsoId === proposta._id}
                         />
                     ))}

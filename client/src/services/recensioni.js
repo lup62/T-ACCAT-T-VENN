@@ -2,7 +2,9 @@
  * recensioni.js — chiamate API verso il backend per le recensioni.
  *
  * Endpoint disponibili (server/routes/recensioneRoutes.js):
- *   POST /api/recensioni → { message, recensione }   (richiede Bearer token)
+ *   POST /api/recensioni                        → { message, recensione }          (richiede Bearer token)
+ *   GET  /api/recensioni/annuncio/:annuncioId   → { message, count, recensioni }   (pubblico)
+ *   GET  /api/recensioni/utente/:utenteId       → { message, count, recensioni }   (pubblico)
  *
  * Il backend accetta la recensione solo se l'annuncio è "concluso",
  * esiste una proposta accettata e autore/destinatario sono le due parti
@@ -30,4 +32,26 @@ export async function creaRecensione({ annuncio, destinatario, stelle, commento 
         throw new Error((data.message || "Errore nell'invio della recensione.") + dettagli);
     }
     return data.recensione;
+}
+
+// Recensioni collegate a un annuncio (al massimo due: una per direzione),
+// con autore/destinatario popolati. Usata per capire se l'utente loggato
+// ha già recensito per quell'annuncio.
+export async function getRecensioniAnnuncio(annuncioId) {
+    const res = await fetch(`${API_URL}/api/recensioni/annuncio/${annuncioId}`);
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Errore nel recupero delle recensioni.");
+    }
+    return data.recensioni;
+}
+
+// Recensioni ricevute da un utente, dalla più recente.
+export async function getRecensioniUtente(utenteId) {
+    const res = await fetch(`${API_URL}/api/recensioni/utente/${utenteId}`);
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Errore nel recupero delle recensioni.");
+    }
+    return data.recensioni;
 }

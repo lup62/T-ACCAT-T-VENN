@@ -106,7 +106,7 @@ function RigaInfo({ Icon, label, valore }) {
 function DettaglioAnnuncioPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isLoggedIn, utente } = useAuth();
+    const { isLoggedIn, utente, accessToken, inizializzazione } = useAuth();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [propostaDialogOpen, setPropostaDialogOpen] = useState(false);
     const [propostaInviata, setPropostaInviata] = useState(false);
@@ -114,12 +114,17 @@ function DettaglioAnnuncioPage() {
     const [annuncio, setAnnuncio] = useState(null);
     const [caricamento, setCaricamento] = useState(true);
 
+    // Si aspetta il ripristino della sessione prima di chiamare: il token
+    // (facoltativo) serve per vedere i propri annunci in corso o conclusi,
+    // e senza attesa la prima chiamata partirebbe sempre da sloggati.
     useEffect(() => {
-        getAnnuncio(id)
+        if (inizializzazione) return;
+        setCaricamento(true);
+        getAnnuncio(id, accessToken)
             .then(setAnnuncio)
             .catch(() => setAnnuncio(null))
             .finally(() => setCaricamento(false));
-    }, [id]);
+    }, [id, accessToken, inizializzazione]);
 
     if (caricamento) {
         return (

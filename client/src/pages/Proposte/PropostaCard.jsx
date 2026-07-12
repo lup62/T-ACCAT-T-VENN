@@ -10,7 +10,7 @@
  *   onRifiuta           callback(proposta) — solo per le ricevute in attesa
  *   onConcludi          callback(proposta) — ricevute accettate con annuncio "in_corso"
  *   onRecensisci        callback(proposta) — proposte accettate con annuncio "concluso"
- *   recensioneLasciata  true se in questa sessione è già stata inviata la recensione
+ *   recensioneLasciata  true se l'utente ha già recensito per questo annuncio
  *   azioneInCorso       true mentre un'azione è in volo (disabilita i bottoni)
  */
 
