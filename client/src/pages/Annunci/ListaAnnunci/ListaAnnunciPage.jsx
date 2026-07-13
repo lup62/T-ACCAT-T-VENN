@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Alert,
     Box,
     Button,
     CircularProgress,
@@ -11,7 +10,6 @@ import {
     InputLabel,
     MenuItem,
     Select,
-    Snackbar,
     Stack,
     TextField,
     Typography,
@@ -30,6 +28,7 @@ import { getAnnunci } from "../../../services/annunci";
 import { useAnnunciFiltrati } from "../../../hooks/useAnnunciFiltrati";
 import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
 import { useAuth } from "../../../hooks/useAuth";
+import SnackbarAvviso from "../../../components/SnackbarAvviso";
 
 function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
     const navigate = useNavigate();
@@ -279,21 +278,7 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
 
             <RegistratiDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
 
-            <Snackbar
-                open={!!errorePreferiti}
-                autoHideDuration={5000}
-                onClose={() => setErrorePreferiti("")}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
-                <Alert
-                    onClose={() => setErrorePreferiti("")}
-                    severity="error"
-                    variant="filled"
-                    sx={{ width: "100%" }}
-                >
-                    {errorePreferiti}
-                </Alert>
-            </Snackbar>
+            <SnackbarAvviso testo={errorePreferiti} onClose={() => setErrorePreferiti("")} />
         </Box>
     );
 }

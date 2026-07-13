@@ -19,7 +19,6 @@ import {
     Button,
     CircularProgress,
     Paper,
-    Snackbar,
     Stack,
     Typography,
 } from "@mui/material";
@@ -29,6 +28,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useAuth } from "../../hooks/useAuth";
 import { getPreferiti, rimuoviPreferito } from "../../services/preferiti";
 import AnnuncioCard from "../Annunci/ListaAnnunci/AnnuncioCard";
+import SnackbarAvviso from "../../components/SnackbarAvviso";
 
 function PreferitiPage() {
     const navigate = useNavigate();
@@ -155,23 +155,11 @@ function PreferitiPage() {
                 </Box>
             )}
 
-            <Snackbar
-                open={!!notifica}
-                autoHideDuration={5000}
+            <SnackbarAvviso
+                testo={notifica?.testo ?? ""}
+                severity={notifica?.severity ?? "error"}
                 onClose={() => setNotifica(null)}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
-                {notifica && (
-                    <Alert
-                        onClose={() => setNotifica(null)}
-                        severity={notifica.severity}
-                        variant="filled"
-                        sx={{ width: "100%" }}
-                    >
-                        {notifica.testo}
-                    </Alert>
-                )}
-            </Snackbar>
+            />
         </Box>
     );
 }

@@ -36,7 +36,6 @@ import {
     Divider,
     IconButton,
     Paper,
-    Snackbar,
     Stack,
     Typography,
 } from "@mui/material";
@@ -58,6 +57,7 @@ import { getAnnuncio } from "../../../services/annunci";
 import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
 import RegistratiDialog from "../RegistratiDialog";
 import InviaPropostaDialog from "./InviaPropostaDialog";
+import SnackbarAvviso from "../../../components/SnackbarAvviso";
 
 const COLORI_TEMA = { primary: "#387347", secondary: "#69A62D" };
 
@@ -143,7 +143,16 @@ function DettaglioAnnuncioPage() {
         let attivo = true; // evita setState dopo lo smontaggio
         getAnnuncio(id, accessToken)
             .then((a) => attivo && setRisultato({ chiave: chiaveFetch, annuncio: a }))
-            .catch(() => attivo && setRisultato({ chiave: chiaveFetch, annuncio: null }));
+            .catch((err) =>
+                attivo &&
+                setRisultato({
+                    chiave: chiaveFetch,
+                    annuncio: null,
+                    // 404 (o errore di rete): testo generico; 401/403: il
+                    // messaggio del backend spiega perché non è visibile.
+                    errore: err.status && err.status !== 404 ? err.message : "",
+                })
+            );
         return () => {
             attivo = false;
         };
@@ -160,9 +169,12 @@ function DettaglioAnnuncioPage() {
     if (!annuncio) {
         return (
             <Box sx={{ px: { xs: 2, sm: 3, md: 10 }, py: { xs: 4, md: 6 }, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 3 }}>
-                <Typography variant="h5">Annuncio non trovato</Typography>
+                <Typography variant="h5">
+                    {risultato?.errore ? "Annuncio non disponibile" : "Annuncio non trovato"}
+                </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    L&apos;annuncio che stai cercando non esiste o è stato rimosso.
+                    {risultato?.errore ||
+                        "L'annuncio che stai cercando non esiste o è stato rimosso."}
                 </Typography>
                 <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
                     Torna agli annunci
@@ -354,37 +366,13 @@ function DettaglioAnnuncioPage() {
                 color={tipoColor}
             />
 
-            <Snackbar
-                open={propostaInviata}
-                autoHideDuration={5000}
+            <SnackbarAvviso
+                testo={propostaInviata ? "Proposta inviata con successo!" : ""}
+                severity="success"
                 onClose={() => setPropostaInviata(false)}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
-                <Alert
-                    onClose={() => setPropostaInviata(false)}
-                    severity="success"
-                    variant="filled"
-                    sx={{ width: "100%" }}
-                >
-                    Proposta inviata con successo!
-                </Alert>
-            </Snackbar>
+            />
 
-            <Snackbar
-                open={!!errorePreferiti}
-                autoHideDuration={5000}
-                onClose={() => setErrorePreferiti("")}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
-                <Alert
-                    onClose={() => setErrorePreferiti("")}
-                    severity="error"
-                    variant="filled"
-                    sx={{ width: "100%" }}
-                >
-                    {errorePreferiti}
-                </Alert>
-            </Snackbar>
+            <SnackbarAvviso testo={errorePreferiti} onClose={() => setErrorePreferiti("")} />
         </Box>
     );
 }

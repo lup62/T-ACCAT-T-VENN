@@ -72,7 +72,11 @@ export async function getAnnuncio(id, accessToken) {
     });
     const data = await res.json();
     if (!res.ok) {
-        throw new Error(data.message || "Annuncio non trovato.");
+        // Lo status permette alla pagina di distinguere il 404 (non esiste)
+        // dal 401/403 (esiste ma non è visibile a questo utente).
+        const errore = new Error(data.message || "Annuncio non trovato.");
+        errore.status = res.status;
+        throw errore;
     }
     return data.annuncio;
 }

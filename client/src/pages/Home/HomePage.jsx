@@ -128,10 +128,13 @@ function HomePage() {
                 </Typography>
 
                 {/* Card affiancate da sm in su, in colonna su mobile.
-                    flex:1 su ogni card le rende della stessa larghezza. */}
+                    flex:1 su ogni card le rende della stessa larghezza.
+                    Card e CardContent sono colonne flex e il bottone ha
+                    mt:"auto": lo Stack stira già le card alla stessa altezza,
+                    così i due bottoni restano allineati in fondo. */}
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 4 }}>
-                    <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3 }}>
-                        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+                    <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3, display: "flex", flexDirection: "column" }}>
+                        <CardContent sx={{ p: { xs: 3, sm: 4 }, display: "flex", flexDirection: "column", flexGrow: 1 }}>
                             <Typography
                                 variant="h4"
                                 component="h3"
@@ -151,15 +154,15 @@ function HomePage() {
                                 color="secondary"
                                 size="large"
                                 onClick={() => navigate("/annunci/offerte")}
-                                sx={{ width: { xs: "100%", sm: "auto" } }}
+                                sx={{ width: { xs: "100%", sm: "auto" }, mt: "auto", alignSelf: { sm: "flex-start" } }}
                             >
                                 Cerco lavoro
                             </Button>
                         </CardContent>
                     </Card>
 
-                    <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3 }}>
-                        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+                    <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3, display: "flex", flexDirection: "column" }}>
+                        <CardContent sx={{ p: { xs: 3, sm: 4 }, display: "flex", flexDirection: "column", flexGrow: 1 }}>
                             <Typography
                                 variant="h4"
                                 component="h3"
@@ -179,7 +182,7 @@ function HomePage() {
                                 color="primary"
                                 size="large"
                                 onClick={() => navigate("/annunci/cercasi")}
-                                sx={{ width: { xs: "100%", sm: "auto" } }}
+                                sx={{ width: { xs: "100%", sm: "auto" }, mt: "auto", alignSelf: { sm: "flex-start" } }}
                             >
                                 Cerco lavoratori
                             </Button>
