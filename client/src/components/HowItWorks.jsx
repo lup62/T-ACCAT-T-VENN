@@ -66,7 +66,7 @@ const steps = [
 function StepCard({ icon, title, description, benefits, color, step }) {
     return (
         <Card sx={{ flex: 1, borderRadius: 3, boxShadow: 3 }}>
-            <CardContent sx={{ p: 4 }}>
+            <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
 
                 {/* Header: icona colorata + numero dello step affiancati */}
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -102,7 +102,12 @@ function StepCard({ icon, title, description, benefits, color, step }) {
                     </Typography>
                 </Stack>
 
-                <Typography variant="h4" component="h3" color={color} sx={{ mb: 2 }}>
+                <Typography
+                    variant="h4"
+                    component="h3"
+                    color={color}
+                    sx={{ mb: 2, fontSize: { xs: "1.5rem", md: "2.125rem" } }}
+                >
                     {title}
                 </Typography>
 
@@ -136,16 +141,14 @@ function StepCard({ icon, title, description, benefits, color, step }) {
 // e genera le card ciclando sull'array "steps" con .map().
 function HowItWorks() {
     return (
-        // Sezione full-bleed: stessa tecnica del Hero in HomePage.
+        // width: 100% basta per il full-bleed (vedi commento del hero in HomePage:
+        // il vecchio trick 100vw causava scroll orizzontale).
         // id="come-funziona" è l'ancora a cui punta il link "Come funziona" in navbar.
         <Box
             component="section"
             id="come-funziona"
             sx={{
-                width: "100vw",
-                position: "relative",
-                left: "50%",
-                marginLeft: "-50vw",
+                width: "100%",
                 py: { xs: 8, md: 12 },
                 px: { xs: 3, md: 10 },
                 bgcolor: "background.default", // sfondo beige per distinguere la sezione
@@ -153,6 +156,8 @@ function HowItWorks() {
         >
             <Box>
 
+                {/* Come per "L'iniziativa": h3 scalato sotto md per non mandare
+                    il badge su due righe su mobile. */}
                 <Typography
                     variant="h3"
                     component="h2"
@@ -160,9 +165,10 @@ function HowItWorks() {
                         display: "inline-block",
                         bgcolor: "primary.main",
                         color: "#FFFFFF",
-                        px: 3,
+                        px: { xs: 2, md: 3 },
                         py: 1,
                         borderRadius: 1,
+                        fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" },
                     }}
                 >
                     Come funziona
@@ -171,7 +177,13 @@ function HowItWorks() {
                 <Typography
                     variant="h6"
                     component="p"
-                    sx={{ mt: 3, maxWidth: 850, color: "text.secondary", lineHeight: 1.8 }}
+                    sx={{
+                        mt: 3,
+                        maxWidth: 850,
+                        color: "text.secondary",
+                        lineHeight: 1.8,
+                        fontSize: { xs: "1rem", md: "1.25rem" },
+                    }}
                 >
                     T&apos;accat &amp; T&apos;venn mette in contatto lavoratori
                     e imprenditori agricoli in pochi passaggi, valorizzando

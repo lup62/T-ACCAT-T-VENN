@@ -73,7 +73,9 @@ function MappaAnnunci({ annunci, color = 'primary' }) {
                 {/* MarkerClusterGroup raggruppa automaticamente i marker vicini.
                     Al click sul cluster la mappa fa zoom per mostrare i marker. */}
                 <MarkerClusterGroup chunkedLoading>
-                    {annunci.map((annuncio) => (
+                    {/* la posizione non è obbligatoria nel modello backend:
+                        gli annunci senza coordinate non compaiono sulla mappa */}
+                    {annunci.filter((a) => a.luogo?.posizione).map((annuncio) => (
                         <Marker
                             key={annuncio._id}
                             position={[

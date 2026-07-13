@@ -16,12 +16,12 @@ export const STATO_INIZIALE = {
     posizione: null,       // { lat, lng } — impostato via geocoding o click mappa
     dataInizio: "",
     dataFine: "",
-    orarioLavorativo: "",
-    competenze: [],
+    orario: "",
+    competenzeRichieste: [],
     prezzoMin: "",
     prezzoMax: "",
     unitaPrezzo: "",
-    nLavoratoriRichiesti: "",
+    numeroLavoratoriRichiesti: "",
 };
 
 export const ERRORI_INIZIALI = {
@@ -35,7 +35,7 @@ export const ERRORI_INIZIALI = {
     prezzoMin: "",
     prezzoMax: "",
     unitaPrezzo: "",
-    nLavoratoriRichiesti: "",
+    numeroLavoratoriRichiesti: "",
 };
 
 export function valida(form) {
@@ -58,7 +58,7 @@ export function valida(form) {
     if (form.descrizione && form.descrizione.length > 2000)
         segna("descrizione", "La descrizione non può superare i 2000 caratteri");
     if (!form.tipoLavoro)
-        segna("tipoLavoro", "Inserisci il tipo di lavoro");
+        segna("tipoLavoro", "Seleziona il tipo di lavoro");
     if (!form.luogoTesto)
         segna("luogoTesto", "Inserisci il luogo (es. Bari (BA))");
     if (!form.dataInizio)
@@ -67,18 +67,23 @@ export function valida(form) {
         segna("dataFine", "Inserisci la data di fine");
     if (form.dataInizio && form.dataFine && form.dataFine < form.dataInizio)
         segna("dataFine", "La data di fine non può essere precedente alla data di inizio");
-    // Compenso opzionale: se compilato parzialmente segnala incongruenze
+    // Compenso opzionale, ma il backend accetta solo "entrambi i prezzi"
+    // oppure "nessuno" (= da concordare): la compilazione parziale va bloccata qui.
     if (form.prezzoMin !== "" && Number(form.prezzoMin) < 0)
         segna("prezzoMin", "Il prezzo minimo non può essere negativo");
     if (form.prezzoMax !== "" && Number(form.prezzoMax) < 0)
         segna("prezzoMax", "Il prezzo massimo non può essere negativo");
     if (form.prezzoMin !== "" && form.prezzoMax !== "" && Number(form.prezzoMax) < Number(form.prezzoMin))
         segna("prezzoMax", "Il prezzo massimo non può essere minore del minimo");
+    if (form.prezzoMin !== "" && form.prezzoMax === "")
+        segna("prezzoMax", "Indica anche il prezzo massimo (o lascia entrambi vuoti)");
+    if (form.prezzoMax !== "" && form.prezzoMin === "")
+        segna("prezzoMin", "Indica anche il prezzo minimo (o lascia entrambi vuoti)");
     const prezziCompilati = form.prezzoMin !== "" || form.prezzoMax !== "";
     if (prezziCompilati && !form.unitaPrezzo)
         segna("unitaPrezzo", "Seleziona l'unità di prezzo");
-    if (form.tipo === "richiesta_manodopera" && (!form.nLavoratoriRichiesti || Number(form.nLavoratoriRichiesti) < 1))
-        segna("nLavoratoriRichiesti", "Inserisci il numero di lavoratori (almeno 1)");
+    if (form.tipo === "richiesta_manodopera" && (!form.numeroLavoratoriRichiesti || Number(form.numeroLavoratoriRichiesti) < 1))
+        segna("numeroLavoratoriRichiesti", "Inserisci il numero di lavoratori (almeno 1)");
 
     return { errori, valido };
 }
@@ -104,22 +109,22 @@ export function costruisciPayload(form) {
             dataInizio: form.dataInizio,
             dataFine: form.dataFine,
         },
-        orarioLavorativo: form.orarioLavorativo.trim(),
+        orario: form.orario.trim(),
         tipoLavoro: form.tipoLavoro.trim(),
-        competenze: form.competenze,
-        // Se nessun campo prezzo è compilato → da concordare
-        prezzo: (form.prezzoMin === "" && form.prezzoMax === "" && !form.unitaPrezzo)
+        competenzeRichieste: form.competenzeRichieste,
+        // Se nessun campo prezzo è compilato → da concordare (anche se
+        // l'utente ha toccato l'unità: il backend vuole min+max null in quel caso)
+        prezzo: (form.prezzoMin === "" && form.prezzoMax === "")
             ? { min: null, max: null, unita: "da_concordare" }
             : {
-                min: form.prezzoMin !== "" ? Number(form.prezzoMin) : null,
-                max: form.prezzoMax !== "" ? Number(form.prezzoMax) : null,
-                unita: form.unitaPrezzo || "da_concordare",
+                min: Number(form.prezzoMin),
+                max: Number(form.prezzoMax),
+                unita: form.unitaPrezzo,
             },
-        stato: "aperto",
     };
 
     if (form.tipo === "richiesta_manodopera") {
-        payload.nLavoratoriRichiesti = Number(form.nLavoratoriRichiesti);
+        payload.numeroLavoratoriRichiesti = Number(form.numeroLavoratoriRichiesti);
     }
 
     return payload;

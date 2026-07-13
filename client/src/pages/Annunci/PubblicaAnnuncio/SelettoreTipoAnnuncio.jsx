@@ -44,18 +44,17 @@ function SelettoreTipoAnnuncio({ valore, onChange }) {
                     <Paper
                         key={val}
                         onClick={() => onChange(val)}
-                        elevation={selezionato ? 4 : 1}
+                        elevation={selezionato ? 4 : 0}
                         sx={{
                             flex: 1,
                             p: 3,
                             cursor: "pointer",
                             borderRadius: 3,
                             border: "2px solid",
-                            borderColor: selezionato ? `${color}.main` : "transparent",
+                            borderColor: selezionato ? `${color}.main` : "divider",
                             transition: "all 0.2s ease",
                             "&:hover": {
                                 borderColor: `${color}.main`,
-                                transform: "translateY(-2px)",
                                 boxShadow: 4,
                             },
                         }}

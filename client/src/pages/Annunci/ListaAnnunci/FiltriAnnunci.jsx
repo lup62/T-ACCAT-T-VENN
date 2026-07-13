@@ -13,7 +13,6 @@
  *   - Mobile:        bottone "Filtri" che apre un Drawer laterale.
  *
  * Props:
- *   annunci         array degli annunci della pagina (per calcolare le opzioni)
  *   filtri          stato corrente { tipiLavoro, province, prezzoRange, stati,
  *                                    periodoInizio, periodoFine }
  *   onFiltriChange  callback(nuoviFiltri) — chiamata ad ogni modifica
@@ -22,7 +21,7 @@
  *
  */
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
     Box,
     Button,
@@ -41,28 +40,13 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import RegistratiDialog from "./RegistratiDialog";
-import { FILTRI_INIZIALI } from "./annunciConstants";
+import RegistratiDialog from "../RegistratiDialog";
+import { FILTRI_INIZIALI, PROVINCE_PUGLIA, TIPI_LAVORO } from "../annunciConstants";
 
-function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isLoggedIn = false, drawerOpen = false, onDrawerClose = () => {} }) {
+function FiltriAnnunci({ filtri, onFiltriChange, color = "primary", isLoggedIn = false, drawerOpen = false, onDrawerClose = () => {} }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const [dialogOpen, setDialogOpen] = useState(false);
-
-    // Opzioni tipo lavoro uniche presenti negli annunci passati
-    const opzioniTipoLavoro = useMemo(
-        () => [...new Set(annunci.map((a) => a.tipoLavoro))].sort(),
-        [annunci]
-    );
-
-    // Estrae il codice provincia da "Città (XX)" → "XX"
-    const opzioniProvincia = useMemo(() => {
-        const province = annunci.map((a) => {
-            const match = a.luogo.testo.match(/\(([A-Z]+)\)/);
-            return match ? match[1] : a.luogo.testo;
-        });
-        return [...new Set(province)].sort();
-    }, [annunci]);
 
     const toggleCheckbox = (campo, valore) => {
         const corrente = filtri[campo];
@@ -86,10 +70,12 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
 
             <Divider sx={{ mb: 2 }} />
 
-            {/* Tipo di lavoro */}
+            {/* Tipo di lavoro: lista fissa condivisa col form di pubblicazione.
+                Gli annunci con valori fuori lista (dati vecchi a testo libero)
+                ricadono nella voce "Altro" (vedi categoriaTipoLavoro). */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>Tipo di lavoro</Typography>
             <FormGroup sx={{ mb: 2 }}>
-                {opzioniTipoLavoro.map((tipo) => (
+                {TIPI_LAVORO.map((tipo) => (
                     <FormControlLabel
                         key={tipo}
                         label={tipo}
@@ -107,19 +93,19 @@ function FiltriAnnunci({ annunci, filtri, onFiltriChange, color = "primary", isL
 
             <Divider sx={{ mb: 2 }} />
 
-            {/* Provincia */}
+            {/* Provincia: lista fissa delle province pugliesi, non dipende dagli annunci */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>Provincia</Typography>
             <FormGroup sx={{ mb: 2 }}>
-                {opzioniProvincia.map((prov) => (
+                {PROVINCE_PUGLIA.map(({ codice, nome }) => (
                     <FormControlLabel
-                        key={prov}
-                        label={prov}
+                        key={codice}
+                        label={`${nome} (${codice})`}
                         control={
                             <Checkbox
                                 size="small"
                                 color={color}
-                                checked={filtri.province.includes(prov)}
-                                onChange={() => toggleCheckbox("province", prov)}
+                                checked={filtri.province.includes(codice)}
+                                onChange={() => toggleCheckbox("province", codice)}
                             />
                         }
                     />

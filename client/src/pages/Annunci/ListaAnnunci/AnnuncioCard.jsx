@@ -5,10 +5,14 @@
  * nella griglia delle pagine lista (/annunci/offerte e /annunci/cercasi).
  *
  * Props:
- *   annuncio  oggetto completo proveniente da mockAnnunci.js
- *   color     "primary" | "secondary" — colore MUI usato per bordi e
- *             bottone; viene passato dalla pagina padre in base
- *             alla sezione (offerte = secondary, cercasi = primary)
+ *   annuncio           oggetto annuncio (autore facoltativo: nei preferiti
+ *                      il backend non lo popola)
+ *   color              "primary" | "secondary" — colore MUI usato per bordi e
+ *                      bottone; viene passato dalla pagina padre in base
+ *                      alla sezione (offerte = secondary, cercasi = primary)
+ *   preferito          true se l'annuncio è nei preferiti (cuore pieno)
+ *   onTogglePreferito  callback(annuncio) — se assente il cuoricino non appare
+ *   toggleInCorso      true mentre il salvataggio/rimozione è in volo
  *
  * Al click di "Visualizza dettagli" naviga a /annunci/:id
  * senza ricaricare la pagina (React Router, niente window.location).
@@ -22,6 +26,7 @@ import {
     CardContent,
     Chip,
     Divider,
+    IconButton,
     Stack,
     Typography,
 } from "@mui/material";
@@ -29,6 +34,14 @@ import {
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EuroIcon from "@mui/icons-material/Euro";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+
+// Stato annuncio: stesse mappe della pagina di dettaglio. Nelle liste gli
+// annunci sono sempre "aperto" (filtro backend), quindi il chip di stato
+// compare solo nei preferiti, dove un annuncio salvato può essere cambiato.
+const LABEL_STATO = { aperto: "Attivo", in_corso: "In corso", concluso: "Concluso", chiuso: "Chiuso" };
+const COLOR_STATO = { aperto: "success", in_corso: "warning", concluso: "default", chiuso: "error" };
 
 // Converte le date ISO in una stringa leggibile: "mar 2026 – mag 2026"
 function formatPeriodo(periodo) {
@@ -46,7 +59,7 @@ function formatPrezzo(prezzo) {
     return `${prezzo.min} – ${prezzo.max} ${unita}`;
 }
 
-function AnnuncioCard({ annuncio, color }) {
+function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, toggleInCorso = false }) {
     const navigate = useNavigate();
 
     return (
@@ -57,6 +70,7 @@ function AnnuncioCard({ annuncio, color }) {
                 boxShadow: 3,
                 display: "flex",
                 flexDirection: "column",
+                position: "relative",
                 transition: "transform 0.25s ease, box-shadow 0.25s ease",
                 "&:hover": {
                     transform: "translateY(-6px)",
@@ -64,6 +78,19 @@ function AnnuncioCard({ annuncio, color }) {
                 },
             }}
         >
+            {/* Cuoricino preferito in alto a destra (solo se la pagina
+                passa il callback: nascosto per ospiti e annunci propri) */}
+            {onTogglePreferito && (
+                <IconButton
+                    aria-label={preferito ? "Rimuovi dai preferiti" : "Salva nei preferiti"}
+                    disabled={toggleInCorso}
+                    onClick={() => onTogglePreferito(annuncio)}
+                    sx={{ position: "absolute", top: 12, right: 12, color: "error.main" }}
+                >
+                    {preferito ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                </IconButton>
+            )}
+
             <CardContent
                 sx={{
                     p: 4,
@@ -72,13 +99,18 @@ function AnnuncioCard({ annuncio, color }) {
                     flexGrow: 1,
                 }}
             >
-                {/* Chip categoria agricola (es. "Olivicoltura") */}
-                <Chip
-                    label={annuncio.tipoLavoro}
-                    variant="outlined"
-                    size="small"
-                    sx={{ alignSelf: "flex-start", mb: 2 }}
-                />
+                {/* Chip categoria agricola (es. "Olivicoltura") + stato se non più aperto */}
+                <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: "wrap", alignSelf: "flex-start" }}>
+                    <Chip label={annuncio.tipoLavoro} variant="outlined" size="small" />
+                    {annuncio.stato && annuncio.stato !== "aperto" && (
+                        <Chip
+                            label={LABEL_STATO[annuncio.stato] ?? annuncio.stato}
+                            color={COLOR_STATO[annuncio.stato] ?? "default"}
+                            variant="outlined"
+                            size="small"
+                        />
+                    )}
+                </Stack>
 
                 <Typography variant="h5" component="h3" sx={{ mb: 3 }}>
                     {annuncio.titolo}
@@ -110,11 +142,14 @@ function AnnuncioCard({ annuncio, color }) {
 
                 <Divider sx={{ mb: 2 }} />
 
-                <Stack direction="row" alignItems="center" sx={{ mb: 3 }}>
-                    <Typography variant="body2" fontWeight={600}>
-                        {annuncio.autore.nome} {annuncio.autore.cognome}
-                    </Typography>
-                </Stack>
+                {/* L'autore manca negli annunci arrivati dalla lista preferiti */}
+                {annuncio.autore && (
+                    <Stack direction="row" alignItems="center" sx={{ mb: 3 }}>
+                        <Typography variant="body2" fontWeight={600}>
+                            {annuncio.autore.nome} {annuncio.autore.cognome}
+                        </Typography>
+                    </Stack>
+                )}
 
                 {/* Bottone che porta alla pagina di dettaglio dell'annuncio */}
                 <Box sx={{ mt: "auto" }}>

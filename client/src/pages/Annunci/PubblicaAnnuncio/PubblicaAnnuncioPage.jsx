@@ -11,11 +11,11 @@
  *   3. Al blur sul campo "Luogo" parte una chiamata Nominatim per il geocoding
  *      automatico: se il luogo è trovato il marker viene posizionato sulla mappa
  *   4. L'utente può affinare la posizione cliccando direttamente sulla mappa
- *   5. Al submit il form viene validato; se valido viene costruito il payload
- *      e mostrata una Snackbar di conferma (TODO: POST /api/annunci)
+ *   5. Al submit il form viene validato; se valido il payload viene inviato
+ *      con POST /api/annunci e l'utente è portato al dettaglio del nuovo annuncio
  *
  * Campi condizionali:
- *   - nLavoratoriRichiesti: visibile solo per tipo "richiesta_manodopera"
+ *   - numeroLavoratoriRichiesti: visibile solo per tipo "richiesta_manodopera"
  *   - posizione: facoltativa, auto-impostata dal geocoding
  */
 
@@ -29,6 +29,7 @@ import {
     Divider,
     FormHelperText,
     InputAdornment,
+    MenuItem,
     Paper,
     Snackbar,
     Stack,
@@ -47,7 +48,9 @@ import InputCompetenze from "./InputCompetenze";
 import SelettorePosizioneMappa from "./SelettorePosizioneMappa";
 import { useAuth } from "../../../hooks/useAuth";
 import { useGeocodingLuogo } from "../../../hooks/useGeocodingLuogo";
+import { creaAnnuncio } from "../../../services/annunci";
 import { STATO_INIZIALE, ERRORI_INIZIALI, valida, costruisciPayload } from "./pubblicaAnnuncioForm";
+import { TIPI_LAVORO } from "../annunciConstants";
 
 // ─── Componente helper: intestazione di sezione ───────────────────────────────
 
@@ -68,9 +71,10 @@ function PubblicaAnnuncioPage() {
     const navigate = useNavigate();
     const [form, setForm] = useState(STATO_INIZIALE);
     const [errori, setErrori] = useState(ERRORI_INIZIALI);
-    const [snackbarAperta, setSnackbarAperta] = useState(false);
+    const [invioInCorso, setInvioInCorso] = useState(false);
+    const [erroreInvio, setErroreInvio] = useState("");
 
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, accessToken, inizializzazione } = useAuth();
 
     const aggiorna = (campo) => (e) =>
         setForm((prev) => ({ ...prev, [campo]: e.target.value }));
@@ -80,30 +84,55 @@ function PubblicaAnnuncioPage() {
 
     // Geocoding al blur sul campo luogo. In caso di fallimento la posizione
     // già presente viene mantenuta: l'utente può affinarla sulla mappa.
+    // Se Nominatim riconosce la provincia e l'utente non ha scritto la sigla,
+    // il testo viene completato in "Città (XX)" — formato su cui si basa
+    // il filtro provincia delle liste annunci.
     const {
         loading: geocodingLoading,
         errore: geocodingErrore,
         azzeraErrore: azzeraErroreGeocoding,
         geocodifica,
     } = useGeocodingLuogo({
-        onTrovata: (pos) => aggiornaValore("posizione", pos),
+        onTrovata: (pos) =>
+            setForm((prev) => ({
+                ...prev,
+                posizione: { lat: pos.lat, lng: pos.lng },
+                luogoTesto:
+                    pos.provincia && !/\([A-Za-z]{2}\)/.test(prev.luogoTesto)
+                        ? `${prev.luogoTesto.trim()} (${pos.provincia})`
+                        : prev.luogoTesto,
+            })),
         messaggi: {
             nonTrovato: "Luogo non trovato sulla mappa — puoi selezionarlo manualmente",
             errore: "Errore nella ricerca del luogo — prova a selezionarlo manualmente",
         },
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const { errori: nuoviErrori, valido } = valida(form);
         setErrori(nuoviErrori);
         if (!valido) return;
 
-        const payload = costruisciPayload(form);
-        // TODO: sostituire con POST /api/annunci quando il backend sarà pronto
-        console.log("Payload annuncio:", payload);
-        setSnackbarAperta(true);
+        setErroreInvio("");
+        setInvioInCorso(true);
+        try {
+            const annuncio = await creaAnnuncio(costruisciPayload(form), accessToken);
+            navigate(`/annunci/${annuncio._id}`);
+        } catch (err) {
+            setErroreInvio(err.message);
+            setInvioInCorso(false);
+        }
     };
+
+    // ── Guard: ripristino sessione in corso (evita il flash del blocco login) ──
+    if (inizializzazione) {
+        return (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+                <CircularProgress color="primary" />
+            </Box>
+        );
+    }
 
     // ── Guard: utente non autenticato ─────────────────────────────────────────
     if (!isLoggedIn) {
@@ -235,17 +264,24 @@ function PubblicaAnnuncioPage() {
                                 placeholder="Descrivi le attività, i requisiti, le condizioni di lavoro..."
                             />
 
-                            {/* Campo libero: il tipo di lavoro non è a lista fissa */}
+                            {/* Lista fissa (TIPI_LAVORO): a testo libero ogni grafia
+                                diversa creava un filtro duplicato nelle liste annunci */}
                             <TextField
+                                select
                                 label="Tipo di lavoro"
                                 required
                                 fullWidth
                                 value={form.tipoLavoro}
                                 onChange={aggiorna("tipoLavoro")}
                                 error={!!errori.tipoLavoro}
-                                helperText={errori.tipoLavoro || "Es. Olivicoltura, Viticoltura, Raccolta frutta, Zootecnia..."}
-                                placeholder="Scrivi il tipo di lavoro"
-                            />
+                                helperText={errori.tipoLavoro || "Scegli la categoria più vicina al lavoro."}
+                            >
+                                {TIPI_LAVORO.map((tipo) => (
+                                    <MenuItem key={tipo} value={tipo}>
+                                        {tipo}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Stack>
                     </Sezione>
 
@@ -399,8 +435,8 @@ function PubblicaAnnuncioPage() {
                             <TextField
                                 label="Orario lavorativo"
                                 fullWidth
-                                value={form.orarioLavorativo}
-                                onChange={aggiorna("orarioLavorativo")}
+                                value={form.orario}
+                                onChange={aggiorna("orario")}
                                 placeholder="Es. 7:00 – 14:00, flessibile, turni..."
                                 helperText="Facoltativo"
                             />
@@ -410,8 +446,8 @@ function PubblicaAnnuncioPage() {
                                     Competenze richieste / offerte
                                 </Typography>
                                 <InputCompetenze
-                                    valore={form.competenze}
-                                    onChange={(nuove) => aggiornaValore("competenze", nuove)}
+                                    valore={form.competenzeRichieste}
+                                    onChange={(nuove) => aggiornaValore("competenzeRichieste", nuove)}
                                 />
                             </Box>
 
@@ -421,10 +457,10 @@ function PubblicaAnnuncioPage() {
                                     type="number"
                                     required
                                     fullWidth
-                                    value={form.nLavoratoriRichiesti}
-                                    onChange={aggiorna("nLavoratoriRichiesti")}
-                                    error={!!errori.nLavoratoriRichiesti}
-                                    helperText={errori.nLavoratoriRichiesti || "Quante persone stai cercando?"}
+                                    value={form.numeroLavoratoriRichiesti}
+                                    onChange={aggiorna("numeroLavoratoriRichiesti")}
+                                    error={!!errori.numeroLavoratoriRichiesti}
+                                    helperText={errori.numeroLavoratoriRichiesti || "Quante persone stai cercando?"}
                                     slotProps={{ htmlInput: { min: 1 } }}
                                 />
                             )}
@@ -443,6 +479,7 @@ function PubblicaAnnuncioPage() {
                             variant="outlined"
                             size="large"
                             onClick={() => navigate(-1)}
+                            disabled={invioInCorso}
                             sx={{ minWidth: 140 }}
                         >
                             Annulla
@@ -452,29 +489,31 @@ function PubblicaAnnuncioPage() {
                             variant="contained"
                             color="primary"
                             size="large"
-                            endIcon={<SendIcon />}
+                            disabled={invioInCorso}
+                            endIcon={invioInCorso ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
                             sx={{ minWidth: 200 }}
                         >
-                            Pubblica annuncio
+                            {invioInCorso ? "Pubblicazione..." : "Pubblica annuncio"}
                         </Button>
                     </Stack>
 
                 </Stack>
             </Paper>
 
+            {/* Errore restituito dal backend (validazione, permessi, rete...) */}
             <Snackbar
-                open={snackbarAperta}
-                autoHideDuration={5000}
-                onClose={() => setSnackbarAperta(false)}
+                open={!!erroreInvio}
+                autoHideDuration={6000}
+                onClose={() => setErroreInvio("")}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             >
                 <Alert
-                    onClose={() => setSnackbarAperta(false)}
-                    severity="success"
+                    onClose={() => setErroreInvio("")}
+                    severity="error"
                     variant="filled"
                     sx={{ width: "100%" }}
                 >
-                    Annuncio pronto per la pubblicazione. Il collegamento al backend verrà aggiunto a breve.
+                    {erroreInvio}
                 </Alert>
             </Snackbar>
         </Box>

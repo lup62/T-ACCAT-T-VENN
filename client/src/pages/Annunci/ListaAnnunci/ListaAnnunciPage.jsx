@@ -1,45 +1,72 @@
-/**
- * AnnunciLavoroPage.jsx  —  rotta: /annunci/offerte
- *
- * Mostra le offerte di lavoro pubblicate dai datori di lavoro
- * (tipo "richiesta_manodopera" in mockAnnunci.js).
- *
- * Comportamento:
- *   - Toggle Lista/Mappa: boolean vistaLista controlla cosa viene mostrato.
- *   - Senza filtri attivi in vista lista: max ANNUNCI_VISIBILI card;
- *     "Vedi altri" apre il RegistratiDialog (gating verso la registrazione).
- *   - Con filtri attivi: mostra tutti i risultati corrispondenti.
- *   - I filtri sono bloccati finché l'utente non è autenticato.
- *   - In vista mappa: tutti gli annunci filtrati compaiono come marker.
- */
-
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    FormControl,
+    IconButton,
+    InputAdornment,
+    InputLabel,
+    MenuItem,
+    Select,
+    Stack,
+    TextField,
+    Typography,
+} from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import AnnuncioCard from "./AnnuncioCard";
-import RegistratiDialog from "./RegistratiDialog";
+import RegistratiDialog from "../RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import FiltriAnnunci from "./FiltriAnnunci";
 import MappaAnnunci from "./MappaAnnunci";
-import { mockAnnunci } from "../../services/mockAnnunci";
-import { useAnnunciFiltrati } from "../../hooks/useAnnunciFiltrati";
+import { getAnnunci } from "../../../services/annunci";
+import { useAnnunciFiltrati } from "../../../hooks/useAnnunciFiltrati";
+import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
+import { useAuth } from "../../../hooks/useAuth";
+import SnackbarAvviso from "../../../components/SnackbarAvviso";
 
-// offerte di lavoro = richieste dei datori, non disponibilità dei lavoratori
-const annunci = mockAnnunci.filter((a) => a.tipo === "richiesta_manodopera");
-
-function AnnunciLavoroPage() {
+function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
     const navigate = useNavigate();
+    const { utente } = useAuth();
+    const [annunci, setAnnunci] = useState([]);
+    const [caricamento, setCaricamento] = useState(true);
+    const [errore, setErrore] = useState(null);
+    const [errorePreferiti, setErrorePreferiti] = useState("");
+    const { isPreferito, togglePreferito, toggleInCorsoId } = usePreferitiAnnunci();
+
+    const toggle = async (annuncio) => {
+        try {
+            await togglePreferito(annuncio);
+        } catch (err) {
+            setErrorePreferiti(err.message);
+        }
+    };
+
+    useEffect(() => {
+        getAnnunci(tipoAnnuncio)
+            .then(setAnnunci)
+            .catch((error) => setErrore(error.message))
+            .finally(() => setCaricamento(false));
+    }, [tipoAnnuncio]);
+
     const {
-        filtri, setFiltri,
-        ricerca, setRicerca,
-        ordinamento, setOrdinamento,
-        vistaLista, setVistaLista,
-        filtriDrawerOpen, setFiltriDrawerOpen,
-        dialogOpen, setDialogOpen,
+        filtri,
+        setFiltri,
+        ricerca,
+        setRicerca,
+        ordinamento,
+        setOrdinamento,
+        vistaLista,
+        setVistaLista,
+        filtriDrawerOpen,
+        setFiltriDrawerOpen,
+        dialogOpen,
+        setDialogOpen,
         isLoggedIn,
         annunciFiltrati,
         annunciDaMostrare,
@@ -54,7 +81,7 @@ function AnnunciLavoroPage() {
                     component="h1"
                     sx={{
                         display: "inline-block",
-                        bgcolor: "secondary.main",
+                        bgcolor: `${color}.main`,
                         color: "#FFFFFF",
                         px: 3,
                         py: 1,
@@ -62,14 +89,13 @@ function AnnunciLavoroPage() {
                         width: { xs: "100%", sm: "auto" },
                     }}
                 >
-                    Offerte di lavoro
+                    {titolo}
                 </Typography>
 
-                {/* Toggle lista / mappa + pulsante pubblica — solo su desktop */}
                 <Stack direction="row" spacing={1} sx={{ ml: "auto", display: { xs: "none", md: "flex" } }}>
                     <Button
                         variant="contained"
-                        color="secondary"
+                        color={color}
                         startIcon={<AddIcon />}
                         onClick={() => navigate("/annunci/nuovo")}
                     >
@@ -77,32 +103,35 @@ function AnnunciLavoroPage() {
                     </Button>
                     <Button
                         variant={vistaLista ? "contained" : "outlined"}
-                        color="secondary"
+                        color={color}
                         onClick={() => setVistaLista(true)}
                         sx={{ minWidth: { xs: 44, sm: "auto" }, px: { xs: 1, sm: 2.5 } }}
                     >
                         <ViewListIcon fontSize="small" sx={{ mr: { xs: 0, sm: 1 } }} />
-                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Lista</Box>
+                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                            Lista
+                        </Box>
                     </Button>
                     <Button
                         variant={!vistaLista ? "contained" : "outlined"}
-                        color="secondary"
+                        color={color}
                         onClick={() => setVistaLista(false)}
                         sx={{ minWidth: { xs: 44, sm: "auto" }, px: { xs: 1, sm: 2.5 } }}
                     >
                         <MapIcon fontSize="small" sx={{ mr: { xs: 0, sm: 1 } }} />
-                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Mappa</Box>
+                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                            Mappa
+                        </Box>
                     </Button>
                 </Stack>
             </Stack>
 
-            {/* Barra di ricerca + ordinamento */}
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 4 }}>
                 <TextField
                     fullWidth
                     placeholder="Cerca per titolo o descrizione..."
                     value={ricerca}
-                    onChange={(e) => setRicerca(e.target.value)}
+                    onChange={(event) => setRicerca(event.target.value)}
                     slotProps={{
                         input: {
                             startAdornment: (
@@ -118,7 +147,7 @@ function AnnunciLavoroPage() {
                     <Select
                         value={ordinamento}
                         label="Ordina per"
-                        onChange={(e) => setOrdinamento(e.target.value)}
+                        onChange={(event) => setOrdinamento(event.target.value)}
                     >
                         <MenuItem value="recenti">Più recenti</MenuItem>
                         <MenuItem value="vecchi">Più vecchi</MenuItem>
@@ -128,43 +157,69 @@ function AnnunciLavoroPage() {
                 </FormControl>
             </Stack>
 
-            {/* Toolbar mobile: hamburger filtri a sinistra + toggle lista/mappa + pubblica a destra */}
             <Stack direction="row" alignItems="center" sx={{ display: { xs: "flex", md: "none" }, mb: 2 }}>
                 <IconButton
                     onClick={() => setFiltriDrawerOpen(true)}
-                    sx={{ border: 1, borderColor: "secondary.main", borderRadius: 2, color: "secondary.main" }}
+                    sx={{ border: 1, borderColor: `${color}.main`, borderRadius: 2, color: `${color}.main` }}
                 >
                     <MenuIcon />
                 </IconButton>
                 <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
-                    <Button variant="contained" color="secondary" onClick={() => navigate("/annunci/nuovo")} sx={{ minWidth: 44, px: 1 }}>
+                    <Button
+                        variant="contained"
+                        color={color}
+                        onClick={() => navigate("/annunci/nuovo")}
+                        sx={{ minWidth: 44, px: 1 }}
+                    >
                         <AddIcon fontSize="small" />
                     </Button>
-                    <Button variant={vistaLista ? "contained" : "outlined"} color="secondary" onClick={() => setVistaLista(true)} sx={{ minWidth: 44, px: 1 }}>
+                    <Button
+                        variant={vistaLista ? "contained" : "outlined"}
+                        color={color}
+                        onClick={() => setVistaLista(true)}
+                        sx={{ minWidth: 44, px: 1 }}
+                    >
                         <ViewListIcon fontSize="small" />
                     </Button>
-                    <Button variant={!vistaLista ? "contained" : "outlined"} color="secondary" onClick={() => setVistaLista(false)} sx={{ minWidth: 44, px: 1 }}>
+                    <Button
+                        variant={!vistaLista ? "contained" : "outlined"}
+                        color={color}
+                        onClick={() => setVistaLista(false)}
+                        sx={{ minWidth: 44, px: 1 }}
+                    >
                         <MapIcon fontSize="small" />
                     </Button>
                 </Stack>
             </Stack>
 
-            {/* Layout: sidebar filtri a sinistra + contenuto a destra */}
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4, alignItems: { md: "stretch" } }}>
-                {/* isLoggedIn viene da useAuth (via useAnnunciFiltrati) */}
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: 4,
+                    alignItems: { md: "stretch" },
+                }}
+            >
                 <FiltriAnnunci
-                    annunci={annunci}
                     filtri={filtri}
                     onFiltriChange={setFiltri}
-                    color="secondary"
+                    color={color}
                     isLoggedIn={isLoggedIn}
                     drawerOpen={filtriDrawerOpen}
                     onDrawerClose={() => setFiltriDrawerOpen(false)}
                 />
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                    {vistaLista ? (
-                        /* Vista lista: griglia di card */
+                    {caricamento ? (
+                        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                            <CircularProgress color={color} />
+                        </Box>
+                    ) : errore ? (
+                        <StatoVuoto
+                            titolo="Impossibile caricare gli annunci"
+                            descrizione={errore}
+                        />
+                    ) : vistaLista ? (
                         annunciFiltrati.length === 0 ? (
                             <StatoVuoto
                                 titolo="Nessun annuncio trovato"
@@ -172,7 +227,6 @@ function AnnunciLavoroPage() {
                             />
                         ) : (
                             <>
-                                {/* Griglia responsive: 1 col mobile, 2 tablet, 3 desktop con sidebar */}
                                 <Box
                                     sx={{
                                         display: "grid",
@@ -188,17 +242,25 @@ function AnnunciLavoroPage() {
                                         <AnnuncioCard
                                             key={annuncio._id}
                                             annuncio={annuncio}
-                                            color="secondary"
+                                            color={color}
+                                            preferito={isPreferito(annuncio._id)}
+                                            // Cuoricino solo da loggati e mai sui propri
+                                            // annunci (il backend li rifiuta comunque)
+                                            onTogglePreferito={
+                                                isLoggedIn && annuncio.autore?._id !== utente?.id
+                                                    ? toggle
+                                                    : undefined
+                                            }
+                                            toggleInCorso={toggleInCorsoId === annuncio._id}
                                         />
                                     ))}
                                 </Box>
 
-                                {/* Bottone "Vedi altri" per utenti non autenticati */}
                                 {hasMore && (
                                     <Box sx={{ textAlign: "center", mt: 4 }}>
                                         <Button
                                             variant="outlined"
-                                            color="secondary"
+                                            color={color}
                                             size="large"
                                             onClick={() => setDialogOpen(true)}
                                         >
@@ -209,15 +271,16 @@ function AnnunciLavoroPage() {
                             </>
                         )
                     ) : (
-                        /* Vista mappa: rispetta lo stesso limite della lista */
-                        <MappaAnnunci annunci={annunciDaMostrare} color="secondary" />
+                        <MappaAnnunci annunci={annunciDaMostrare} color={color} />
                     )}
                 </Box>
             </Box>
 
             <RegistratiDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+
+            <SnackbarAvviso testo={errorePreferiti} onClose={() => setErrorePreferiti("")} />
         </Box>
     );
 }
 
-export default AnnunciLavoroPage;
+export default ListaAnnunciPage;

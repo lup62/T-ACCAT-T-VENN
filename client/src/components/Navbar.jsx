@@ -11,7 +11,6 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
     AppBar,
     Toolbar,
-    Typography,
     Box,
     Button,
     IconButton,
@@ -24,9 +23,11 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import WorkIcon from "@mui/icons-material/Work";
-import farmerIcon from "../assets/farmerIcon.png"
+import PersonIcon from "@mui/icons-material/Person";
+import AgricultureIcon from '@mui/icons-material/Agriculture';
+import scrittaTaccat from "../assets/scrittaTaccat.svg"
 import { useAuth } from "../hooks/useAuth";
+
 
 
 
@@ -41,7 +42,6 @@ function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isLoggedIn, utente, logout } = useAuth();
     const navigate = useNavigate();
-
     const handleLogout = () => {
         logout();
         setMobileMenuOpen(false);
@@ -71,22 +71,16 @@ function Navbar() {
                     sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 1,
-                        color: "inherit",
+                        gap: 1.5,
                         textDecoration: "none",
                     }}
                 >
-                    <WorkIcon color="primary" />
-
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            fontWeight: 700,
-                            letterSpacing: "-0.5px",
-                        }}
-                    >
-                        T&apos;ACCAT & T&apos;VENN
-                    </Typography>
+                    <Box
+                        component="img"
+                        src={scrittaTaccat}
+                        alt="T'ACCAT & T'VENN"
+                        sx={{ height: 26 }}
+                    />
                 </Box>
 
                 {/* Menu centrale: visibile da tablet/desktop */}
@@ -123,7 +117,7 @@ function Navbar() {
                         <>
                             <Button
                                 component={RouterLink}
-                                to="/profilo"
+                                to="/preferiti"
                                 color="inherit"
                                 sx={{
                                     display: {
@@ -132,7 +126,40 @@ function Navbar() {
                                     },
                                 }}
                             >
+                                Preferiti
+                            </Button>
+
+                            <Button
+                                component={RouterLink}
+                                to="/proposte"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Le mie proposte
+                            </Button>
+
+                            <Button
+                                component={RouterLink}
+                                to="/profilo"
+                                color="primary"
+                                variant="contained"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                                startIcon={
+                                   <PersonIcon />
+                                }
+                            >
                                 {utente?.nome}
+
                             </Button>
 
                             <Button
@@ -179,15 +206,7 @@ function Navbar() {
                                     },
                                 }}
                                 startIcon={
-                                    <Box
-                                        component="img"
-                                        src={farmerIcon}
-                                        alt=""
-                                        sx={{
-                                            width: 22,
-                                            height: 22,
-                                        }}
-                                    />
+                                    <AgricultureIcon />
                                 }
                             >
                                 Registrati
@@ -235,13 +254,12 @@ function Navbar() {
                                 gap: 1,
                             }}
                         >
-                            <WorkIcon color="primary" />
-                            <Typography
-                                variant="subtitle1"
-                                sx={{ fontWeight: 700 }}
-                            >
-                                T&apos;ACCAT & T&apos;VENN
-                            </Typography>
+                            <Box
+                                component="img"
+                                src={scrittaTaccat}
+                                alt="T'ACCAT & T'VENN"
+                                sx={{ height: 30 }}
+                            />
                         </Box>
 
                         <IconButton
@@ -272,6 +290,24 @@ function Navbar() {
 
                     {isLoggedIn ? (
                         <List>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/preferiti"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="Preferiti" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/proposte"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="Le mie proposte" />
+                                </ListItemButton>
+                            </ListItem>
                             <ListItem disablePadding>
                                 <ListItemButton
                                     component={RouterLink}
@@ -314,17 +350,7 @@ function Navbar() {
                                             color: "#FFFFFF",
                                         },
                                     }}
-                                    startIcon={
-                                        <Box
-                                            component="img"
-                                            src={farmerIcon}
-                                            alt=""
-                                            sx={{
-                                                width: 22,
-                                                height: 22,
-                                            }}
-                                        />
-                                    }
+                                    startIcon={<AgricultureIcon />}
                                 >
                                     Registrati
                                 </Button>
