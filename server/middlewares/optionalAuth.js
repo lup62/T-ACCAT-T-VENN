@@ -1,3 +1,6 @@
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+
 async function optionalAuth(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
@@ -10,7 +13,7 @@ async function optionalAuth(req, res, next) {
 
         const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
-        const utente = await User.findById(decoded.id).select(
+        const utente = await User.findById(decoded.userId).select(
             "_id email ruoli"
         );
 
