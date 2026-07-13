@@ -12,6 +12,7 @@ import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage.jsx'
 import TerminiCondizioniPage from '../pages/Legal/TerminiCondizioniPage.jsx'
 import PubblicaAnnuncioPage from '../pages/Annunci/PubblicaAnnuncio/PubblicaAnnuncioPage.jsx'
 import PropostePage from '../pages/Proposte/PropostePage.jsx'
+import PreferitiPage from '../pages/Preferiti/PreferitiPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
 
 /**
@@ -40,6 +41,7 @@ function AppRoutes() {
                 <Route path="termini" element={<TerminiCondizioniPage />} />
                 <Route path="annunci/nuovo" element={<PubblicaAnnuncioPage />} />
                 <Route path="proposte" element={<PropostePage />} />
+                <Route path="preferiti" element={<PreferitiPage />} />
             </Route>
         </Routes>
     );

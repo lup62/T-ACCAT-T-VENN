@@ -34,6 +34,7 @@ import {
     Chip,
     CircularProgress,
     Divider,
+    IconButton,
     Paper,
     Snackbar,
     Stack,
@@ -41,6 +42,8 @@ import {
 } from "@mui/material";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EuroIcon from "@mui/icons-material/Euro";
@@ -52,6 +55,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { getAnnuncio } from "../../../services/annunci";
+import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
 import RegistratiDialog from "../RegistratiDialog";
 import InviaPropostaDialog from "./InviaPropostaDialog";
 
@@ -111,20 +115,39 @@ function DettaglioAnnuncioPage() {
     const [propostaDialogOpen, setPropostaDialogOpen] = useState(false);
     const [propostaInviata, setPropostaInviata] = useState(false);
 
-    const [annuncio, setAnnuncio] = useState(null);
-    const [caricamento, setCaricamento] = useState(true);
+    // Cuoricino preferito: stesso hook delle pagine lista
+    const { isPreferito, togglePreferito, toggleInCorsoId } = usePreferitiAnnunci();
+    const [errorePreferiti, setErrorePreferiti] = useState("");
+
+    const toggleCuore = async () => {
+        try {
+            await togglePreferito(annuncio);
+        } catch (err) {
+            setErrorePreferiti(err.message);
+        }
+    };
+
+    // Risultato dell'ultima fetch: { chiave, annuncio }. La chiave (id + token)
+    // dice per quali parametri vale il risultato, così "caricamento" si deriva
+    // senza setState sincroni nell'effect (react-hooks/set-state-in-effect).
+    const [risultato, setRisultato] = useState(null);
+    const chiaveFetch = `${id}|${accessToken ?? ""}`;
+    const caricamento = inizializzazione || risultato?.chiave !== chiaveFetch;
+    const annuncio = risultato?.annuncio ?? null;
 
     // Si aspetta il ripristino della sessione prima di chiamare: il token
     // (facoltativo) serve per vedere i propri annunci in corso o conclusi,
     // e senza attesa la prima chiamata partirebbe sempre da sloggati.
     useEffect(() => {
         if (inizializzazione) return;
-        setCaricamento(true);
+        let attivo = true; // evita setState dopo lo smontaggio
         getAnnuncio(id, accessToken)
-            .then(setAnnuncio)
-            .catch(() => setAnnuncio(null))
-            .finally(() => setCaricamento(false));
-    }, [id, accessToken, inizializzazione]);
+            .then((a) => attivo && setRisultato({ chiave: chiaveFetch, annuncio: a }))
+            .catch(() => attivo && setRisultato({ chiave: chiaveFetch, annuncio: null }));
+        return () => {
+            attivo = false;
+        };
+    }, [id, accessToken, inizializzazione, chiaveFetch]);
 
     if (caricamento) {
         return (
@@ -164,7 +187,7 @@ function DettaglioAnnuncioPage() {
                 Torna agli annunci
             </Button>
 
-            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: "wrap" }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, flexWrap: "wrap" }}>
                 <Chip label={tipoLabel} color={tipoColor} size="small" />
                 <Chip
                     label={LABEL_STATO[annuncio.stato] ?? annuncio.stato}
@@ -172,6 +195,26 @@ function DettaglioAnnuncioPage() {
                     variant="outlined"
                     size="small"
                 />
+
+                {/* Cuoricino: solo da loggati e mai sul proprio annuncio,
+                    come nelle pagine lista */}
+                {isLoggedIn && !isAutore && (
+                    <>
+                        <Box sx={{ flexGrow: 1 }} />
+                        <IconButton
+                            aria-label={
+                                isPreferito(annuncio._id)
+                                    ? "Rimuovi dai preferiti"
+                                    : "Salva nei preferiti"
+                            }
+                            disabled={toggleInCorsoId === annuncio._id}
+                            onClick={toggleCuore}
+                            sx={{ color: "error.main" }}
+                        >
+                            {isPreferito(annuncio._id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                        </IconButton>
+                    </>
+                )}
             </Stack>
 
             <Typography
@@ -324,6 +367,22 @@ function DettaglioAnnuncioPage() {
                     sx={{ width: "100%" }}
                 >
                     Proposta inviata con successo!
+                </Alert>
+            </Snackbar>
+
+            <Snackbar
+                open={!!errorePreferiti}
+                autoHideDuration={5000}
+                onClose={() => setErrorePreferiti("")}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert
+                    onClose={() => setErrorePreferiti("")}
+                    severity="error"
+                    variant="filled"
+                    sx={{ width: "100%" }}
+                >
+                    {errorePreferiti}
                 </Alert>
             </Snackbar>
         </Box>

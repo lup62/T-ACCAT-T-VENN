@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+    Alert,
     Box,
     Button,
     CircularProgress,
@@ -10,6 +11,7 @@ import {
     InputLabel,
     MenuItem,
     Select,
+    Snackbar,
     Stack,
     TextField,
     Typography,
@@ -26,12 +28,25 @@ import FiltriAnnunci from "./FiltriAnnunci";
 import MappaAnnunci from "./MappaAnnunci";
 import { getAnnunci } from "../../../services/annunci";
 import { useAnnunciFiltrati } from "../../../hooks/useAnnunciFiltrati";
+import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
+import { useAuth } from "../../../hooks/useAuth";
 
 function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
     const navigate = useNavigate();
+    const { utente } = useAuth();
     const [annunci, setAnnunci] = useState([]);
     const [caricamento, setCaricamento] = useState(true);
     const [errore, setErrore] = useState(null);
+    const [errorePreferiti, setErrorePreferiti] = useState("");
+    const { isPreferito, togglePreferito, toggleInCorsoId } = usePreferitiAnnunci();
+
+    const toggle = async (annuncio) => {
+        try {
+            await togglePreferito(annuncio);
+        } catch (err) {
+            setErrorePreferiti(err.message);
+        }
+    };
 
     useEffect(() => {
         getAnnunci(tipoAnnuncio)
@@ -229,6 +244,15 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                                             key={annuncio._id}
                                             annuncio={annuncio}
                                             color={color}
+                                            preferito={isPreferito(annuncio._id)}
+                                            // Cuoricino solo da loggati e mai sui propri
+                                            // annunci (il backend li rifiuta comunque)
+                                            onTogglePreferito={
+                                                isLoggedIn && annuncio.autore?._id !== utente?.id
+                                                    ? toggle
+                                                    : undefined
+                                            }
+                                            toggleInCorso={toggleInCorsoId === annuncio._id}
                                         />
                                     ))}
                                 </Box>
@@ -254,6 +278,22 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
             </Box>
 
             <RegistratiDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+
+            <Snackbar
+                open={!!errorePreferiti}
+                autoHideDuration={5000}
+                onClose={() => setErrorePreferiti("")}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert
+                    onClose={() => setErrorePreferiti("")}
+                    severity="error"
+                    variant="filled"
+                    sx={{ width: "100%" }}
+                >
+                    {errorePreferiti}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
