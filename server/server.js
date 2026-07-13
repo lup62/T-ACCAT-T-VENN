@@ -8,8 +8,7 @@ const annuncioRoutes = require("./routes/annuncioRoutes");
 const propostaRoutes = require("./routes/propostaRoutes");
 const recensioneRoutes = require("./routes/recensioneRoutes");
 const preferitoRoutes = require("./routes/preferitoRoutes");
-
-dotenv.config();
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -24,6 +23,7 @@ app.use("/api/annunci", annuncioRoutes);
 app.use("/api/proposte", propostaRoutes);
 app.use("/api/recensioni", recensioneRoutes);
 app.use("/api/preferiti", preferitoRoutes);
+app.use("/api/users", userRoutes);
 // Collega il backend al database MongoDB.
 connectDB();
 
