@@ -2,9 +2,10 @@
  * annunci.js — chiamate API verso il backend per gli annunci.
  *
  * Endpoint disponibili (server/routes/annuncioRoutes.js):
- *   GET  /api/annunci?tipo=...  → { message, count, annunci }
- *   GET  /api/annunci/:id       → { message, annuncio }
- *   POST /api/annunci           → { message, annuncio }   (richiede Bearer token)
+ *   GET   /api/annunci?tipo=...        → { message, count, annunci }
+ *   GET   /api/annunci/:id             → { message, annuncio }   (Bearer token facoltativo)
+ *   POST  /api/annunci                 → { message, annuncio }   (richiede Bearer token)
+ *   PATCH /api/annunci/:id/concludi    → { message, annuncio }   (richiede Bearer token)
  *
  * Stesso pattern di AuthContext: base URL da VITE_API_URL
  * con fallback su localhost per lo sviluppo.
@@ -46,12 +47,36 @@ export async function creaAnnuncio(payload, accessToken) {
     return data.annuncio;
 }
 
-// Dettaglio di un singolo annuncio per id.
-export async function getAnnuncio(id) {
-    const res = await fetch(`${API_URL}/api/annunci/${id}`);
+// Segna un annuncio come concluso. Solo l'autore può farlo e solo
+// se l'annuncio è "in_corso" (cioè dopo aver accettato una proposta).
+export async function concludiAnnuncio(id, accessToken) {
+    const res = await fetch(`${API_URL}/api/annunci/${id}/concludi`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
     const data = await res.json();
     if (!res.ok) {
-        throw new Error(data.message || "Annuncio non trovato.");
+        throw new Error(data.message || "Errore nella conclusione dell'annuncio.");
+    }
+    return data.annuncio;
+}
+
+// Dettaglio di un singolo annuncio per id. Il token è facoltativo (optionalAuth):
+// senza, si vedono solo gli annunci aperti; con il token, autore e proponente
+// accettato vedono anche i propri annunci in corso o conclusi.
+export async function getAnnuncio(id, accessToken) {
+    const res = await fetch(`${API_URL}/api/annunci/${id}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        // Lo status permette alla pagina di distinguere il 404 (non esiste)
+        // dal 401/403 (esiste ma non è visibile a questo utente).
+        const errore = new Error(data.message || "Annuncio non trovato.");
+        errore.status = res.status;
+        throw errore;
     }
     return data.annuncio;
 }

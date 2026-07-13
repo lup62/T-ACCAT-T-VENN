@@ -25,7 +25,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import AgricultureIcon from '@mui/icons-material/Agriculture';
-import iconaTaccat from "../assets/iconaTaccat.svg"
 import scrittaTaccat from "../assets/scrittaTaccat.svg"
 import { useAuth } from "../hooks/useAuth";
 
@@ -76,12 +75,11 @@ function Navbar() {
                         textDecoration: "none",
                     }}
                 >
-                    <Box component="img" src={iconaTaccat} alt="" sx={{ height: 42 }} />
                     <Box
                         component="img"
                         src={scrittaTaccat}
                         alt="T'ACCAT & T'VENN"
-                        sx={{ height: 26, display: { xs: "none", sm: "block" } }}
+                        sx={{ height: 26 }}
                     />
                 </Box>
 
@@ -117,6 +115,34 @@ function Navbar() {
                 >
                     {isLoggedIn ? (
                         <>
+                            <Button
+                                component={RouterLink}
+                                to="/preferiti"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Preferiti
+                            </Button>
+
+                            <Button
+                                component={RouterLink}
+                                to="/proposte"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Le mie proposte
+                            </Button>
+
                             <Button
                                 component={RouterLink}
                                 to="/profilo"
@@ -228,12 +254,11 @@ function Navbar() {
                                 gap: 1,
                             }}
                         >
-                            <Box component="img" src={iconaTaccat} alt="" sx={{ height: 34 }} />
                             <Box
                                 component="img"
                                 src={scrittaTaccat}
                                 alt="T'ACCAT & T'VENN"
-                                sx={{ height: 20 }}
+                                sx={{ height: 30 }}
                             />
                         </Box>
 
@@ -265,6 +290,24 @@ function Navbar() {
 
                     {isLoggedIn ? (
                         <List>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/preferiti"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="Preferiti" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/proposte"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="Le mie proposte" />
+                                </ListItemButton>
+                            </ListItem>
                             <ListItem disablePadding>
                                 <ListItemButton
                                     component={RouterLink}

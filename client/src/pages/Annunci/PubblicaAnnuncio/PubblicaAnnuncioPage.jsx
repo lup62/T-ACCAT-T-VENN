@@ -29,6 +29,7 @@ import {
     Divider,
     FormHelperText,
     InputAdornment,
+    MenuItem,
     Paper,
     Snackbar,
     Stack,
@@ -49,6 +50,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useGeocodingLuogo } from "../../../hooks/useGeocodingLuogo";
 import { creaAnnuncio } from "../../../services/annunci";
 import { STATO_INIZIALE, ERRORI_INIZIALI, valida, costruisciPayload } from "./pubblicaAnnuncioForm";
+import { TIPI_LAVORO } from "../annunciConstants";
 
 // ─── Componente helper: intestazione di sezione ───────────────────────────────
 
@@ -262,17 +264,24 @@ function PubblicaAnnuncioPage() {
                                 placeholder="Descrivi le attività, i requisiti, le condizioni di lavoro..."
                             />
 
-                            {/* Campo libero: il tipo di lavoro non è a lista fissa */}
+                            {/* Lista fissa (TIPI_LAVORO): a testo libero ogni grafia
+                                diversa creava un filtro duplicato nelle liste annunci */}
                             <TextField
+                                select
                                 label="Tipo di lavoro"
                                 required
                                 fullWidth
                                 value={form.tipoLavoro}
                                 onChange={aggiorna("tipoLavoro")}
                                 error={!!errori.tipoLavoro}
-                                helperText={errori.tipoLavoro || "Es. Olivicoltura, Viticoltura, Raccolta frutta, Zootecnia..."}
-                                placeholder="Scrivi il tipo di lavoro"
-                            />
+                                helperText={errori.tipoLavoro || "Scegli la categoria più vicina al lavoro."}
+                            >
+                                {TIPI_LAVORO.map((tipo) => (
+                                    <MenuItem key={tipo} value={tipo}>
+                                        {tipo}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Stack>
                     </Sezione>
 

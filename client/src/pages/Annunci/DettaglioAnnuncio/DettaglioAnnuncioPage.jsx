@@ -26,19 +26,23 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../../hooks/useAuth";
 import {
+    Alert,
     Box,
     Button,
     Chip,
     CircularProgress,
     Divider,
+    IconButton,
     Paper,
     Stack,
     Typography,
 } from "@mui/material";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EuroIcon from "@mui/icons-material/Euro";
@@ -49,8 +53,11 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { getAnnuncio } from "../../services/annunci";
-import RegistratiDialog from "./RegistratiDialog";
+import { getAnnuncio } from "../../../services/annunci";
+import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
+import RegistratiDialog from "../RegistratiDialog";
+import InviaPropostaDialog from "./InviaPropostaDialog";
+import SnackbarAvviso from "../../../components/SnackbarAvviso";
 
 const COLORI_TEMA = { primary: "#387347", secondary: "#69A62D" };
 
@@ -103,18 +110,53 @@ function RigaInfo({ Icon, label, valore }) {
 function DettaglioAnnuncioPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, utente, accessToken, inizializzazione } = useAuth();
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [propostaDialogOpen, setPropostaDialogOpen] = useState(false);
+    const [propostaInviata, setPropostaInviata] = useState(false);
 
-    const [annuncio, setAnnuncio] = useState(null);
-    const [caricamento, setCaricamento] = useState(true);
+    // Cuoricino preferito: stesso hook delle pagine lista
+    const { isPreferito, togglePreferito, toggleInCorsoId } = usePreferitiAnnunci();
+    const [errorePreferiti, setErrorePreferiti] = useState("");
 
+    const toggleCuore = async () => {
+        try {
+            await togglePreferito(annuncio);
+        } catch (err) {
+            setErrorePreferiti(err.message);
+        }
+    };
+
+    // Risultato dell'ultima fetch: { chiave, annuncio }. La chiave (id + token)
+    // dice per quali parametri vale il risultato, così "caricamento" si deriva
+    // senza setState sincroni nell'effect (react-hooks/set-state-in-effect).
+    const [risultato, setRisultato] = useState(null);
+    const chiaveFetch = `${id}|${accessToken ?? ""}`;
+    const caricamento = inizializzazione || risultato?.chiave !== chiaveFetch;
+    const annuncio = risultato?.annuncio ?? null;
+
+    // Si aspetta il ripristino della sessione prima di chiamare: il token
+    // (facoltativo) serve per vedere i propri annunci in corso o conclusi,
+    // e senza attesa la prima chiamata partirebbe sempre da sloggati.
     useEffect(() => {
-        getAnnuncio(id)
-            .then(setAnnuncio)
-            .catch(() => setAnnuncio(null))
-            .finally(() => setCaricamento(false));
-    }, [id]);
+        if (inizializzazione) return;
+        let attivo = true; // evita setState dopo lo smontaggio
+        getAnnuncio(id, accessToken)
+            .then((a) => attivo && setRisultato({ chiave: chiaveFetch, annuncio: a }))
+            .catch((err) =>
+                attivo &&
+                setRisultato({
+                    chiave: chiaveFetch,
+                    annuncio: null,
+                    // 404 (o errore di rete): testo generico; 401/403: il
+                    // messaggio del backend spiega perché non è visibile.
+                    errore: err.status && err.status !== 404 ? err.message : "",
+                })
+            );
+        return () => {
+            attivo = false;
+        };
+    }, [id, accessToken, inizializzazione, chiaveFetch]);
 
     if (caricamento) {
         return (
@@ -127,9 +169,12 @@ function DettaglioAnnuncioPage() {
     if (!annuncio) {
         return (
             <Box sx={{ px: { xs: 2, sm: 3, md: 10 }, py: { xs: 4, md: 6 }, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 3 }}>
-                <Typography variant="h5">Annuncio non trovato</Typography>
+                <Typography variant="h5">
+                    {risultato?.errore ? "Annuncio non disponibile" : "Annuncio non trovato"}
+                </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    L&apos;annuncio che stai cercando non esiste o è stato rimosso.
+                    {risultato?.errore ||
+                        "L'annuncio che stai cercando non esiste o è stato rimosso."}
                 </Typography>
                 <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
                     Torna agli annunci
@@ -143,6 +188,10 @@ function DettaglioAnnuncioPage() {
     const tipoColor = isRichiesta ? "secondary" : "primary";
     const backPath = isRichiesta ? "/annunci/offerte" : "/annunci/cercasi";
 
+    // L'autore non può candidarsi al proprio annuncio (il backend risponderebbe
+    // 403): al posto del bottone proposta mostriamo un'informativa.
+    const isAutore = isLoggedIn && utente?.id === annuncio.autore?._id;
+
     return (
         <Box sx={{ px: { xs: 2, sm: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
 
@@ -150,7 +199,7 @@ function DettaglioAnnuncioPage() {
                 Torna agli annunci
             </Button>
 
-            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: "wrap" }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, flexWrap: "wrap" }}>
                 <Chip label={tipoLabel} color={tipoColor} size="small" />
                 <Chip
                     label={LABEL_STATO[annuncio.stato] ?? annuncio.stato}
@@ -158,6 +207,26 @@ function DettaglioAnnuncioPage() {
                     variant="outlined"
                     size="small"
                 />
+
+                {/* Cuoricino: solo da loggati e mai sul proprio annuncio,
+                    come nelle pagine lista */}
+                {isLoggedIn && !isAutore && (
+                    <>
+                        <Box sx={{ flexGrow: 1 }} />
+                        <IconButton
+                            aria-label={
+                                isPreferito(annuncio._id)
+                                    ? "Rimuovi dai preferiti"
+                                    : "Salva nei preferiti"
+                            }
+                            disabled={toggleInCorsoId === annuncio._id}
+                            onClick={toggleCuore}
+                            sx={{ color: "error.main" }}
+                        >
+                            {isPreferito(annuncio._id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                        </IconButton>
+                    </>
+                )}
             </Stack>
 
             <Typography
@@ -200,15 +269,23 @@ function DettaglioAnnuncioPage() {
                         ))}
                     </Stack>
 
-                    <Button
-                        variant="contained"
-                        color={tipoColor}
-                        size="large"
-                        fullWidth
-                        onClick={() => !isLoggedIn && setDialogOpen(true)}
-                    >
-                        {isLoggedIn ? "Invia una proposta" : "Accedi per inviare una proposta"}
-                    </Button>
+                    {isAutore ? (
+                        <Alert severity="info" variant="outlined">
+                            Questo è un tuo annuncio: non puoi inviarti una proposta.
+                        </Alert>
+                    ) : (
+                        <Button
+                            variant="contained"
+                            color={tipoColor}
+                            size="large"
+                            fullWidth
+                            onClick={() =>
+                                isLoggedIn ? setPropostaDialogOpen(true) : setDialogOpen(true)
+                            }
+                        >
+                            {isLoggedIn ? "Invia una proposta" : "Accedi per inviare una proposta"}
+                        </Button>
+                    )}
 
                     {/* la posizione non è obbligatoria nel modello backend */}
                     {annuncio.luogo?.posizione && (
@@ -277,6 +354,25 @@ function DettaglioAnnuncioPage() {
             </Box>
 
             <RegistratiDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+
+            <InviaPropostaDialog
+                open={propostaDialogOpen}
+                onClose={() => setPropostaDialogOpen(false)}
+                onInviata={() => {
+                    setPropostaDialogOpen(false);
+                    setPropostaInviata(true);
+                }}
+                annuncioId={annuncio._id}
+                color={tipoColor}
+            />
+
+            <SnackbarAvviso
+                testo={propostaInviata ? "Proposta inviata con successo!" : ""}
+                severity="success"
+                onClose={() => setPropostaInviata(false)}
+            />
+
+            <SnackbarAvviso testo={errorePreferiti} onClose={() => setErrorePreferiti("")} />
         </Box>
     );
 }

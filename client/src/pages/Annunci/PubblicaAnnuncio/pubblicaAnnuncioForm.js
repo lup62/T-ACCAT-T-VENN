@@ -58,7 +58,7 @@ export function valida(form) {
     if (form.descrizione && form.descrizione.length > 2000)
         segna("descrizione", "La descrizione non può superare i 2000 caratteri");
     if (!form.tipoLavoro)
-        segna("tipoLavoro", "Inserisci il tipo di lavoro");
+        segna("tipoLavoro", "Seleziona il tipo di lavoro");
     if (!form.luogoTesto)
         segna("luogoTesto", "Inserisci il luogo (es. Bari (BA))");
     if (!form.dataInizio)

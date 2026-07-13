@@ -3,14 +3,16 @@ import { Routes, Route } from 'react-router-dom'
 import HomePage from '../pages/Home/HomePage.jsx'
 import LoginPage from '../pages/Login/LoginPage.jsx'
 import RegisterPage from '../pages/Register/RegisterPage.jsx'
-import AnnunciLavoroPage from '../pages/Annunci/AnnunciLavoroPage.jsx'
-import AnnunciLavoratoriPage from '../pages/Annunci/AnnunciLavoratoriPage.jsx'
-import DettaglioAnnuncioPage from '../pages/Annunci/DettaglioAnnuncioPage.jsx'
+import AnnunciLavoroPage from '../pages/Annunci/ListaAnnunci/AnnunciLavoroPage.jsx'
+import AnnunciLavoratoriPage from '../pages/Annunci/ListaAnnunci/AnnunciLavoratoriPage.jsx'
+import DettaglioAnnuncioPage from '../pages/Annunci/DettaglioAnnuncio/DettaglioAnnuncioPage.jsx'
 import ProfiloPage from '../pages/Profilo/ProfiloPage.jsx'
 import ChatPage from '../pages/Chat/ChatPage.jsx'
 import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage.jsx'
 import TerminiCondizioniPage from '../pages/Legal/TerminiCondizioniPage.jsx'
 import PubblicaAnnuncioPage from '../pages/Annunci/PubblicaAnnuncio/PubblicaAnnuncioPage.jsx'
+import PropostePage from '../pages/Proposte/PropostePage.jsx'
+import PreferitiPage from '../pages/Preferiti/PreferitiPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
 
 /**
@@ -38,6 +40,8 @@ function AppRoutes() {
                 <Route path="privacy" element={<PrivacyPolicyPage />} />
                 <Route path="termini" element={<TerminiCondizioniPage />} />
                 <Route path="annunci/nuovo" element={<PubblicaAnnuncioPage />} />
+                <Route path="proposte" element={<PropostePage />} />
+                <Route path="preferiti" element={<PreferitiPage />} />
             </Route>
         </Routes>
     );
