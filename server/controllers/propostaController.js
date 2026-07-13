@@ -137,7 +137,7 @@ async function accettaProposta(req, res) {
             });
         }
 
-        const proposta = await Proposta.findById(id).populate("annuncio");
+        const proposta = await Proposta.findById(id);
 
         if (!proposta) {
             return res.status(404).json({
@@ -157,41 +157,90 @@ async function accettaProposta(req, res) {
             });
         }
 
-        if (!proposta.annuncio) {
-            return res.status(404).json({
-                message: "Annuncio collegato alla proposta non trovato.",
-            });
-        }
+        const dataRisposta = new Date();
 
-        if (proposta.annuncio.stato !== "aperto") {
+        const annuncioAggiornato = await Annuncio.findOneAndUpdate(
+            {
+                _id: proposta.annuncio,
+                autore: req.utente.id,
+                stato: "aperto",
+            },
+            {
+                stato: "in_corso",
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
+
+        if (!annuncioAggiornato) {
+            const annuncioEsistente = await Annuncio.findById(proposta.annuncio);
+
+            if (!annuncioEsistente) {
+                return res.status(404).json({
+                    message: "Annuncio collegato alla proposta non trovato.",
+                });
+            }
+
             return res.status(400).json({
                 message: "Puoi accettare proposte solo su annunci ancora aperti.",
             });
         }
 
-        proposta.stato = "accettata";
-        proposta.dataRisposta = new Date();
+        const propostaAccettata = await Proposta.findOneAndUpdate(
+            {
+                _id: proposta._id,
+                destinatario: req.utente.id,
+                stato: "in_attesa",
+            },
+            {
+                stato: "accettata",
+                dataRisposta,
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        ).populate(
+            "annuncio",
+            "tipo titolo descrizione luogo periodo orarioLavorativo tipoLavoro competenze numeroLavoratoriRichiesti prezzo stato"
+        );
 
-        proposta.annuncio.stato = "in_corso";
+        if (!propostaAccettata) {
+            await Annuncio.findOneAndUpdate(
+                {
+                    _id: annuncioAggiornato._id,
+                    stato: "in_corso",
+                },
+                {
+                    stato: "aperto",
+                },
+                {
+                    runValidators: true,
+                }
+            );
 
-        await proposta.save();
-        await proposta.annuncio.save();
+            return res.status(400).json({
+                message: "La proposta non è più in attesa.",
+            });
+        }
 
         await Proposta.updateMany(
             {
-                annuncio: proposta.annuncio._id,
-                _id: { $ne: proposta._id },
+                annuncio: annuncioAggiornato._id,
+                _id: { $ne: propostaAccettata._id },
                 stato: "in_attesa",
             },
             {
                 stato: "rifiutata",
-                dataRisposta: new Date(),
+                dataRisposta,
             }
         );
 
         return res.status(200).json({
             message: "Proposta accettata con successo.",
-            proposta,
+            proposta: propostaAccettata,
         });
     } catch (error) {
         console.error("Errore durante l'accettazione della proposta:", error);
@@ -201,7 +250,6 @@ async function accettaProposta(req, res) {
         });
     }
 }
-
 async function rifiutaProposta(req, res) {
     try {
         const { id } = req.params;
