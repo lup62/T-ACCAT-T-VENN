@@ -338,11 +338,43 @@ async function logout(req, res) {
         });
     }
 }
-function utenteCorrente(req, res) {
-    return res.status(200).json({
-        message: "Utente autenticato correttamente.",
-        utente: req.utente,
-    });
+async function utenteCorrente(req, res) {
+    try {
+        const utente = await User.findById(req.utente.id)
+            .select("-passwordHash -oauth -__v");
+
+        if (!utente) {
+            return res.status(404).json({
+                message: "Utente non trovato.",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Utente autenticato correttamente.",
+            utente: {
+                id: utente._id,
+                ruoli: utente.ruoli,
+                nome: utente.nome,
+                cognome: utente.cognome,
+                dataNascita: utente.dataNascita,
+                email: utente.email,
+                telefono: utente.telefono,
+                indirizzo: utente.indirizzo,
+                immagineProfilo: utente.immagineProfilo,
+                datiLavoratore: utente.datiLavoratore,
+                datiImprenditore: utente.datiImprenditore,
+                ratingMedio: utente.ratingMedio,
+                createdAt: utente.createdAt,
+                updatedAt: utente.updatedAt,
+            },
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero dell'utente corrente:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
 }
 
 module.exports = {
