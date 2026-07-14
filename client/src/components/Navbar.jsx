@@ -62,6 +62,7 @@ function Navbar() {
                     minHeight: 72,
                     display: "flex",
                     justifyContent: "space-between",
+                    position: "relative",
                 }}
             >
                 {/* Logo */}
@@ -83,7 +84,9 @@ function Navbar() {
                     />
                 </Box>
 
-                {/* Menu centrale: visibile da tablet/desktop */}
+                {/* Menu centrale: visibile da tablet/desktop.
+                    Centrato rispetto alla barra (non allo spazio tra logo e
+                    azioni, che hanno larghezze diverse). */}
                 <Box
                     sx={{
                         display: {
@@ -91,6 +94,10 @@ function Navbar() {
                             lg: "flex",
                         },
                         gap: 1,
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
                     }}
                 >
                     {navLinks.map(({ to, label, isAnchor }) => (
@@ -143,19 +150,6 @@ function Navbar() {
                                 Le mie proposte
                             </Button>
 
-                            <Button
-                                component={RouterLink}
-                                to="/annunci/miei"
-                                color="inherit"
-                                sx={{
-                                    display: {
-                                        xs: "none",
-                                        lg: "inline-flex",
-                                    },
-                                }}
-                            >
-                                I miei annunci
-                            </Button>
 
                             <Button
                                 component={RouterLink}
@@ -320,15 +314,6 @@ function Navbar() {
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     <ListItemText primary="Le mie proposte" />
-                                </ListItemButton>
-                            </ListItem>
-                            <ListItem disablePadding>
-                                <ListItemButton
-                                    component={RouterLink}
-                                    to="/annunci/miei"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    <ListItemText primary="I miei annunci" />
                                 </ListItemButton>
                             </ListItem>
                             <ListItem disablePadding>
