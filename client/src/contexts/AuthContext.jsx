@@ -50,6 +50,13 @@ export function AuthProvider({ children }) {
         return data.utente;
     }
 
+    // Sostituisce il profilo in stato e cache locale: usato dopo
+    // PATCH /api/users/me, che restituisce il profilo completo aggiornato.
+    function aggiornaUtente(utenteAggiornato) {
+        localStorage.setItem(STORAGE_KEY_UTENTE, JSON.stringify(utenteAggiornato));
+        setUtente(utenteAggiornato);
+    }
+
     function chiudiSessioneLocale() {
         localStorage.removeItem(STORAGE_KEY_UTENTE);
         setUtente(null);
@@ -177,6 +184,7 @@ export function AuthProvider({ children }) {
         accedi,
         logout,
         rinnovaAccessToken,
+        aggiornaUtente,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -87,7 +87,11 @@ async function aggiornaProfilo(req, res) {
             });
         }
 
-        const utente = await User.findById(req.utente.id);
+        // Serve anche il passwordHash (select: false): senza, il save()
+        // fallirebbe la validazione "password oppure OAuth" dello schema.
+        const utente = await User.findById(req.utente.id).select(
+            "+passwordHash"
+        );
 
         if (!utente) {
             return res.status(404).json({
