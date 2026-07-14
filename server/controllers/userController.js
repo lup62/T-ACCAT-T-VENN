@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/User");
 
 function formattaUtente(utente) {
@@ -18,7 +19,27 @@ function formattaUtente(utente) {
         updatedAt: utente.updatedAt,
     };
 }
-
+function formattaProfiloPubblico(utente) {
+    return {
+        id: utente._id,
+        nome: utente.nome,
+        cognome: utente.cognome,
+        ruoli: utente.ruoli,
+        immagineProfilo: utente.immagineProfilo,
+        ratingMedio: utente.ratingMedio,
+        indirizzo: {
+            testo: utente.indirizzo?.testo || "",
+        },
+        datiLavoratore: {
+            competenze: utente.datiLavoratore?.competenze || [],
+            certificazioni: utente.datiLavoratore?.certificazioni || [],
+        },
+        datiImprenditore: {
+            nomeAzienda: utente.datiImprenditore?.nomeAzienda || "",
+            sitoWeb: utente.datiImprenditore?.sitoWeb || "",
+        },
+    };
+}
 function contieneCampiVietati(body) {
     const campiVietati = [
         "email",
@@ -209,7 +230,39 @@ async function aggiornaProfilo(req, res) {
         });
     }
 }
+async function profiloPubblico(req, res) {
+    try {
+        const { id } = req.params;
 
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "ID utente non valido.",
+            });
+        }
+
+        const utente = await User.findById(id).select(
+            "nome cognome ruoli immagineProfilo ratingMedio indirizzo.testo datiLavoratore.competenze datiLavoratore.certificazioni datiImprenditore.nomeAzienda datiImprenditore.sitoWeb"
+        );
+
+        if (!utente) {
+            return res.status(404).json({
+                message: "Utente non trovato.",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Profilo pubblico recuperato con successo.",
+            utente: formattaProfiloPubblico(utente),
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero del profilo pubblico:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
 module.exports = {
     aggiornaProfilo,
+    profiloPubblico,
 };
