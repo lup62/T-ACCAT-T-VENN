@@ -7,6 +7,7 @@ import AnnunciLavoroPage from '../pages/Annunci/ListaAnnunci/AnnunciLavoroPage.j
 import AnnunciLavoratoriPage from '../pages/Annunci/ListaAnnunci/AnnunciLavoratoriPage.jsx'
 import DettaglioAnnuncioPage from '../pages/Annunci/DettaglioAnnuncio/DettaglioAnnuncioPage.jsx'
 import ProfiloPage from '../pages/Profilo/ProfiloPage.jsx'
+import ProfiloPubblicoPage from '../pages/Profilo/ProfiloPubblicoPage.jsx'
 import ChatPage from '../pages/Chat/ChatPage.jsx'
 import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage.jsx'
 import TerminiCondizioniPage from '../pages/Legal/TerminiCondizioniPage.jsx'
@@ -39,6 +40,7 @@ function AppRoutes() {
                 <Route path="annunci/miei" element={<MieiAnnunciPage />} />
                 <Route path="annunci/:id" element={<DettaglioAnnuncioPage />} />
                 <Route path="profilo" element={<ProfiloPage />} />
+                <Route path="utenti/:id" element={<ProfiloPubblicoPage />} />
                 <Route path="chat" element={<ChatPage />} />
                 <Route path="privacy" element={<PrivacyPolicyPage />} />
                 <Route path="termini" element={<TerminiCondizioniPage />} />

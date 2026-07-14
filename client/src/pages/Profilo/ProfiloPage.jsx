@@ -30,45 +30,12 @@ import { useAuth } from "../../hooks/useAuth";
 import { getProfilo } from "../../services/users";
 import ModificaProfiloForm from "./ModificaProfiloForm";
 import SnackbarAvviso from "../../components/SnackbarAvviso";
+import { CampoProfilo, ChipsProfilo } from "../../components/ProfiloCampi";
 
 const LABEL_RUOLO = {
     lavoratore: "Lavoratore",
     imprenditore: "Imprenditore",
 };
-
-// Riga label/valore della vista in sola lettura.
-function CampoProfilo({ label, valore }) {
-    return (
-        <Box>
-            <Typography variant="body2" color="text.secondary">
-                {label}
-            </Typography>
-            <Typography variant="body1" sx={{ wordBreak: "break-word" }}>
-                {valore || "—"}
-            </Typography>
-        </Box>
-    );
-}
-
-// Elenco di chip (competenze, certificazioni, social) con fallback.
-function ChipsProfilo({ label, voci }) {
-    return (
-        <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                {label}
-            </Typography>
-            {voci?.length ? (
-                <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
-                    {voci.map((voce) => (
-                        <Chip key={voce} label={voce} size="small" variant="outlined" />
-                    ))}
-                </Stack>
-            ) : (
-                <Typography variant="body1">—</Typography>
-            )}
-        </Box>
-    );
-}
 
 function formatDataNascita(iso) {
     if (!iso) return "";

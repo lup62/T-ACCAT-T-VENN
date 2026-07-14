@@ -4,6 +4,7 @@
  * Endpoint disponibili (server/routes/userRoutes.js + authRoutes.js):
  *   GET   /api/auth/me    → { message, utente }   (profilo completo, richiede Bearer token)
  *   PATCH /api/users/me   → { message, utente }   (modifica profilo, richiede Bearer token)
+ *   GET   /api/users/:id  → { message, utente }   (profilo pubblico, senza auth)
  *
  */
 
@@ -18,6 +19,21 @@ export async function getProfilo(accessToken) {
     const data = await res.json();
     if (!res.ok) {
         throw new Error(data.message || "Errore nel recupero del profilo.");
+    }
+    return data.utente;
+}
+
+// Profilo pubblico di un utente: solo i campi visibili a tutti
+// (niente email, telefono o posizione precisa).
+export async function getProfiloPubblico(id) {
+    const res = await fetch(`${API_URL}/api/users/${id}`);
+    const data = await res.json();
+    if (!res.ok) {
+        // Lo status permette alla pagina di distinguere il 404/400
+        // (utente inesistente) da un errore del server.
+        const errore = new Error(data.message || "Utente non trovato.");
+        errore.status = res.status;
+        throw errore;
     }
     return data.utente;
 }

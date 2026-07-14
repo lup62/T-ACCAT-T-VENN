@@ -25,7 +25,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import {
     Alert,
@@ -341,10 +341,22 @@ function DettaglioAnnuncioPage() {
 
                         <Stack direction="row" spacing={1.5} alignItems="center">
                             <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="body2" fontWeight={600} sx={{ wordBreak: "break-word" }}>
+                                {/* Il nome porta al profilo pubblico dell'autore */}
+                                <Typography
+                                    component={RouterLink}
+                                    to={`/utenti/${annuncio.autore._id}`}
+                                    variant="body2"
+                                    fontWeight={600}
+                                    sx={{
+                                        wordBreak: "break-word",
+                                        color: "inherit",
+                                        textDecoration: "none",
+                                        "&:hover": { textDecoration: "underline" },
+                                    }}
+                                >
                                     {annuncio.autore.nome} {annuncio.autore.cognome}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" color="text.secondary" display="block">
                                     {LABEL_RUOLO[annuncio.autore.ruoli?.[0]] ?? annuncio.autore.ruoli?.[0]}
                                 </Typography>
                             </Box>

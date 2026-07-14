@@ -20,7 +20,7 @@
  * senza ricaricare la pagina (React Router, niente window.location).
  */
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
     Button,
     Card,
@@ -143,10 +143,21 @@ function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, t
 
                 <Divider sx={{ mb: 2 }} />
 
-                {/* L'autore manca negli annunci arrivati dalla lista preferiti */}
+                {/* L'autore manca negli annunci arrivati dalla lista preferiti.
+                    Il nome porta al suo profilo pubblico. */}
                 {annuncio.autore && (
                     <Stack direction="row" alignItems="center" sx={{ mb: 3 }}>
-                        <Typography variant="body2" fontWeight={600}>
+                        <Typography
+                            component={RouterLink}
+                            to={`/utenti/${annuncio.autore._id}`}
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{
+                                color: "inherit",
+                                textDecoration: "none",
+                                "&:hover": { textDecoration: "underline" },
+                            }}
+                        >
                             {annuncio.autore.nome} {annuncio.autore.cognome}
                         </Typography>
                     </Stack>
