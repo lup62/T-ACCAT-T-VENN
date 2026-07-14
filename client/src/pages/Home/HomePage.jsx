@@ -5,8 +5,9 @@
  * colonne e sezione "Come funziona" (componente HowItWorks).
  */
 
+import { useEffect } from "react";
 import { Box, Typography, Stack, Button, Card, CardContent } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 
 import sfondoHero from "../../assets/sfondoHero.webp";
@@ -17,6 +18,17 @@ import HowItWorks from "../../components/HowItWorks";
 
 function HomePage() {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Arrivando con l'hash (link "Come funziona" da un'altra pagina) React
+    // Router non scorre da solo all'ancora: lo facciamo qui, quando la
+    // sezione è ormai renderizzata.
+    useEffect(() => {
+        if (!location.hash) return;
+        document
+            .getElementById(location.hash.slice(1))
+            ?.scrollIntoView({ behavior: "smooth" });
+    }, [location.hash]);
 
     return (
         <>

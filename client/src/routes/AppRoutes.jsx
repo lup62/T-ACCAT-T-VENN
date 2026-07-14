@@ -16,6 +16,7 @@ import MieiAnnunciPage from '../pages/Annunci/MieiAnnunci/MieiAnnunciPage.jsx'
 import PropostePage from '../pages/Proposte/PropostePage.jsx'
 import PreferitiPage from '../pages/Preferiti/PreferitiPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
+import ScrollToTop from '../components/ScrollToTop.jsx'
 
 /**
  * AppRoutes definisce tutte le rotte dell'applicazione.
@@ -30,6 +31,8 @@ import MainLayout from '../layouts/MainLayout.jsx'
  */
 function AppRoutes() {
     return (
+        <>
+        <ScrollToTop />
         <Routes>
             <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
@@ -49,6 +52,7 @@ function AppRoutes() {
                 <Route path="preferiti" element={<PreferitiPage />} />
             </Route>
         </Routes>
+        </>
     );
 }
 
