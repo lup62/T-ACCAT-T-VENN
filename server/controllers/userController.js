@@ -11,7 +11,6 @@ function formattaUtente(utente) {
         email: utente.email,
         telefono: utente.telefono,
         indirizzo: utente.indirizzo,
-        immagineProfilo: utente.immagineProfilo,
         datiLavoratore: utente.datiLavoratore,
         datiImprenditore: utente.datiImprenditore,
         ratingMedio: utente.ratingMedio,
@@ -25,7 +24,6 @@ function formattaProfiloPubblico(utente) {
         nome: utente.nome,
         cognome: utente.cognome,
         ruoli: utente.ruoli,
-        immagineProfilo: utente.immagineProfilo,
         ratingMedio: utente.ratingMedio,
         indirizzo: {
             testo: utente.indirizzo?.testo || "",
@@ -71,7 +69,6 @@ async function aggiornaProfilo(req, res) {
             cognome,
             telefono,
             indirizzo,
-            immagineProfilo,
             datiLavoratore,
             datiImprenditore,
         } = req.body;
@@ -81,7 +78,6 @@ async function aggiornaProfilo(req, res) {
             cognome === undefined &&
             telefono === undefined &&
             indirizzo === undefined &&
-            immagineProfilo === undefined &&
             datiLavoratore === undefined &&
             datiImprenditore === undefined;
 
@@ -111,10 +107,7 @@ async function aggiornaProfilo(req, res) {
             utente.telefono = telefono;
         }
 
-        if (immagineProfilo !== undefined) {
-            utente.immagineProfilo = immagineProfilo || "";
-        }
-
+        
         if (indirizzo !== undefined) {
             if (
                 !indirizzo ||
@@ -241,7 +234,7 @@ async function profiloPubblico(req, res) {
         }
 
         const utente = await User.findById(id).select(
-            "nome cognome ruoli immagineProfilo ratingMedio indirizzo.testo datiLavoratore.competenze datiLavoratore.certificazioni datiImprenditore.nomeAzienda datiImprenditore.sitoWeb"
+            "nome cognome ruoli ratingMedio indirizzo.testo datiLavoratore.competenze datiLavoratore.certificazioni datiImprenditore.nomeAzienda datiImprenditore.sitoWeb"
         );
 
         if (!utente) {

@@ -81,7 +81,7 @@ async function listaProposteRicevute(req, res) {
             )
             .populate(
                 "proponente",
-                "nome cognome email ruoli immagineProfilo ratingMedio"
+                "nome cognome email ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 
@@ -110,7 +110,7 @@ async function listaProposteInviate(req, res) {
             )
             .populate(
                 "destinatario",
-                "nome cognome email ruoli immagineProfilo ratingMedio"
+                "nome cognome email ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 

@@ -78,7 +78,6 @@ async function registrati(req, res) {
             telefono,
             password,
             indirizzo,
-            immagineProfilo,
             datiLavoratore,
             datiImprenditore,
         } = req.body;
@@ -143,7 +142,6 @@ async function registrati(req, res) {
             telefono,
             passwordHash,
             indirizzo,
-            immagineProfilo: immagineProfilo || "",
             datiLavoratore: ruoli.includes("lavoratore")
                 ? datiLavoratore || {}
                 : undefined,
@@ -164,7 +162,6 @@ async function registrati(req, res) {
                 nome: utente.nome,
                 cognome: utente.cognome,
                 email: utente.email,
-                immagineProfilo: utente.immagineProfilo,
                 ratingMedio: utente.ratingMedio,
             },
         });
@@ -236,7 +233,6 @@ async function accedi(req, res) {
                 nome: utente.nome,
                 cognome: utente.cognome,
                 email: utente.email,
-                immagineProfilo: utente.immagineProfilo,
                 ratingMedio: utente.ratingMedio,
             },
         });
@@ -360,7 +356,6 @@ async function utenteCorrente(req, res) {
                 email: utente.email,
                 telefono: utente.telefono,
                 indirizzo: utente.indirizzo,
-                immagineProfilo: utente.immagineProfilo,
                 datiLavoratore: utente.datiLavoratore,
                 datiImprenditore: utente.datiImprenditore,
                 ratingMedio: utente.ratingMedio,

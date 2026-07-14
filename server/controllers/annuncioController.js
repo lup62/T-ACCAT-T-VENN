@@ -117,7 +117,7 @@ async function listaAnnunci(req, res) {
         const annunci = await Annuncio.find(filtri)
             .populate(
                 "autore",
-                "nome cognome ruoli immagineProfilo ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 
@@ -172,7 +172,7 @@ async function listaMieiAnnunci(req, res) {
         const annunci = await Annuncio.find(filtri)
             .populate(
                 "autore",
-                "nome cognome ruoli immagineProfilo ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 
@@ -201,7 +201,7 @@ async function dettaglioAnnuncio(req, res) {
 
         const annuncio = await Annuncio.findById(id).populate(
             "autore",
-            "nome cognome ruoli immagineProfilo ratingMedio"
+            "nome cognome ruoli ratingMedio"
         );
 
         if (!annuncio) {
