@@ -1,4 +1,28 @@
 const mongoose = require("mongoose");
+const TIPI_LAVORO_CONSENTITI = [
+    "Olivicoltura",
+    "Viticoltura",
+    "Frutticoltura",
+    "Orticoltura",
+    "Cerealicoltura",
+    "Apicoltura",
+    "Zootecnia",
+    "Altro",
+];
+
+function normalizzaTipoLavoro(tipoLavoro) {
+    if (!tipoLavoro || typeof tipoLavoro !== "string") {
+        return "Altro";
+    }
+
+    const valorePulito = tipoLavoro.trim();
+
+    if (TIPI_LAVORO_CONSENTITI.includes(valorePulito)) {
+        return valorePulito;
+    }
+
+    return "Altro";
+}
 
 // Punto geografico GeoJSON.
 // MongoDB usa sempre: [longitudine, latitudine].
@@ -102,10 +126,11 @@ const annuncioSchema = new mongoose.Schema(
         },
 
         tipoLavoro: {
-            type: String,
-            required: true,
-            trim: true,
-        },
+    type: String,
+    required: true,
+    trim: true,
+    enum: TIPI_LAVORO_CONSENTITI,
+},
 
         competenze: {
             type: [String],
@@ -155,6 +180,7 @@ annuncioSchema.index({ "luogo.posizione": "2dsphere" });
 
 // Controlli che coinvolgono più campi.
 annuncioSchema.pre("validate", function () {
+    this.tipoLavoro = normalizzaTipoLavoro(this.tipoLavoro);
     // La data di fine non può essere prima della data di inizio.
     if (
         this.periodo?.dataInizio &&

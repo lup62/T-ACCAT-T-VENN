@@ -209,11 +209,11 @@ async function listaRecensioniUtente(req, res) {
         })
             .populate(
                 "autore",
-                "nome cognome ruoli immagineProfilo ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .populate(
                 "destinatario",
-                "nome cognome ruoli immagineProfilo ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .populate(
                 "annuncio",
@@ -250,11 +250,11 @@ async function listaRecensioniAnnuncio(req, res) {
         })
             .populate(
                 "autore",
-                "nome cognome ruoli immagineProfilo ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .populate(
                 "destinatario",
-                "nome cognome ruoli immagineProfilo ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .populate(
                 "annuncio",
