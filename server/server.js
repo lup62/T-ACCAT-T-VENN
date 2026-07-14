@@ -9,6 +9,8 @@ const propostaRoutes = require("./routes/propostaRoutes");
 const recensioneRoutes = require("./routes/recensioneRoutes");
 const preferitoRoutes = require("./routes/preferitoRoutes");
 const userRoutes = require("./routes/userRoutes");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs/swaggerSpec");
 
 dotenv.config();
 
@@ -19,6 +21,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/annunci", annuncioRoutes);
