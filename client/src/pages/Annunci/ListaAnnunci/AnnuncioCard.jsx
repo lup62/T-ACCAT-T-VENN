@@ -13,6 +13,8 @@
  *   preferito          true se l'annuncio è nei preferiti (cuore pieno)
  *   onTogglePreferito  callback(annuncio) — se assente il cuoricino non appare
  *   toggleInCorso      true mentre il salvataggio/rimozione è in volo
+ *   azioni             nodo opzionale reso sotto "Visualizza dettagli"
+ *                      (usato da "I miei annunci" per Chiudi/Concludi)
  *
  * Al click di "Visualizza dettagli" naviga a /annunci/:id
  * senza ricaricare la pagina (React Router, niente window.location).
@@ -20,7 +22,6 @@
 
 import { useNavigate } from "react-router-dom";
 import {
-    Box,
     Button,
     Card,
     CardContent,
@@ -59,7 +60,7 @@ function formatPrezzo(prezzo) {
     return `${prezzo.min} – ${prezzo.max} ${unita}`;
 }
 
-function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, toggleInCorso = false }) {
+function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, toggleInCorso = false, azioni = null }) {
     const navigate = useNavigate();
 
     return (
@@ -152,7 +153,7 @@ function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, t
                 )}
 
                 {/* Bottone che porta alla pagina di dettaglio dell'annuncio */}
-                <Box sx={{ mt: "auto" }}>
+                <Stack spacing={1.5} sx={{ mt: "auto" }}>
                     <Button
                         variant="outlined"
                         color={color}
@@ -161,7 +162,8 @@ function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, t
                     >
                         Visualizza dettagli
                     </Button>
-                </Box>
+                    {azioni}
+                </Stack>
             </CardContent>
         </Card>
     );

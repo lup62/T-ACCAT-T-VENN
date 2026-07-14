@@ -11,6 +11,7 @@ import ChatPage from '../pages/Chat/ChatPage.jsx'
 import PrivacyPolicyPage from '../pages/Legal/PrivacyPolicyPage.jsx'
 import TerminiCondizioniPage from '../pages/Legal/TerminiCondizioniPage.jsx'
 import PubblicaAnnuncioPage from '../pages/Annunci/PubblicaAnnuncio/PubblicaAnnuncioPage.jsx'
+import MieiAnnunciPage from '../pages/Annunci/MieiAnnunci/MieiAnnunciPage.jsx'
 import PropostePage from '../pages/Proposte/PropostePage.jsx'
 import PreferitiPage from '../pages/Preferiti/PreferitiPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
@@ -23,6 +24,7 @@ import MainLayout from '../layouts/MainLayout.jsx'
  * Rotte annunci:
  *   /annunci/offerte  → offerte di lavoro pubblicate dai datori
  *   /annunci/cercasi  → profili di lavoratori disponibili
+ *   /annunci/miei     → annunci pubblicati dall'utente autenticato
  *   /annunci/:id      → dettaglio di un singolo annuncio
  */
 function AppRoutes() {
@@ -34,6 +36,7 @@ function AppRoutes() {
                 <Route path="register" element={<RegisterPage />} />
                 <Route path="annunci/offerte" element={<AnnunciLavoroPage />} />
                 <Route path="annunci/cercasi" element={<AnnunciLavoratoriPage />} />
+                <Route path="annunci/miei" element={<MieiAnnunciPage />} />
                 <Route path="annunci/:id" element={<DettaglioAnnuncioPage />} />
                 <Route path="profilo" element={<ProfiloPage />} />
                 <Route path="chat" element={<ChatPage />} />

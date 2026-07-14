@@ -3,8 +3,10 @@
  *
  * Endpoint disponibili (server/routes/annuncioRoutes.js):
  *   GET   /api/annunci?tipo=...        → { message, count, annunci }
+ *   GET   /api/annunci/miei?stato=...  → { message, count, annunci }  (richiede Bearer token)
  *   GET   /api/annunci/:id             → { message, annuncio }   (Bearer token facoltativo)
  *   POST  /api/annunci                 → { message, annuncio }   (richiede Bearer token)
+ *   PATCH /api/annunci/:id/chiudi      → { message, annuncio }   (richiede Bearer token)
  *   PATCH /api/annunci/:id/concludi    → { message, annuncio }   (richiede Bearer token)
  *
  * Stesso pattern di AuthContext: base URL da VITE_API_URL
@@ -21,6 +23,19 @@ export async function getAnnunci(tipo) {
     const data = await res.json();
     if (!res.ok) {
         throw new Error(data.message || "Errore nel recupero degli annunci.");
+    }
+    return data.annunci;
+}
+
+// Annunci creati dall'utente autenticato, in qualunque stato
+// (aperto, in_corso, concluso, chiuso), dal più recente.
+export async function getAnnunciMiei(accessToken) {
+    const res = await fetch(`${API_URL}/api/annunci/miei`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Errore nel recupero dei tuoi annunci.");
     }
     return data.annunci;
 }
@@ -43,6 +58,22 @@ export async function creaAnnuncio(payload, accessToken) {
         // dei singoli errori: li mostriamo tutti, non solo il messaggio.
         const dettagli = Array.isArray(data.errors) ? ` ${data.errors.join(" ")}` : "";
         throw new Error((data.message || "Errore nella pubblicazione dell'annuncio.") + dettagli);
+    }
+    return data.annuncio;
+}
+
+// Chiude un annuncio ancora aperto. Solo l'autore può farlo; il backend
+// rifiuta in automatico le proposte ancora in attesa.
+export async function chiudiAnnuncio(id, accessToken) {
+    const res = await fetch(`${API_URL}/api/annunci/${id}/chiudi`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Errore nella chiusura dell'annuncio.");
     }
     return data.annuncio;
 }

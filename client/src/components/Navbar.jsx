@@ -145,6 +145,20 @@ function Navbar() {
 
                             <Button
                                 component={RouterLink}
+                                to="/annunci/miei"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                I miei annunci
+                            </Button>
+
+                            <Button
+                                component={RouterLink}
                                 to="/profilo"
                                 color="primary"
                                 variant="contained"
@@ -306,6 +320,15 @@ function Navbar() {
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     <ListItemText primary="Le mie proposte" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/annunci/miei"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="I miei annunci" />
                                 </ListItemButton>
                             </ListItem>
                             <ListItem disablePadding>
