@@ -32,46 +32,12 @@ import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 import { getProfiloPubblico } from "../../services/users";
 import { getRecensioniUtente } from "../../services/recensioni";
 import { CampoProfilo, ChipsProfilo } from "../../components/ProfiloCampi";
+import RecensioneItem from "../../components/RecensioneItem";
 
 const LABEL_RUOLO = {
     lavoratore: "Lavoratore",
     imprenditore: "Imprenditore",
 };
-
-function formatData(iso) {
-    return new Date(iso).toLocaleDateString("it-IT", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
-}
-
-// Singola recensione ricevuta: stelle, commento, autore e data.
-function RecensioneRicevuta({ recensione }) {
-    return (
-        <Box>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5, flexWrap: "wrap" }}>
-                <Rating value={recensione.stelle} readOnly size="small" />
-                <Typography variant="body2" fontWeight={600}>
-                    {recensione.autore?.nome} {recensione.autore?.cognome}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                    {formatData(recensione.createdAt)}
-                </Typography>
-            </Stack>
-            {recensione.commento && (
-                <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
-                    {recensione.commento}
-                </Typography>
-            )}
-            {recensione.annuncio?.titolo && (
-                <Typography variant="caption" color="text.secondary">
-                    per "{recensione.annuncio.titolo}"
-                </Typography>
-            )}
-        </Box>
-    );
-}
 
 function ProfiloPubblicoPage() {
     const { id } = useParams();
@@ -242,7 +208,7 @@ function ProfiloPubblicoPage() {
                     ) : (
                         <Stack spacing={2.5} divider={<Divider />}>
                             {recensioni.map((recensione) => (
-                                <RecensioneRicevuta key={recensione._id} recensione={recensione} />
+                                <RecensioneItem key={recensione._id} recensione={recensione} mostraAnnuncio />
                             ))}
                         </Stack>
                     )}

@@ -54,10 +54,12 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { getAnnuncio } from "../../../services/annunci";
+import { getRecensioniAnnuncio } from "../../../services/recensioni";
 import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
 import RegistratiDialog from "../RegistratiDialog";
 import InviaPropostaDialog from "./InviaPropostaDialog";
 import SnackbarAvviso from "../../../components/SnackbarAvviso";
+import RecensioneItem from "../../../components/RecensioneItem";
 
 const COLORI_TEMA = { primary: "#387347", secondary: "#69A62D" };
 
@@ -158,6 +160,23 @@ function DettaglioAnnuncioPage() {
         };
     }, [id, accessToken, inizializzazione, chiaveFetch]);
 
+    // Recensioni della collaborazione: esistono solo per annunci conclusi.
+    // Stessa idea della chiave qui sopra: il risultato ricorda per quale
+    // annuncio vale, così cambiando pagina non si mostrano recensioni vecchie.
+    const [recensioniRisultato, setRecensioniRisultato] = useState(null);
+    useEffect(() => {
+        if (annuncio?.stato !== "concluso") return undefined;
+        let attivo = true;
+        getRecensioniAnnuncio(annuncio._id)
+            .then((lista) => attivo && setRecensioniRisultato({ annuncioId: annuncio._id, lista }))
+            .catch(() => {
+                // sezione facoltativa: se la lettura fallisce non si mostra
+            });
+        return () => {
+            attivo = false;
+        };
+    }, [annuncio]);
+
     if (caricamento) {
         return (
             <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
@@ -182,6 +201,10 @@ function DettaglioAnnuncioPage() {
             </Box>
         );
     }
+
+    // Recensioni valide solo se appartengono all'annuncio mostrato.
+    const recensioni =
+        recensioniRisultato?.annuncioId === annuncio._id ? recensioniRisultato.lista : [];
 
     const isRichiesta = annuncio.tipo === "richiesta_manodopera";
     const tipoLabel = isRichiesta ? "Ricerca manodopera" : "Offerta di lavoro";
@@ -317,6 +340,26 @@ function DettaglioAnnuncioPage() {
                             </MapContainer>
                         </Box>
                     </Box>
+                    )}
+
+                    {/* Recensioni lasciate a lavoro concluso (nelle due direzioni) */}
+                    {annuncio.stato === "concluso" && recensioni.length > 0 && (
+                        <Box sx={{ mt: 5 }}>
+                            <Typography variant="h6" sx={{ mb: 2 }}>
+                                Recensioni della collaborazione
+                            </Typography>
+                            <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+                                <Stack spacing={2.5} divider={<Divider />}>
+                                    {recensioni.map((recensione) => (
+                                        <RecensioneItem
+                                            key={recensione._id}
+                                            recensione={recensione}
+                                            mostraDestinatario
+                                        />
+                                    ))}
+                                </Stack>
+                            </Paper>
+                        </Box>
                     )}
                 </Box>
 
