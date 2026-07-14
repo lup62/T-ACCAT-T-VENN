@@ -159,22 +159,28 @@ async function accettaProposta(req, res) {
 
         const dataRisposta = new Date();
 
-        const annuncioAggiornato = await Annuncio.findOneAndUpdate(
+        // L'annuncio passa (o resta) "in_corso". L'update condizionale accetta
+        // sia "aperto" che "in_corso": l'autore può accettare più proposte
+        // sullo stesso annuncio (es. quando servono più lavoratori) e le altre
+        // candidature restano in attesa finché non decide lui, una per una.
+        // Con new: false otteniamo il documento PRECEDENTE all'update, così
+        // in caso di ripristino sappiamo che stato aveva l'annuncio.
+        const annuncioPrecedente = await Annuncio.findOneAndUpdate(
             {
                 _id: proposta.annuncio,
                 autore: req.utente.id,
-                stato: "aperto",
+                stato: { $in: ["aperto", "in_corso"] },
             },
             {
                 stato: "in_corso",
             },
             {
-                new: true,
+                new: false,
                 runValidators: true,
             }
         );
 
-        if (!annuncioAggiornato) {
+        if (!annuncioPrecedente) {
             const annuncioEsistente = await Annuncio.findById(proposta.annuncio);
 
             if (!annuncioEsistente) {
@@ -184,7 +190,7 @@ async function accettaProposta(req, res) {
             }
 
             return res.status(400).json({
-                message: "Puoi accettare proposte solo su annunci ancora aperti.",
+                message: "Puoi accettare proposte solo su annunci aperti o in corso.",
             });
         }
 
@@ -208,13 +214,14 @@ async function accettaProposta(req, res) {
         );
 
         if (!propostaAccettata) {
+            // Riporta l'annuncio allo stato che aveva prima dell'update.
             await Annuncio.findOneAndUpdate(
                 {
-                    _id: annuncioAggiornato._id,
+                    _id: annuncioPrecedente._id,
                     stato: "in_corso",
                 },
                 {
-                    stato: "aperto",
+                    stato: annuncioPrecedente.stato,
                 },
                 {
                     runValidators: true,
@@ -225,18 +232,6 @@ async function accettaProposta(req, res) {
                 message: "La proposta non è più in attesa.",
             });
         }
-
-        await Proposta.updateMany(
-            {
-                annuncio: annuncioAggiornato._id,
-                _id: { $ne: propostaAccettata._id },
-                stato: "in_attesa",
-            },
-            {
-                stato: "rifiutata",
-                dataRisposta,
-            }
-        );
 
         return res.status(200).json({
             message: "Proposta accettata con successo.",

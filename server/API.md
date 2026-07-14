@@ -451,6 +451,10 @@ Auth: sì
 
 Solo autore.
 
+Effetti:
+- annuncio → `concluso`
+- proposte `in_attesa` collegate → `rifiutata`
+
 Risposte:
 
 ```text
@@ -535,8 +539,11 @@ Solo destinatario della proposta.
 
 Effetti:
 - proposta → `accettata`
-- annuncio → `in_corso`
-- altre proposte `in_attesa` sullo stesso annuncio → `rifiutata`
+- annuncio → `in_corso` (se era `aperto`)
+
+Le altre proposte `in_attesa` restano in attesa: è l'autore a decidere,
+una per una, se accettarle o rifiutarle. Si possono quindi accettare più
+proposte sullo stesso annuncio finché è `aperto` o `in_corso`.
 
 La logica usa update condizionale per ridurre il rischio di doppia accettazione.
 

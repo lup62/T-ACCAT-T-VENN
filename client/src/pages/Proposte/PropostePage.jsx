@@ -3,11 +3,14 @@
  *
  * "Le mie proposte": due tab per gestire le candidature.
  *   - Ricevute: proposte arrivate sui propri annunci, con Accetta/Rifiuta.
- *     Accettando, il backend mette l'annuncio "in corso" e rifiuta in
- *     automatico le altre proposte in attesa: per questo dopo ogni azione
- *     la lista viene ricaricata invece di aggiornare la singola card.
+ *     Accettando, il backend mette l'annuncio "in corso" ma le altre
+ *     proposte restano in attesa: è l'autore a decidere una per una (può
+ *     anche accettarne più di una, es. quando servono più lavoratori).
  *     Sulla proposta accettata compare poi "Concludi lavoro"
- *     (PATCH /api/annunci/:id/concludi, solo autore dell'annuncio).
+ *     (PATCH /api/annunci/:id/concludi, solo autore dell'annuncio): è la
+ *     conclusione a rifiutare in automatico le proposte rimaste in attesa.
+ *     Dopo ogni azione la lista viene ricaricata invece di aggiornare la
+ *     singola card, perché cambia anche lo stato dell'annuncio collegato.
  *   - Inviate: le proprie candidature, con lo stato della risposta.
  *
  * Ad annuncio concluso entrambe le tab mostrano "Lascia una recensione"

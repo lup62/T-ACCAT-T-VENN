@@ -431,9 +431,24 @@ async function concludiAnnuncio(req, res) {
 
         await annuncio.save();
 
+        // Il lavoro è finito: le candidature rimaste in attesa non hanno più
+        // senso e vengono rifiutate in automatico (a differenza
+        // dell'accettazione, dove è l'autore a decidere una per una).
+        const risultatoProposte = await Proposta.updateMany(
+            {
+                annuncio: annuncio._id,
+                stato: "in_attesa",
+            },
+            {
+                stato: "rifiutata",
+                dataRisposta: new Date(),
+            }
+        );
+
         return res.status(200).json({
             message: "Annuncio concluso con successo.",
             annuncio,
+            proposteRifiutate: risultatoProposte.modifiedCount,
         });
     } catch (error) {
         console.error("Errore durante la conclusione dell'annuncio:", error);
