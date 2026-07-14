@@ -307,6 +307,8 @@ const swaggerSpec = {
             patch: {
                 tags: ["Annunci"],
                 summary: "Chiude annuncio aperto",
+                description:
+                    "Solo l'autore. L'annuncio passa a 'chiuso' e le proposte ancora in attesa vengono rifiutate automaticamente (la risposta include proposteRifiutate).",
                 security: bearerSecurity,
                 parameters: [idParam()],
                 responses: {
@@ -323,6 +325,8 @@ const swaggerSpec = {
             patch: {
                 tags: ["Annunci"],
                 summary: "Conclude annuncio in corso",
+                description:
+                    "Solo l'autore. L'annuncio passa a 'concluso' e le proposte ancora in attesa vengono rifiutate automaticamente (la risposta include proposteRifiutate).",
                 security: bearerSecurity,
                 parameters: [idParam()],
                 responses: {
@@ -390,6 +394,8 @@ const swaggerSpec = {
             patch: {
                 tags: ["Proposte"],
                 summary: "Accetta proposta ricevuta",
+                description:
+                    "Solo il destinatario. L'annuncio passa (o resta) 'in_corso'; le altre proposte in attesa NON vengono rifiutate in automatico: decide l'autore una per una, e si possono accettare più proposte sullo stesso annuncio finché è aperto o in corso.",
                 security: bearerSecurity,
                 parameters: [idParam()],
                 responses: {
