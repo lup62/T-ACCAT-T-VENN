@@ -19,7 +19,8 @@
  * NOTA: il CSS di Leaflet viene importato qui per non inquinare il tema globale.
  */
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -58,6 +59,10 @@ function MappaAnnunci({ annunci, color = 'primary' }) {
     const hexColor = COLORI_TEMA[color] ?? COLORI_TEMA.primary;
     const markerIcon = createMarkerIcon(hexColor);
 
+    // Annuncio col popup aperto: solo il suo raggio di disponibilità
+    // viene disegnato sulla mappa (per non affollarla di cerchi)
+    const [annuncioAperto, setAnnuncioAperto] = useState(null);
+
     return (
         <Box sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 2, height: { xs: 450, md: '100%' } }}>
             <MapContainer
@@ -83,6 +88,11 @@ function MappaAnnunci({ annunci, color = 'primary' }) {
                                 annuncio.luogo.posizione.coordinates[0],
                             ]}
                             icon={markerIcon}
+                            eventHandlers={{
+                                popupopen: () => setAnnuncioAperto(annuncio),
+                                popupclose: () => setAnnuncioAperto((corrente) =>
+                                    corrente?._id === annuncio._id ? null : corrente),
+                            }}
                         >
                             <Popup minWidth={200}>
                                 <Chip
@@ -114,6 +124,20 @@ function MappaAnnunci({ annunci, color = 'primary' }) {
                         </Marker>
                     ))}
                 </MarkerClusterGroup>
+
+                {/* Zona raggiungibile dal lavoratore: cerchio col raggio di
+                    disponibilità, solo per l'annuncio col popup aperto
+                    (fuori dal cluster, che gestisce solo marker) */}
+                {annuncioAperto?.tipo === 'disponibilita_lavoro' && annuncioAperto.luogo.raggioKm > 0 && (
+                    <Circle
+                        center={[
+                            annuncioAperto.luogo.posizione.coordinates[1],
+                            annuncioAperto.luogo.posizione.coordinates[0],
+                        ]}
+                        radius={annuncioAperto.luogo.raggioKm * 1000}
+                        pathOptions={{ color: hexColor, weight: 1.5, fillOpacity: 0.08 }}
+                    />
+                )}
             </MapContainer>
         </Box>
     );

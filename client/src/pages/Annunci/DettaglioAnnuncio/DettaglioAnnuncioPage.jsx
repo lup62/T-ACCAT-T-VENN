@@ -48,8 +48,9 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EuroIcon from "@mui/icons-material/Euro";
 import AgricultureIcon from "@mui/icons-material/Agriculture";
 import GroupIcon from "@mui/icons-material/Group";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -323,6 +324,15 @@ function DettaglioAnnuncioPage() {
                                 zoom={12}
                                 style={{ width: "100%", height: "100%" }}
                                 scrollWheelZoom={false}
+                                // Con un raggio di spostamento il fit avviene sui bounds
+                                // del cerchio (che vincono su center/zoom), così è tutto visibile
+                                {...(annuncio.tipo === "disponibilita_lavoro" && annuncio.luogo.raggioKm > 0 && {
+                                    bounds: L.latLng(
+                                        annuncio.luogo.posizione.coordinates[1],
+                                        annuncio.luogo.posizione.coordinates[0],
+                                    ).toBounds(annuncio.luogo.raggioKm * 2000),
+                                    boundsOptions: { padding: [20, 20] },
+                                })}
                             >
                                 <TileLayer
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -337,6 +347,18 @@ function DettaglioAnnuncioPage() {
                                 >
                                     <Popup>{annuncio.luogo.testo}</Popup>
                                 </Marker>
+
+                                {/* Zona raggiungibile dal lavoratore (solo disponibilità con raggio) */}
+                                {annuncio.tipo === "disponibilita_lavoro" && annuncio.luogo.raggioKm > 0 && (
+                                    <Circle
+                                        center={[
+                                            annuncio.luogo.posizione.coordinates[1],
+                                            annuncio.luogo.posizione.coordinates[0],
+                                        ]}
+                                        radius={annuncio.luogo.raggioKm * 1000}
+                                        pathOptions={{ color: COLORI_TEMA[tipoColor], weight: 1.5, fillOpacity: 0.08 }}
+                                    />
+                                )}
                             </MapContainer>
                         </Box>
                     </Box>
@@ -367,6 +389,16 @@ function DettaglioAnnuncioPage() {
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, minWidth: 0 }}>
                     <Stack spacing={2.5}>
                         <RigaInfo Icon={LocationOnIcon} label="Luogo" valore={annuncio.luogo.testo} />
+
+                        {/* Solo per le disponibilità: quanto il lavoratore è disposto a spostarsi */}
+                        {annuncio.tipo === "disponibilita_lavoro" && annuncio.luogo?.raggioKm > 0 && (
+                            <RigaInfo
+                                Icon={DirectionsCarIcon}
+                                label="Raggio di spostamento"
+                                valore={`Fino a ${annuncio.luogo.raggioKm} km`}
+                            />
+                        )}
+
                         <RigaInfo Icon={CalendarMonthIcon} label="Periodo" valore={formatPeriodo(annuncio.periodo)} />
                         <RigaInfo Icon={EuroIcon} label="Compenso" valore={formatPrezzo(annuncio.prezzo)} />
                         <RigaInfo Icon={AgricultureIcon} label="Tipo di lavoro" valore={annuncio.tipoLavoro} />
