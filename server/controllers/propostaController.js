@@ -81,7 +81,7 @@ async function listaProposteRicevute(req, res) {
             )
             .populate(
                 "proponente",
-                "nome cognome email ruoli immagineProfilo ratingMedio"
+                "nome cognome email ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 
@@ -110,7 +110,7 @@ async function listaProposteInviate(req, res) {
             )
             .populate(
                 "destinatario",
-                "nome cognome email ruoli immagineProfilo ratingMedio"
+                "nome cognome email ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 
@@ -137,7 +137,7 @@ async function accettaProposta(req, res) {
             });
         }
 
-        const proposta = await Proposta.findById(id).populate("annuncio");
+        const proposta = await Proposta.findById(id);
 
         if (!proposta) {
             return res.status(404).json({
@@ -157,41 +157,85 @@ async function accettaProposta(req, res) {
             });
         }
 
-        if (!proposta.annuncio) {
-            return res.status(404).json({
-                message: "Annuncio collegato alla proposta non trovato.",
-            });
-        }
+        const dataRisposta = new Date();
 
-        if (proposta.annuncio.stato !== "aperto") {
-            return res.status(400).json({
-                message: "Puoi accettare proposte solo su annunci ancora aperti.",
-            });
-        }
-
-        proposta.stato = "accettata";
-        proposta.dataRisposta = new Date();
-
-        proposta.annuncio.stato = "in_corso";
-
-        await proposta.save();
-        await proposta.annuncio.save();
-
-        await Proposta.updateMany(
+        // L'annuncio passa (o resta) "in_corso". L'update condizionale accetta
+        // sia "aperto" che "in_corso": l'autore può accettare più proposte
+        // sullo stesso annuncio (es. quando servono più lavoratori) e le altre
+        // candidature restano in attesa finché non decide lui, una per una.
+        // Con new: false otteniamo il documento PRECEDENTE all'update, così
+        // in caso di ripristino sappiamo che stato aveva l'annuncio.
+        const annuncioPrecedente = await Annuncio.findOneAndUpdate(
             {
-                annuncio: proposta.annuncio._id,
-                _id: { $ne: proposta._id },
-                stato: "in_attesa",
+                _id: proposta.annuncio,
+                autore: req.utente.id,
+                stato: { $in: ["aperto", "in_corso"] },
             },
             {
-                stato: "rifiutata",
-                dataRisposta: new Date(),
+                stato: "in_corso",
+            },
+            {
+                new: false,
+                runValidators: true,
             }
         );
 
+        if (!annuncioPrecedente) {
+            const annuncioEsistente = await Annuncio.findById(proposta.annuncio);
+
+            if (!annuncioEsistente) {
+                return res.status(404).json({
+                    message: "Annuncio collegato alla proposta non trovato.",
+                });
+            }
+
+            return res.status(400).json({
+                message: "Puoi accettare proposte solo su annunci aperti o in corso.",
+            });
+        }
+
+        const propostaAccettata = await Proposta.findOneAndUpdate(
+            {
+                _id: proposta._id,
+                destinatario: req.utente.id,
+                stato: "in_attesa",
+            },
+            {
+                stato: "accettata",
+                dataRisposta,
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        ).populate(
+            "annuncio",
+            "tipo titolo descrizione luogo periodo orarioLavorativo tipoLavoro competenze numeroLavoratoriRichiesti prezzo stato"
+        );
+
+        if (!propostaAccettata) {
+            // Riporta l'annuncio allo stato che aveva prima dell'update.
+            await Annuncio.findOneAndUpdate(
+                {
+                    _id: annuncioPrecedente._id,
+                    stato: "in_corso",
+                },
+                {
+                    stato: annuncioPrecedente.stato,
+                },
+                {
+                    runValidators: true,
+                }
+            );
+
+            return res.status(400).json({
+                message: "La proposta non è più in attesa.",
+            });
+        }
+
         return res.status(200).json({
             message: "Proposta accettata con successo.",
-            proposta,
+            proposta: propostaAccettata,
         });
     } catch (error) {
         console.error("Errore durante l'accettazione della proposta:", error);
@@ -201,7 +245,6 @@ async function accettaProposta(req, res) {
         });
     }
 }
-
 async function rifiutaProposta(req, res) {
     try {
         const { id } = req.params;

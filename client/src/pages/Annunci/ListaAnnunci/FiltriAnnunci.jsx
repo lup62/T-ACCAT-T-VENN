@@ -13,7 +13,7 @@
  *   - Mobile:        bottone "Filtri" che apre un Drawer laterale.
  *
  * Props:
- *   filtri          stato corrente { tipiLavoro, province, prezzoRange, stati,
+ *   filtri          stato corrente { tipiLavoro, province, prezzoRange,
  *                                    periodoInizio, periodoFine }
  *   onFiltriChange  callback(nuoviFiltri) — chiamata ad ogni modifica
  *   color           "primary" | "secondary" — colore tema della pagina
@@ -128,32 +128,6 @@ function FiltriAnnunci({ filtri, onFiltriChange, color = "primary", isLoggedIn =
                     color={color}
                 />
             </Box>
-
-            <Divider sx={{ mb: 2 }} />
-
-            {/* Stato annuncio */}
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>Stato</Typography>
-            <FormGroup sx={{ mb: 2 }}>
-                {[
-                    { valore: 'aperto', label: 'Aperto' },
-                    { valore: 'in_corso', label: 'In corso' },
-                    { valore: 'concluso', label: 'Concluso' },
-                    { valore: 'chiuso', label: 'Chiuso' },
-                ].map(({ valore, label }) => (
-                    <FormControlLabel
-                        key={valore}
-                        label={label}
-                        control={
-                            <Checkbox
-                                size="small"
-                                color={color}
-                                checked={filtri.stati.includes(valore)}
-                                onChange={() => toggleCheckbox("stati", valore)}
-                            />
-                        }
-                    />
-                ))}
-            </FormGroup>
 
             <Divider sx={{ mb: 2 }} />
 

@@ -13,14 +13,15 @@
  *   preferito          true se l'annuncio è nei preferiti (cuore pieno)
  *   onTogglePreferito  callback(annuncio) — se assente il cuoricino non appare
  *   toggleInCorso      true mentre il salvataggio/rimozione è in volo
+ *   azioni             nodo opzionale reso sotto "Visualizza dettagli"
+ *                      (usato da "I miei annunci" per Chiudi/Concludi)
  *
  * Al click di "Visualizza dettagli" naviga a /annunci/:id
  * senza ricaricare la pagina (React Router, niente window.location).
  */
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
-    Box,
     Button,
     Card,
     CardContent,
@@ -59,7 +60,7 @@ function formatPrezzo(prezzo) {
     return `${prezzo.min} – ${prezzo.max} ${unita}`;
 }
 
-function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, toggleInCorso = false }) {
+function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, toggleInCorso = false, azioni = null }) {
     const navigate = useNavigate();
 
     return (
@@ -142,17 +143,28 @@ function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, t
 
                 <Divider sx={{ mb: 2 }} />
 
-                {/* L'autore manca negli annunci arrivati dalla lista preferiti */}
+                {/* L'autore manca negli annunci arrivati dalla lista preferiti.
+                    Il nome porta al suo profilo pubblico. */}
                 {annuncio.autore && (
                     <Stack direction="row" alignItems="center" sx={{ mb: 3 }}>
-                        <Typography variant="body2" fontWeight={600}>
+                        <Typography
+                            component={RouterLink}
+                            to={`/utenti/${annuncio.autore._id}`}
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{
+                                color: "inherit",
+                                textDecoration: "none",
+                                "&:hover": { textDecoration: "underline" },
+                            }}
+                        >
                             {annuncio.autore.nome} {annuncio.autore.cognome}
                         </Typography>
                     </Stack>
                 )}
 
                 {/* Bottone che porta alla pagina di dettaglio dell'annuncio */}
-                <Box sx={{ mt: "auto" }}>
+                <Stack spacing={1.5} sx={{ mt: "auto" }}>
                     <Button
                         variant="outlined"
                         color={color}
@@ -161,7 +173,8 @@ function AnnuncioCard({ annuncio, color, preferito = false, onTogglePreferito, t
                     >
                         Visualizza dettagli
                     </Button>
-                </Box>
+                    {azioni}
+                </Stack>
             </CardContent>
         </Card>
     );

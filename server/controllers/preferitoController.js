@@ -66,7 +66,7 @@ async function creaPreferito(req, res) {
         const preferitoPopolato = await Preferito.findById(preferito._id)
             .populate(
                 "riferimento",
-                "titolo tipo tipoLavoro luogo periodo prezzo stato nome cognome ruoli immagineProfilo ratingMedio"
+                "titolo tipo tipoLavoro luogo periodo prezzo stato nome cognome ruoli ratingMedio"
             );
 
         return res.status(201).json({
@@ -116,7 +116,7 @@ async function listaPreferiti(req, res) {
         const preferiti = await Preferito.find(filtri)
             .populate(
                 "riferimento",
-                "titolo tipo tipoLavoro luogo periodo prezzo stato nome cognome ruoli immagineProfilo ratingMedio"
+                "titolo tipo tipoLavoro luogo periodo prezzo stato nome cognome ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 

@@ -7,7 +7,7 @@
  */
 
 import { useState } from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import {
     AppBar,
     Toolbar,
@@ -35,17 +35,35 @@ const navLinks = [
     { label: "Home", to: "/" },
     { label: "Offerte di lavoro", to: "/annunci/offerte" },
     { label: "Cerca personale", to: "/annunci/cercasi" },
-    { label: "Come funziona", to: "/#come-funziona", isAnchor: true },
+    // hash: sezione della homepage, gestita da vaiAllAncora (niente <a href>)
+    { label: "Come funziona", hash: "#come-funziona" },
 ];
 
 function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isLoggedIn, utente, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const handleLogout = () => {
         logout();
         setMobileMenuOpen(false);
         navigate("/");
+    };
+
+    // "Come funziona" è un'ancora dentro la homepage. Un normale <a href>
+    // ricaricherebbe la pagina e il browser cercherebbe l'ancora prima che
+    // React l'abbia renderizzata (serviva un secondo click). Se siamo già
+    // in home basta scorrere; altrimenti navighiamo con l'hash e ci pensa
+    // l'effect in HomePage a scorrere a rendering avvenuto.
+    const vaiAllAncora = (hash) => {
+        setMobileMenuOpen(false);
+        if (location.pathname === "/") {
+            document
+                .getElementById(hash.slice(1))
+                ?.scrollIntoView({ behavior: "smooth" });
+        } else {
+            navigate(`/${hash}`);
+        }
     };
 
     return (
@@ -62,6 +80,7 @@ function Navbar() {
                     minHeight: 72,
                     display: "flex",
                     justifyContent: "space-between",
+                    position: "relative",
                 }}
             >
                 {/* Logo */}
@@ -83,7 +102,9 @@ function Navbar() {
                     />
                 </Box>
 
-                {/* Menu centrale: visibile da tablet/desktop */}
+                {/* Menu centrale: visibile da tablet/desktop.
+                    Centrato rispetto alla barra (non allo spazio tra logo e
+                    azioni, che hanno larghezze diverse). */}
                 <Box
                     sx={{
                         display: {
@@ -91,13 +112,18 @@ function Navbar() {
                             lg: "flex",
                         },
                         gap: 1,
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
                     }}
                 >
-                    {navLinks.map(({ to, label, isAnchor }) => (
+                    {navLinks.map(({ to, label, hash }) => (
                         <Button
-                            key={to}
-                            component={isAnchor ? "a" : RouterLink}
-                            {...(isAnchor ? { href: to } : { to })}
+                            key={label}
+                            {...(hash
+                                ? { onClick: () => vaiAllAncora(hash) }
+                                : { component: RouterLink, to })}
                             color="inherit"
                         >
                             {label}
@@ -142,6 +168,7 @@ function Navbar() {
                             >
                                 Le mie proposte
                             </Button>
+
 
                             <Button
                                 component={RouterLink}
@@ -273,12 +300,16 @@ function Navbar() {
                     <Divider />
 
                     <List>
-                        {navLinks.map(({ label, to, isAnchor }) => (
-                            <ListItem key={to} disablePadding>
+                        {navLinks.map(({ label, to, hash }) => (
+                            <ListItem key={label} disablePadding>
                                 <ListItemButton
-                                    component={isAnchor ? "a" : RouterLink}
-                                    {...(isAnchor ? { href: to } : { to })}
-                                    onClick={() => setMobileMenuOpen(false)}
+                                    {...(hash
+                                        ? { onClick: () => vaiAllAncora(hash) }
+                                        : {
+                                              component: RouterLink,
+                                              to,
+                                              onClick: () => setMobileMenuOpen(false),
+                                          })}
                                 >
                                     <ListItemText primary={label} />
                                 </ListItemButton>

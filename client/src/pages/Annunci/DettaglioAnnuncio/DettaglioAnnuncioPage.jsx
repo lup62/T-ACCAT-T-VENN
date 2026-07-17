@@ -25,7 +25,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import {
     Alert,
@@ -48,16 +48,19 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EuroIcon from "@mui/icons-material/Euro";
 import AgricultureIcon from "@mui/icons-material/Agriculture";
 import GroupIcon from "@mui/icons-material/Group";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { getAnnuncio } from "../../../services/annunci";
+import { getRecensioniAnnuncio } from "../../../services/recensioni";
 import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
 import RegistratiDialog from "../RegistratiDialog";
 import InviaPropostaDialog from "./InviaPropostaDialog";
 import SnackbarAvviso from "../../../components/SnackbarAvviso";
+import RecensioneItem from "../../../components/RecensioneItem";
 
 const COLORI_TEMA = { primary: "#387347", secondary: "#69A62D" };
 
@@ -158,6 +161,23 @@ function DettaglioAnnuncioPage() {
         };
     }, [id, accessToken, inizializzazione, chiaveFetch]);
 
+    // Recensioni della collaborazione: esistono solo per annunci conclusi.
+    // Stessa idea della chiave qui sopra: il risultato ricorda per quale
+    // annuncio vale, così cambiando pagina non si mostrano recensioni vecchie.
+    const [recensioniRisultato, setRecensioniRisultato] = useState(null);
+    useEffect(() => {
+        if (annuncio?.stato !== "concluso") return undefined;
+        let attivo = true;
+        getRecensioniAnnuncio(annuncio._id)
+            .then((lista) => attivo && setRecensioniRisultato({ annuncioId: annuncio._id, lista }))
+            .catch(() => {
+                // sezione facoltativa: se la lettura fallisce non si mostra
+            });
+        return () => {
+            attivo = false;
+        };
+    }, [annuncio]);
+
     if (caricamento) {
         return (
             <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
@@ -182,6 +202,10 @@ function DettaglioAnnuncioPage() {
             </Box>
         );
     }
+
+    // Recensioni valide solo se appartengono all'annuncio mostrato.
+    const recensioni =
+        recensioniRisultato?.annuncioId === annuncio._id ? recensioniRisultato.lista : [];
 
     const isRichiesta = annuncio.tipo === "richiesta_manodopera";
     const tipoLabel = isRichiesta ? "Ricerca manodopera" : "Offerta di lavoro";
@@ -300,6 +324,15 @@ function DettaglioAnnuncioPage() {
                                 zoom={12}
                                 style={{ width: "100%", height: "100%" }}
                                 scrollWheelZoom={false}
+                                // Con un raggio di spostamento il fit avviene sui bounds
+                                // del cerchio (che vincono su center/zoom), così è tutto visibile
+                                {...(annuncio.tipo === "disponibilita_lavoro" && annuncio.luogo.raggioKm > 0 && {
+                                    bounds: L.latLng(
+                                        annuncio.luogo.posizione.coordinates[1],
+                                        annuncio.luogo.posizione.coordinates[0],
+                                    ).toBounds(annuncio.luogo.raggioKm * 2000),
+                                    boundsOptions: { padding: [20, 20] },
+                                })}
                             >
                                 <TileLayer
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -314,9 +347,41 @@ function DettaglioAnnuncioPage() {
                                 >
                                     <Popup>{annuncio.luogo.testo}</Popup>
                                 </Marker>
+
+                                {/* Zona raggiungibile dal lavoratore (solo disponibilità con raggio) */}
+                                {annuncio.tipo === "disponibilita_lavoro" && annuncio.luogo.raggioKm > 0 && (
+                                    <Circle
+                                        center={[
+                                            annuncio.luogo.posizione.coordinates[1],
+                                            annuncio.luogo.posizione.coordinates[0],
+                                        ]}
+                                        radius={annuncio.luogo.raggioKm * 1000}
+                                        pathOptions={{ color: COLORI_TEMA[tipoColor], weight: 1.5, fillOpacity: 0.08 }}
+                                    />
+                                )}
                             </MapContainer>
                         </Box>
                     </Box>
+                    )}
+
+                    {/* Recensioni lasciate a lavoro concluso (nelle due direzioni) */}
+                    {annuncio.stato === "concluso" && recensioni.length > 0 && (
+                        <Box sx={{ mt: 5 }}>
+                            <Typography variant="h6" sx={{ mb: 2 }}>
+                                Recensioni della collaborazione
+                            </Typography>
+                            <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+                                <Stack spacing={2.5} divider={<Divider />}>
+                                    {recensioni.map((recensione) => (
+                                        <RecensioneItem
+                                            key={recensione._id}
+                                            recensione={recensione}
+                                            mostraDestinatario
+                                        />
+                                    ))}
+                                </Stack>
+                            </Paper>
+                        </Box>
                     )}
                 </Box>
 
@@ -324,6 +389,16 @@ function DettaglioAnnuncioPage() {
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, minWidth: 0 }}>
                     <Stack spacing={2.5}>
                         <RigaInfo Icon={LocationOnIcon} label="Luogo" valore={annuncio.luogo.testo} />
+
+                        {/* Solo per le disponibilità: quanto il lavoratore è disposto a spostarsi */}
+                        {annuncio.tipo === "disponibilita_lavoro" && annuncio.luogo?.raggioKm > 0 && (
+                            <RigaInfo
+                                Icon={DirectionsCarIcon}
+                                label="Raggio di spostamento"
+                                valore={`Fino a ${annuncio.luogo.raggioKm} km`}
+                            />
+                        )}
+
                         <RigaInfo Icon={CalendarMonthIcon} label="Periodo" valore={formatPeriodo(annuncio.periodo)} />
                         <RigaInfo Icon={EuroIcon} label="Compenso" valore={formatPrezzo(annuncio.prezzo)} />
                         <RigaInfo Icon={AgricultureIcon} label="Tipo di lavoro" valore={annuncio.tipoLavoro} />
@@ -341,10 +416,22 @@ function DettaglioAnnuncioPage() {
 
                         <Stack direction="row" spacing={1.5} alignItems="center">
                             <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="body2" fontWeight={600} sx={{ wordBreak: "break-word" }}>
+                                {/* Il nome porta al profilo pubblico dell'autore */}
+                                <Typography
+                                    component={RouterLink}
+                                    to={`/utenti/${annuncio.autore._id}`}
+                                    variant="body2"
+                                    fontWeight={600}
+                                    sx={{
+                                        wordBreak: "break-word",
+                                        color: "inherit",
+                                        textDecoration: "none",
+                                        "&:hover": { textDecoration: "underline" },
+                                    }}
+                                >
                                     {annuncio.autore.nome} {annuncio.autore.cognome}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" color="text.secondary" display="block">
                                     {LABEL_RUOLO[annuncio.autore.ruoli?.[0]] ?? annuncio.autore.ruoli?.[0]}
                                 </Typography>
                             </Box>

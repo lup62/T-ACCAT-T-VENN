@@ -4,6 +4,7 @@ const optionalAuth = require("../middlewares/optionalAuth");
 const {
     creaAnnuncio,
     listaAnnunci,
+    listaMieiAnnunci,
     dettaglioAnnuncio,
     modificaAnnuncio,
     chiudiAnnuncio,
@@ -13,6 +14,7 @@ const router = express.Router();
 
 
 router.get("/", listaAnnunci);
+router.get("/miei", requireAuth, listaMieiAnnunci);
 router.get("/:id", optionalAuth, dettaglioAnnuncio);
 router.post("/", requireAuth, creaAnnuncio);
 router.patch("/:id/chiudi", requireAuth, chiudiAnnuncio);

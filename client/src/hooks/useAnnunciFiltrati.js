@@ -59,9 +59,6 @@ function applicaFiltri(lista, filtri) {
             (a.prezzo.max < filtri.prezzoRange[0] || a.prezzo.min > filtri.prezzoRange[1]))
             return false;
 
-        if (filtri.stati.length > 0 && !filtri.stati.includes(a.stato))
-            return false;
-
         if (filtri.periodoInizio && a.periodo.dataFine < filtri.periodoInizio)
             return false;
 

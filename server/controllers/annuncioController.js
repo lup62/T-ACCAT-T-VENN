@@ -117,7 +117,7 @@ async function listaAnnunci(req, res) {
         const annunci = await Annuncio.find(filtri)
             .populate(
                 "autore",
-                "nome cognome ruoli immagineProfilo ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .sort({ createdAt: -1 });
 
@@ -128,6 +128,61 @@ async function listaAnnunci(req, res) {
         });
     } catch (error) {
         console.error("Errore durante il recupero degli annunci:", error);
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+async function listaMieiAnnunci(req, res) {
+    try {
+        const { stato, tipo, tipoLavoro } = req.query;
+
+        const statiValidi = ["aperto", "in_corso", "concluso", "chiuso"];
+        const tipiValidi = ["richiesta_manodopera", "disponibilita_lavoro"];
+
+        const filtri = {
+            autore: req.utente.id,
+        };
+
+        if (stato) {
+            if (!statiValidi.includes(stato)) {
+                return res.status(400).json({
+                    message: "Stato annuncio non valido.",
+                });
+            }
+
+            filtri.stato = stato;
+        }
+
+        if (tipo) {
+            if (!tipiValidi.includes(tipo)) {
+                return res.status(400).json({
+                    message: "Tipo annuncio non valido.",
+                });
+            }
+
+            filtri.tipo = tipo;
+        }
+
+        if (tipoLavoro) {
+            filtri.tipoLavoro = tipoLavoro;
+        }
+
+        const annunci = await Annuncio.find(filtri)
+            .populate(
+                "autore",
+                "nome cognome ruoli ratingMedio"
+            )
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: "I tuoi annunci sono stati recuperati con successo.",
+            count: annunci.length,
+            annunci,
+        });
+    } catch (error) {
+        console.error("Errore durante il recupero dei miei annunci:", error);
 
         return res.status(500).json({
             message: "Errore interno del server.",
@@ -146,7 +201,7 @@ async function dettaglioAnnuncio(req, res) {
 
         const annuncio = await Annuncio.findById(id).populate(
             "autore",
-            "nome cognome ruoli immagineProfilo ratingMedio"
+            "nome cognome ruoli ratingMedio"
         );
 
         if (!annuncio) {
@@ -376,9 +431,24 @@ async function concludiAnnuncio(req, res) {
 
         await annuncio.save();
 
+        // Il lavoro è finito: le candidature rimaste in attesa non hanno più
+        // senso e vengono rifiutate in automatico (a differenza
+        // dell'accettazione, dove è l'autore a decidere una per una).
+        const risultatoProposte = await Proposta.updateMany(
+            {
+                annuncio: annuncio._id,
+                stato: "in_attesa",
+            },
+            {
+                stato: "rifiutata",
+                dataRisposta: new Date(),
+            }
+        );
+
         return res.status(200).json({
             message: "Annuncio concluso con successo.",
             annuncio,
+            proposteRifiutate: risultatoProposte.modifiedCount,
         });
     } catch (error) {
         console.error("Errore durante la conclusione dell'annuncio:", error);
@@ -391,6 +461,7 @@ async function concludiAnnuncio(req, res) {
 module.exports = {
     creaAnnuncio,
     listaAnnunci,
+    listaMieiAnnunci,
     dettaglioAnnuncio,
     modificaAnnuncio,
     chiudiAnnuncio,
