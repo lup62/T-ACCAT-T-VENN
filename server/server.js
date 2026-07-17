@@ -9,6 +9,7 @@ const propostaRoutes = require("./routes/propostaRoutes");
 const recensioneRoutes = require("./routes/recensioneRoutes");
 const preferitoRoutes = require("./routes/preferitoRoutes");
 const userRoutes = require("./routes/userRoutes");
+const conversazioneRoutes = require("./routes/conversazioneRoutes");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swaggerSpec");
 
@@ -30,6 +31,7 @@ app.use("/api/proposte", propostaRoutes);
 app.use("/api/recensioni", recensioneRoutes);
 app.use("/api/preferiti", preferitoRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/conversazioni", conversazioneRoutes);
 // Collega il backend al database MongoDB.
 connectDB();
 
