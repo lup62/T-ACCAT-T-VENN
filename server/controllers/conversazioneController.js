@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Conversazione = require("../models/Conversazione");
 const User = require("../models/User");
 const Annuncio = require("../models/Annuncio");
+const Messaggio = require("../models/Messaggio");
 
 async function listaConversazioni(req, res) {
     try {
@@ -169,7 +170,66 @@ async function creaORecuperaConversazione(req, res) {
     }
 }
 
+async function listaMessaggiConversazione(req, res) {
+    try {
+        const { conversazioneId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(conversazioneId)) {
+            return res.status(400).json({
+                message: "ID conversazione non valido.",
+            });
+        }
+
+        const conversazione = await Conversazione.findById(
+            conversazioneId
+        ).select("partecipanti");
+
+        if (!conversazione) {
+            return res.status(404).json({
+                message: "Conversazione non trovata.",
+            });
+        }
+
+        const utentePartecipa = conversazione.partecipanti.some(
+            (partecipanteId) =>
+                partecipanteId.toString() === req.utente.id
+        );
+
+        if (!utentePartecipa) {
+            return res.status(403).json({
+                message:
+                    "Non sei autorizzato a visualizzare i messaggi di questa conversazione.",
+            });
+        }
+
+        const messaggi = await Messaggio.find({
+            conversazione: conversazioneId,
+        })
+            .populate(
+                "mittente",
+                "nome cognome immagineProfilo ruoli"
+            )
+            .sort({ createdAt: 1 });
+
+        return res.status(200).json({
+            message: "Messaggi recuperati con successo.",
+            count: messaggi.length,
+            messaggi,
+        });
+    } catch (error) {
+        console.error(
+            "Errore durante il recupero dei messaggi:",
+            error
+        );
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
 module.exports = {
     listaConversazioni,
     creaORecuperaConversazione,
+    listaMessaggiConversazione,
 };
