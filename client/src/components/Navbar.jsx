@@ -169,6 +169,20 @@ function Navbar() {
                                 Le mie proposte
                             </Button>
 
+                            <Button
+                                component={RouterLink}
+                                to="/chat"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Messaggi
+                            </Button>
+
 
                             <Button
                                 component={RouterLink}
@@ -337,6 +351,15 @@ function Navbar() {
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     <ListItemText primary="Le mie proposte" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/chat"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="Messaggi" />
                                 </ListItemButton>
                             </ListItem>
                             <ListItem disablePadding>
