@@ -63,7 +63,6 @@ const swaggerSpec = {
                                 },
                                 datiLavoratore: {
                                     competenze: ["Raccolta", "Potatura"],
-                                    cv: "",
                                     certificazioni: [],
                                 },
                             },
@@ -160,7 +159,6 @@ const swaggerSpec = {
                                 telefono: "3331234567",
                                 datiLavoratore: {
                                     competenze: ["Raccolta", "Potatura"],
-                                    cv: "",
                                     certificazioni: [],
                                 },
                             },

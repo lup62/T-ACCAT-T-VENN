@@ -1,4 +1,6 @@
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -9,12 +11,26 @@ const propostaRoutes = require("./routes/propostaRoutes");
 const recensioneRoutes = require("./routes/recensioneRoutes");
 const preferitoRoutes = require("./routes/preferitoRoutes");
 const userRoutes = require("./routes/userRoutes");
+const conversazioneRoutes = require("./routes/conversazioneRoutes");
+const socketAuth = require("./sockets/socketAuth");
+const configuraChatSocket = require("./sockets/chatSocket");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swaggerSpec");
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: process.env.CLIENT_ORIGIN,
+        credentials: true,
+    },
+});
+
+io.use(socketAuth);
+configuraChatSocket(io);
 
 const PORT = process.env.PORT || 3000;
 
@@ -30,6 +46,8 @@ app.use("/api/proposte", propostaRoutes);
 app.use("/api/recensioni", recensioneRoutes);
 app.use("/api/preferiti", preferitoRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/conversazioni", conversazioneRoutes);
+
 // Collega il backend al database MongoDB.
 connectDB();
 
@@ -37,6 +55,6 @@ app.get("/", (req, res) => {
     res.send("Backend T'ACCAT attivo!");
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server avviato su http://localhost:${PORT}`);
 });
