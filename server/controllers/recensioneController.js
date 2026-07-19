@@ -104,29 +104,8 @@ async function creaRecensione(req, res) {
             });
         }
 
-        const propostaAccettata = await Proposta.findOne({
-            annuncio: annuncio._id,
-            stato: "accettata",
-        });
-
-        if (!propostaAccettata) {
-            return res.status(400).json({
-                message: "Non esiste una proposta accettata per questo annuncio.",
-            });
-        }
-
         const autoreId = req.utente.id;
         const autoreAnnuncioId = annuncio.autore.toString();
-        const proponenteId = propostaAccettata.proponente.toString();
-
-        const utenteCoinvolto =
-            autoreId === autoreAnnuncioId || autoreId === proponenteId;
-
-        if (!utenteCoinvolto) {
-            return res.status(403).json({
-                message: "Puoi recensire solo utenti collegati a una tua collaborazione.",
-            });
-        }
 
         if (autoreId === destinatarioId) {
             return res.status(400).json({
@@ -134,19 +113,32 @@ async function creaRecensione(req, res) {
             });
         }
 
-        let destinatarioCorretto = null;
-
+        let filtroProposta;
         if (autoreId === autoreAnnuncioId) {
-            destinatarioCorretto = proponenteId;
-        }
-
-        if (autoreId === proponenteId) {
-            destinatarioCorretto = autoreAnnuncioId;
-        }
-
-        if (destinatarioId !== destinatarioCorretto) {
+            filtroProposta = {
+                annuncio: annuncio._id,
+                stato: "accettata",
+                destinatario: annuncio.autore,
+                proponente: destinatarioId,
+            };
+        } else if (destinatarioId === autoreAnnuncioId) {
+            filtroProposta = {
+                annuncio: annuncio._id,
+                stato: "accettata",
+                destinatario: annuncio.autore,
+                proponente: autoreId,
+            };
+        } else {
             return res.status(403).json({
                 message: "Il destinatario non è collegato a questa collaborazione.",
+            });
+        }
+
+        const propostaAccettata = await Proposta.findOne(filtroProposta);
+
+        if (!propostaAccettata) {
+            return res.status(403).json({
+                message: "Il destinatario non è collegato a una collaborazione accettata.",
             });
         }
 

@@ -5,7 +5,7 @@
  *   node scripts/seed.js
  *
  * ATTENZIONE: svuota TUTTE le collection (utenti, annunci, proposte,
- * preferiti, recensioni, conversazioni, refresh token) prima di ricreare
+ * preferiti, recensioni, messaggi, conversazioni, refresh token) prima di ricreare
  * i dati. Da usare solo sul database di sviluppo.
  *
  * Cosa crea:
@@ -32,6 +32,7 @@ const Annuncio = require("../models/Annuncio");
 const Proposta = require("../models/Proposta");
 const Preferito = require("../models/Preferito");
 const Recensione = require("../models/Recensione");
+const Messaggio = require("../models/Messaggio");
 const Conversazione = require("../models/Conversazione");
 const RefreshToken = require("../models/RefreshToken");
 
@@ -72,7 +73,16 @@ async function main() {
     console.log(`Connesso al database "${mongoose.connection.name}"`);
 
     // ── 1. Pulizia totale ────────────────────────────────────────────────
-    const collections = [User, Annuncio, Proposta, Preferito, Recensione, Conversazione, RefreshToken];
+    const collections = [
+        User,
+        Annuncio,
+        Proposta,
+        Preferito,
+        Recensione,
+        Messaggio,
+        Conversazione,
+        RefreshToken,
+    ];
     for (const model of collections) {
         const { deletedCount } = await model.deleteMany({});
         console.log(`  svuotata ${model.collection.collectionName}: ${deletedCount} documenti rimossi`);

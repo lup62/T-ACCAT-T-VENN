@@ -34,9 +34,8 @@ export async function creaRecensione({ annuncio, destinatario, stelle, commento 
     return data.recensione;
 }
 
-// Recensioni collegate a un annuncio (al massimo due: una per direzione),
-// con autore/destinatario popolati. Usata per capire se l'utente loggato
-// ha già recensito per quell'annuncio.
+// Recensioni collegate a un annuncio, con autore/destinatario popolati.
+// Usata per capire quali controparti l'utente loggato ha già recensito.
 export async function getRecensioniAnnuncio(annuncioId) {
     const res = await fetch(`${API_URL}/api/recensioni/annuncio/${annuncioId}`);
     const data = await res.json();

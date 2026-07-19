@@ -75,7 +75,10 @@ function MieiAnnunciPage() {
     }, [accessToken]);
 
     useEffect(() => {
-        if (accessToken) carica();
+        if (accessToken) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- carica aggiorna lo stato solo dopo la richiesta asincrona.
+            void carica();
+        }
     }, [accessToken, carica]);
 
     // Chiude o conclude l'annuncio e ricarica la lista, così chip di

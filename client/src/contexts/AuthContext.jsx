@@ -16,7 +16,8 @@
  * sloggati. Il token viene poi rinnovato in automatico prima della scadenza.
  */
 
-import { createContext, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { AuthContext } from "./auth-context.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const STORAGE_KEY_UTENTE = "utente";
@@ -32,8 +33,6 @@ function leggiUtenteSalvato() {
         return null;
     }
 }
-
-export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [accessToken, setAccessToken] = useState(null);

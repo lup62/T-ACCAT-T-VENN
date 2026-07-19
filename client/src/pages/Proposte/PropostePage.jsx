@@ -16,8 +16,9 @@
  * Ad annuncio concluso entrambe le tab mostrano "Lascia una recensione"
  * (RecensioneDialog). Per sapere se è già stata lasciata si leggono le
  * recensioni degli annunci conclusi (GET /api/recensioni/annuncio/:id)
- * e si controlla se tra gli autori c'è l'utente loggato. Se la lettura
- * fallisce il bottone resta visibile: un eventuale doppio invio viene
+ * e si controlla se l'utente loggato ha già recensito quella specifica
+ * controparte. Se la lettura fallisce il bottone resta visibile: un
+ * eventuale doppio invio viene
  * comunque bloccato dal backend con un 409.
  *
  * Accessibile solo agli utenti autenticati (stesso guard di PubblicaAnnuncio).
@@ -53,6 +54,16 @@ import { creaORecuperaConversazione } from "../../services/conversazioni";
 import PropostaCard from "./PropostaCard";
 import RecensioneDialog from "./RecensioneDialog";
 
+function idDocumento(valore) {
+    return typeof valore === "string" ? valore : valore?._id;
+}
+
+function chiaveRecensione(annuncio, destinatario) {
+    const annuncioId = idDocumento(annuncio);
+    const destinatarioId = idDocumento(destinatario);
+    return annuncioId && destinatarioId ? `${annuncioId}:${destinatarioId}` : "";
+}
+
 // Stato vuoto minimale per le due tab.
 function NessunaProposta({ testo }) {
     return (
@@ -77,8 +88,8 @@ function PropostePage() {
     const [notifica, setNotifica] = useState(null);    // { severity, testo }
     // Recensione in corso: { proposta, persona } — null = dialog chiuso.
     const [recensione, setRecensione] = useState(null);
-    // Id degli annunci conclusi che l'utente ha già recensito (vedi commento in testa).
-    const [annunciRecensiti, setAnnunciRecensiti] = useState(() => new Set());
+    // Coppie annuncio-destinatario già recensite dall'utente (vedi commento in testa).
+    const [recensioniLasciate, setRecensioniLasciate] = useState(() => new Set());
 
     const carica = useCallback(async () => {
         try {
@@ -104,9 +115,11 @@ function PropostePage() {
                     idAnnunciConclusi.map(getRecensioniAnnuncio)
                 );
                 recensiti = new Set(
-                    idAnnunciConclusi.filter((idAnnuncio, i) =>
-                        recensioniPerAnnuncio[i].some((r) => r.autore?._id === utente?.id)
-                    )
+                    recensioniPerAnnuncio
+                        .flat()
+                        .filter((r) => idDocumento(r.autore) === utente?.id)
+                        .map((r) => chiaveRecensione(r.annuncio, r.destinatario))
+                        .filter(Boolean)
                 );
             } catch {
                 // ignorato: vedi commento sopra
@@ -114,7 +127,7 @@ function PropostePage() {
 
             setRicevute(ric);
             setInviate(inv);
-            setAnnunciRecensiti(recensiti);
+            setRecensioniLasciate(recensiti);
             setErroreCaricamento("");
         } catch (err) {
             setErroreCaricamento(err.message);
@@ -124,7 +137,10 @@ function PropostePage() {
     }, [accessToken, utente?.id]);
 
     useEffect(() => {
-        if (accessToken) carica();
+        if (accessToken) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- carica aggiorna lo stato solo dopo le richieste asincrone.
+            void carica();
+        }
     }, [accessToken, carica]);
 
     const rispondi = async (proposta, azione) => {
@@ -193,8 +209,12 @@ function PropostePage() {
             persona: tab === 0 ? proposta.proponente : proposta.destinatario,
         });
 
-    const recensioneInviata = () => {
-        setAnnunciRecensiti((prev) => new Set(prev).add(recensione.proposta.annuncio._id));
+    const recensioneInviata = (recensioneCreata) => {
+        const chiave = chiaveRecensione(
+            recensioneCreata.annuncio,
+            recensioneCreata.destinatario
+        );
+        setRecensioniLasciate((prev) => new Set(prev).add(chiave));
         setRecensione(null);
         setNotifica({ severity: "success", testo: "Recensione inviata, grazie!" });
     };
@@ -292,7 +312,12 @@ function PropostePage() {
                             onConcludi={concludi}
                             onRecensisci={apriRecensione}
                             onContatta={contatta}
-                            recensioneLasciata={annunciRecensiti.has(proposta.annuncio?._id)}
+                            recensioneLasciata={recensioniLasciate.has(
+                                chiaveRecensione(
+                                    proposta.annuncio,
+                                    tab === 0 ? proposta.proponente : proposta.destinatario
+                                )
+                            )}
                             azioneInCorso={azioneInCorsoId === proposta._id}
                         />
                     ))}

@@ -49,7 +49,6 @@ import EuroIcon from "@mui/icons-material/Euro";
 import AgricultureIcon from "@mui/icons-material/Agriculture";
 import GroupIcon from "@mui/icons-material/Group";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
 
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
@@ -57,7 +56,6 @@ import "leaflet/dist/leaflet.css";
 
 import { getAnnuncio } from "../../../services/annunci";
 import { getRecensioniAnnuncio } from "../../../services/recensioni";
-import { creaORecuperaConversazione } from "../../../services/conversazioni";
 import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
 import RegistratiDialog from "../RegistratiDialog";
 import InviaPropostaDialog from "./InviaPropostaDialog";
@@ -129,28 +127,6 @@ function DettaglioAnnuncioPage() {
             await togglePreferito(annuncio);
         } catch (err) {
             setErrorePreferiti(err.message);
-        }
-    };
-
-    // Chat con l'autore: apre (o recupera) la conversazione legata a questo
-    // annuncio e porta alla pagina messaggi con il thread già selezionato.
-    const [contattoInCorso, setContattoInCorso] = useState(false);
-    const [erroreContatto, setErroreContatto] = useState("");
-
-    const contattaAutore = async () => {
-        setContattoInCorso(true);
-        try {
-            const conversazione = await creaORecuperaConversazione(
-                annuncio.autore._id,
-                annuncio._id,
-                accessToken
-            );
-            // La conversazione viaggia in state: se è appena stata creata
-            // la pagina chat la mostra senza aspettare il refetch della lista.
-            navigate(`/chat?c=${conversazione._id}`, { state: { conversazione } });
-        } catch (err) {
-            setErroreContatto(err.message);
-            setContattoInCorso(false);
         }
     };
 
@@ -239,6 +215,7 @@ function DettaglioAnnuncioPage() {
     // L'autore non può candidarsi al proprio annuncio (il backend risponderebbe
     // 403): al posto del bottone proposta mostriamo un'informativa.
     const isAutore = isLoggedIn && utente?.id === annuncio.autore?._id;
+    const annuncioAperto = annuncio.stato === "aperto";
 
     return (
         <Box sx={{ px: { xs: 2, sm: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
@@ -320,6 +297,10 @@ function DettaglioAnnuncioPage() {
                     {isAutore ? (
                         <Alert severity="info" variant="outlined">
                             Questo è un tuo annuncio: non puoi inviarti una proposta.
+                        </Alert>
+                    ) : !annuncioAperto ? (
+                        <Alert severity="info" variant="outlined">
+                            Questo annuncio non accetta nuove proposte.
                         </Alert>
                     ) : (
                         <Button
@@ -461,24 +442,6 @@ function DettaglioAnnuncioPage() {
                             </Box>
                         </Stack>
 
-                        {/* Chat diretta con l'autore, solo da loggati */}
-                        {isLoggedIn && !isAutore && (
-                            <Button
-                                variant="outlined"
-                                color={tipoColor}
-                                startIcon={
-                                    contattoInCorso ? (
-                                        <CircularProgress size={16} color="inherit" />
-                                    ) : (
-                                        <ChatBubbleOutlinedIcon />
-                                    )
-                                }
-                                disabled={contattoInCorso}
-                                onClick={contattaAutore}
-                            >
-                                Invia un messaggio
-                            </Button>
-                        )}
                     </Stack>
                 </Paper>
             </Box>
@@ -504,7 +467,6 @@ function DettaglioAnnuncioPage() {
 
             <SnackbarAvviso testo={errorePreferiti} onClose={() => setErrorePreferiti("")} />
 
-            <SnackbarAvviso testo={erroreContatto} onClose={() => setErroreContatto("")} />
         </Box>
     );
 }

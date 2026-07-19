@@ -11,7 +11,7 @@
  *   onConcludi          callback(proposta) — ricevute accettate con annuncio "in_corso"
  *   onRecensisci        callback(proposta) — proposte accettate con annuncio "concluso"
  *   onContatta          callback(proposta) — proposte accettate: apre la chat con l'altra persona
- *   recensioneLasciata  true se l'utente ha già recensito per questo annuncio
+ *   recensioneLasciata  true se l'utente ha già recensito questa controparte
  *   azioneInCorso       true mentre un'azione è in volo (disabilita i bottoni)
  */
 
