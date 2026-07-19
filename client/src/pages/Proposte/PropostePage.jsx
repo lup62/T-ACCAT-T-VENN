@@ -272,7 +272,16 @@ function PropostePage() {
                     }
                 />
             ) : (
-                <Stack spacing={2.5} sx={{ maxWidth: 800 }}>
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+                        gap: 2.5,
+                        // Ogni card mantiene la propria altezza invece di
+                        // allungarsi a quella della più alta della riga.
+                        alignItems: "start",
+                    }}
+                >
                     {listaAttiva.map((proposta) => (
                         <PropostaCard
                             key={proposta._id}
@@ -287,7 +296,7 @@ function PropostePage() {
                             azioneInCorso={azioneInCorsoId === proposta._id}
                         />
                     ))}
-                </Stack>
+                </Box>
             )}
 
             {recensione && (

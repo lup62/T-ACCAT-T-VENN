@@ -95,6 +95,9 @@ function PropostaCard({
                         label={LABEL_STATO[proposta.stato] ?? proposta.stato}
                         color={COLOR_STATO[proposta.stato] ?? "default"}
                         size="small"
+                        // Il verde success del tema ha contrastText scuro:
+                        // sulla chip piena la scritta si legge meglio bianca.
+                        sx={proposta.stato === "accettata" ? { color: "common.white" } : undefined}
                     />
                     {accettata && LABEL_STATO_ANNUNCIO[statoAnnuncio] && (
                         <Chip
@@ -173,6 +176,7 @@ function PropostaCard({
                                 startIcon={azioneInCorso ? <CircularProgress size={16} color="inherit" /> : <CheckIcon />}
                                 disabled={azioneInCorso}
                                 onClick={() => onAccetta(proposta)}
+                                sx={{ color: "common.white" }}
                             >
                                 Accetta
                             </Button>
@@ -192,7 +196,7 @@ function PropostaCard({
                 {/* A proposta accettata: chat con l'altra persona, concludi il
                     lavoro (autore annuncio), poi recensione reciproca ad
                     annuncio concluso */}
-                {(accettata || puoConcludere || puoRecensire || recensioneLasciata) && (
+                {(accettata || puoConcludere || puoRecensire) && (
                     <>
                         <Divider />
                         <Stack
@@ -232,11 +236,6 @@ function PropostaCard({
                                 >
                                     Lascia una recensione
                                 </Button>
-                            )}
-                            {recensioneLasciata && (
-                                <Typography variant="body2" color="text.secondary">
-                                    Recensione inviata, grazie!
-                                </Typography>
                             )}
                         </Stack>
                     </>
