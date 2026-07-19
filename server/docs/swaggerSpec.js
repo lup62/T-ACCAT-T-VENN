@@ -16,8 +16,8 @@ const swaggerSpec = {
     },
     servers: [
         {
-            url: "http://localhost:3000/api",
-            description: "Server locale",
+            url: "/api",
+            description: "Server corrente",
         },
     ],
     tags: [

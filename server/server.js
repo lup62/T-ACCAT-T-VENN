@@ -1,5 +1,6 @@
 const express = require("express");
 const http = require("http");
+const path = require("path");
 const { Server } = require("socket.io");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -21,10 +22,14 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+const clientOrigin =
+    process.env.CLIENT_ORIGIN ||
+    process.env.RENDER_EXTERNAL_URL ||
+    "http://localhost:5173";
 
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_ORIGIN,
+        origin: clientOrigin,
         credentials: true,
     },
 });
@@ -34,7 +39,7 @@ configuraChatSocket(io);
 
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
+app.use(cors({ origin: clientOrigin, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -48,13 +53,38 @@ app.use("/api/preferiti", preferitoRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/conversazioni", conversazioneRoutes);
 
-// Collega il backend al database MongoDB.
-connectDB();
-
-app.get("/", (req, res) => {
-    res.send("Backend T'ACCAT attivo!");
+app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "ok" });
 });
 
-server.listen(PORT, () => {
-    console.log(`Server avviato su http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV === "production") {
+    const clientDistPath = path.join(__dirname, "..", "client", "dist");
+
+    app.use(express.static(clientDistPath));
+
+    app.use((req, res, next) => {
+        const isApiRequest =
+            req.path.startsWith("/api") || req.path.startsWith("/socket.io");
+
+        if (req.method !== "GET" || isApiRequest) {
+            return next();
+        }
+
+        return res.sendFile(path.join(clientDistPath, "index.html"));
+    });
+} else {
+    app.get("/", (_req, res) => {
+        res.send("Backend T'ACCAT attivo!");
+    });
+}
+
+async function avviaServer() {
+    // Il server accetta traffico soltanto dopo la connessione a MongoDB.
+    await connectDB();
+
+    server.listen(PORT, "0.0.0.0", () => {
+        console.log(`Server avviato sulla porta ${PORT}`);
+    });
+}
+
+avviaServer();

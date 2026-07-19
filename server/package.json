@@ -4,8 +4,12 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "dev": "node server.js",
     "seed": "node scripts/seed.js"
+  },
+  "engines": {
+    "node": ">=22.0.0 <23.0.0"
   },
   "keywords": [],
   "author": "",

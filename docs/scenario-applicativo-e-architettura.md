@@ -245,6 +245,14 @@ Il file `server/.env.example` documenta le variabili backend; i file `.env` real
 
 Lo script `npm run seed` crea dati dimostrativi ed è destinato soltanto a database di sviluppo, perché ripopola le collection.
 
+### 6.3 Deployment dimostrativo
+
+Il file `render.yaml` definisce un deployment dimostrativo su Render collegato al branch `develop`. Un'unica Web Service Node.js costruisce il frontend Vite e lo serve tramite Express insieme alle API REST, a Swagger UI e a Socket.IO. Frontend e backend condividono quindi lo stesso URL HTTPS, mentre la persistenza continua a essere fornita dal database MongoDB Atlas esterno.
+
+Render assegna la porta tramite `PORT`, espone l'URL pubblico tramite `RENDER_EXTERNAL_URL` e controlla l'endpoint `/health`. Le credenziali Atlas rimangono nella variabile riservata `MONGODB_URI`; il segreto JWT viene generato dal Blueprint. Il seed non fa parte di build o avvio, così un nuovo deploy non cancella i dati esistenti.
+
+La procedura operativa e la configurazione della IP Access List Atlas sono descritte in `docs/deployment-render.md`.
+
 ## 7. Qualità, documentazione e limiti operativi
 
 Il repository mette a disposizione:
@@ -255,7 +263,7 @@ Il repository mette a disposizione:
 - diagrammi UML di sequenza dei flussi principali;
 - validazioni applicative e indici MongoDB per diversi vincoli di integrità.
 
-Allo stato attuale non risultano versionate suite di test automatizzate né pipeline CI. Il backend non espone uno script di test. La configurazione Docker comprende frontend, backend e database, ma mantiene impostazioni orientate allo sviluppo locale, tra cui porte pubblicate sull'host, `NODE_ENV=development`, URL locali e assenza di TLS. Test, osservabilità, backup e strategia di scalabilità vanno definiti prima di considerare una topologia di produzione.
+Allo stato attuale non risultano versionate suite di test automatizzate né pipeline CI. Il backend non espone uno script di test. La configurazione Docker rimane orientata allo sviluppo locale, mentre il Blueprint Render offre soltanto una pubblicazione dimostrativa a istanza singola. Test, osservabilità, backup e strategia di scalabilità vanno definiti prima di considerare una topologia di produzione.
 
 Il canale Socket.IO e le stanze risiedono nel singolo processo backend. Un'eventuale scalabilità orizzontale richiederebbe la condivisione degli eventi tra istanze, per esempio tramite un adapter, oltre a una strategia di bilanciamento compatibile con Socket.IO.
 
@@ -271,6 +279,7 @@ Il canale Socket.IO e le stanze risiedono nel singolo processo backend. Un'event
 | Regole applicative | `server/controllers/` |
 | Modello dati | `server/models/` |
 | Configurazione Docker e locale | `docker-compose.yaml`, `client/Dockerfile`, `client/nginx.conf`, `server/Dockerfile`, `server/.env.example` |
+| Deployment dimostrativo | `render.yaml`, `docs/deployment-render.md` |
 | OpenAPI | `server/docs/swaggerSpec.js` |
 
 Per ogni approfondimento bisogna fare riferimento ai documenti presenti nella cartella `docs/` e nelle relative sottocartelle. I principali documenti correlati sono:

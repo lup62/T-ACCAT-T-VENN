@@ -194,8 +194,8 @@ Tutti i servizi usano la rete bridge `taccat-network`, la policy di riavvio `unl
 | --- | --- |
 | Frontend | React 19, Vite 8, Material UI, React Router, Leaflet, React Leaflet, Socket.IO Client |
 | Backend | Node.js 22, Express 5, Mongoose, JSON Web Token, bcrypt, Socket.IO, Swagger UI |
-| Database | MongoDB 7, GeoJSON e indici geospaziali `2dsphere` |
-| Infrastruttura | Docker, Docker Compose, Nginx 1.27, Git e GitHub |
+| Database | MongoDB 7 in locale, MongoDB Atlas online, GeoJSON e indici geospaziali `2dsphere` |
+| Infrastruttura | Docker, Docker Compose, Nginx 1.27, Render, Git e GitHub |
 | Servizi esterni | Nominatim, CARTO e OpenStreetMap |
 
 ## Variabili di ambiente
@@ -210,6 +210,21 @@ Tutti i servizi usano la rete bridge `taccat-network`, la policy di riavvio `unl
 | Frontend | `VITE_API_URL` | URL base per REST e Socket.IO. Compose usa `http://localhost:3000`. |
 
 `VITE_API_URL` è un argomento di build: viene incorporato nel bundle frontend. Se cambia, l'immagine `frontend` deve essere ricostruita.
+
+## Deployment online con Render
+
+Per la pubblicazione dimostrativa è disponibile il Blueprint [`render.yaml`](./render.yaml). Il servizio gratuito esegue frontend, API, Swagger e Socket.IO sullo stesso URL HTTPS e usa il database MongoDB Atlas esistente.
+
+La procedura completa, inclusi configurazione di `MONGODB_URI`, IP Access List di Atlas, verifica e avvertenze sul seed, è descritta in [Deployment dimostrativo su Render](./docs/deployment-render.md).
+
+In sintesi:
+
+1. creare un Blueprint Render collegato al repository e al branch `develop`;
+2. inserire `MONGODB_URI` quando richiesto;
+3. autorizzare in Atlas gli indirizzi in uscita mostrati da Render;
+4. aprire l'URL `onrender.com` assegnato al servizio.
+
+Il seed non parte automaticamente e non deve essere lanciato sull'Atlas già popolato, perché esegue un reset dei dati applicativi.
 
 ## Sviluppo manuale senza container applicativi
 
@@ -259,6 +274,7 @@ Eseguire dalla cartella `server/`.
 
 | Comando | Descrizione |
 | --- | --- |
+| `npm start` | Avvia Express e Socket.IO in modalità standard. |
 | `npm run dev` | Avvia Express e Socket.IO tramite `node server.js`. |
 | `npm run seed` | Svuota e ripopola il database di sviluppo con dati dimostrativi. |
 
@@ -294,6 +310,7 @@ T-ACCAT-T-VENN/
 │   └── server.js               # Entry point del server
 ├── docs/                       # Documentazione progettuale e diagrammi UML
 ├── docker-compose.yaml         # Orchestrazione dell'intero stack
+├── render.yaml                 # Blueprint del deployment dimostrativo
 └── README.md
 ```
 
@@ -303,6 +320,7 @@ Per gli approfondimenti progettuali bisogna fare riferimento ai documenti presen
 
 - [Scenario applicativo e architettura](./docs/scenario-applicativo-e-architettura.md)
 - [Componenti React](./docs/componenti-react.md)
+- [Deployment dimostrativo su Render](./docs/deployment-render.md)
 - [Diagrammi UML di sequenza](./docs/UML%20sequenza/)
 - [Documentazione del frontend](./client/README.md)
 - [Riepilogo delle API backend](./server/API.md)
