@@ -228,8 +228,75 @@ async function listaMessaggiConversazione(req, res) {
     }
 }
 
+async function segnaMessaggiComeLetti(req, res) {
+    try {
+        const { conversazioneId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(conversazioneId)) {
+            return res.status(400).json({
+                message: "ID conversazione non valido.",
+            });
+        }
+
+        const conversazione = await Conversazione.findById(
+            conversazioneId
+        ).select("partecipanti");
+
+        if (!conversazione) {
+            return res.status(404).json({
+                message: "Conversazione non trovata.",
+            });
+        }
+
+        const utentePartecipa =
+            conversazione.partecipanti.some(
+                (partecipanteId) =>
+                    partecipanteId.toString() ===
+                    req.utente.id
+            );
+
+        if (!utentePartecipa) {
+            return res.status(403).json({
+                message:
+                    "Non sei autorizzato ad aggiornare i messaggi di questa conversazione.",
+            });
+        }
+
+        const risultato = await Messaggio.updateMany(
+            {
+                conversazione: conversazioneId,
+                mittente: {
+                    $ne: req.utente.id,
+                },
+                letto: false,
+            },
+            {
+                $set: {
+                    letto: true,
+                },
+            }
+        );
+
+        return res.status(200).json({
+            message:
+                "Messaggi segnati come letti con successo.",
+            count: risultato.modifiedCount,
+        });
+    } catch (error) {
+        console.error(
+            "Errore durante l'aggiornamento dei messaggi letti:",
+            error
+        );
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
 module.exports = {
     listaConversazioni,
     creaORecuperaConversazione,
     listaMessaggiConversazione,
+    segnaMessaggiComeLetti,
 };
