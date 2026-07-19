@@ -106,11 +106,6 @@ const userSchema = new mongoose.Schema(
             },
         },
 
-        immagineProfilo: {
-            type: String,
-            default: "",
-        },
-
         indirizzo: {
             testo: {
                 type: String,
@@ -146,10 +141,6 @@ const userSchema = new mongoose.Schema(
             competenze: {
                 type: [String],
                 default: [],
-            },
-            cv: {
-                type: String,
-                default: "",
             },
             certificazioni: {
                 type: [String],

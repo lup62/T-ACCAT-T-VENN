@@ -155,10 +155,6 @@ async function aggiornaProfilo(req, res) {
                     datiLavoratore.competenze;
             }
 
-            if (datiLavoratore.cv !== undefined) {
-                utente.datiLavoratore.cv = datiLavoratore.cv || "";
-            }
-
             if (datiLavoratore.certificazioni !== undefined) {
                 utente.datiLavoratore.certificazioni =
                     datiLavoratore.certificazioni;

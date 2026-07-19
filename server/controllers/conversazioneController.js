@@ -11,7 +11,7 @@ async function listaConversazioni(req, res) {
         })
             .populate(
                 "partecipanti",
-                "nome cognome immagineProfilo ruoli ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .populate(
                 "annuncioRiferimento",
@@ -118,7 +118,7 @@ async function creaORecuperaConversazione(req, res) {
         )
             .populate(
                 "partecipanti",
-                "nome cognome immagineProfilo ruoli ratingMedio"
+                "nome cognome ruoli ratingMedio"
             )
             .populate(
                 "annuncioRiferimento",
@@ -146,7 +146,7 @@ async function creaORecuperaConversazione(req, res) {
 
         await nuovaConversazione.populate(
             "partecipanti",
-            "nome cognome immagineProfilo ruoli ratingMedio"
+            "nome cognome ruoli ratingMedio"
         );
 
         await nuovaConversazione.populate(
@@ -207,7 +207,7 @@ async function listaMessaggiConversazione(req, res) {
         })
             .populate(
                 "mittente",
-                "nome cognome immagineProfilo ruoli"
+                "nome cognome ruoli"
             )
             .sort({ createdAt: 1 });
 

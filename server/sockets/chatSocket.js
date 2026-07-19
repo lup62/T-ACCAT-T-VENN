@@ -199,7 +199,7 @@ function configuraChatSocket(io) {
 
                     await messaggio.populate(
                         "mittente",
-                        "nome cognome immagineProfilo ruoli"
+                        "nome cognome ruoli"
                     );
 
                     io.to(nomeStanza).emit(
