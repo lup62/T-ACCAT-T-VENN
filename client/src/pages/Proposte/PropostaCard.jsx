@@ -10,6 +10,7 @@
  *   onRifiuta           callback(proposta) — solo per le ricevute in attesa
  *   onConcludi          callback(proposta) — ricevute accettate con annuncio "in_corso"
  *   onRecensisci        callback(proposta) — proposte accettate con annuncio "concluso"
+ *   onContatta          callback(proposta) — proposte accettate: apre la chat con l'altra persona
  *   recensioneLasciata  true se l'utente ha già recensito per questo annuncio
  *   azioneInCorso       true mentre un'azione è in volo (disabilita i bottoni)
  */
@@ -30,6 +31,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
 
 const LABEL_STATO = {
     in_attesa: "In attesa",
@@ -67,6 +69,7 @@ function PropostaCard({
     onRifiuta,
     onConcludi,
     onRecensisci,
+    onContatta,
     recensioneLasciata = false,
     azioneInCorso = false,
 }) {
@@ -92,6 +95,9 @@ function PropostaCard({
                         label={LABEL_STATO[proposta.stato] ?? proposta.stato}
                         color={COLOR_STATO[proposta.stato] ?? "default"}
                         size="small"
+                        // Il verde success del tema ha contrastText scuro:
+                        // sulla chip piena la scritta si legge meglio bianca.
+                        sx={proposta.stato === "accettata" ? { color: "common.white" } : undefined}
                     />
                     {accettata && LABEL_STATO_ANNUNCIO[statoAnnuncio] && (
                         <Chip
@@ -170,6 +176,7 @@ function PropostaCard({
                                 startIcon={azioneInCorso ? <CircularProgress size={16} color="inherit" /> : <CheckIcon />}
                                 disabled={azioneInCorso}
                                 onClick={() => onAccetta(proposta)}
+                                sx={{ color: "common.white" }}
                             >
                                 Accetta
                             </Button>
@@ -186,9 +193,10 @@ function PropostaCard({
                     </>
                 )}
 
-                {/* A proposta accettata: concludi il lavoro (autore annuncio),
-                    poi recensione reciproca ad annuncio concluso */}
-                {(puoConcludere || puoRecensire || recensioneLasciata) && (
+                {/* A proposta accettata: chat con l'altra persona, concludi il
+                    lavoro (autore annuncio), poi recensione reciproca ad
+                    annuncio concluso */}
+                {(accettata || puoConcludere || puoRecensire) && (
                     <>
                         <Divider />
                         <Stack
@@ -196,6 +204,17 @@ function PropostaCard({
                             spacing={1.5}
                             alignItems={{ sm: "center" }}
                         >
+                            {accettata && (
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    startIcon={<ChatBubbleOutlinedIcon />}
+                                    disabled={azioneInCorso}
+                                    onClick={() => onContatta(proposta)}
+                                >
+                                    Invia un messaggio
+                                </Button>
+                            )}
                             {puoConcludere && (
                                 <Button
                                     variant="contained"
@@ -217,11 +236,6 @@ function PropostaCard({
                                 >
                                     Lascia una recensione
                                 </Button>
-                            )}
-                            {recensioneLasciata && (
-                                <Typography variant="body2" color="text.secondary">
-                                    Recensione inviata, grazie!
-                                </Typography>
                             )}
                         </Stack>
                     </>

@@ -49,6 +49,7 @@ import {
 } from "../../services/proposte";
 import { concludiAnnuncio } from "../../services/annunci";
 import { getRecensioniAnnuncio } from "../../services/recensioni";
+import { creaORecuperaConversazione } from "../../services/conversazioni";
 import PropostaCard from "./PropostaCard";
 import RecensioneDialog from "./RecensioneDialog";
 
@@ -164,6 +165,26 @@ function PropostePage() {
         }
     };
 
+    // Apre (o recupera) la chat con l'altra persona della proposta accettata
+    // e naviga alla pagina messaggi con il thread già selezionato.
+    const contatta = async (proposta) => {
+        const persona = tab === 0 ? proposta.proponente : proposta.destinatario;
+        setAzioneInCorsoId(proposta._id);
+        try {
+            const conversazione = await creaORecuperaConversazione(
+                persona._id,
+                proposta.annuncio?._id,
+                accessToken
+            );
+            // La conversazione viaggia in state: se è appena stata creata
+            // la pagina chat la mostra senza aspettare il refetch della lista.
+            navigate(`/chat?c=${conversazione._id}`, { state: { conversazione } });
+        } catch (err) {
+            setNotifica({ severity: "error", testo: err.message });
+            setAzioneInCorsoId(null);
+        }
+    };
+
     // Chi va recensito: nelle ricevute il proponente, nelle inviate
     // il destinatario (cioè l'autore dell'annuncio).
     const apriRecensione = (proposta) =>
@@ -251,7 +272,16 @@ function PropostePage() {
                     }
                 />
             ) : (
-                <Stack spacing={2.5} sx={{ maxWidth: 800 }}>
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+                        gap: 2.5,
+                        // Ogni card mantiene la propria altezza invece di
+                        // allungarsi a quella della più alta della riga.
+                        alignItems: "start",
+                    }}
+                >
                     {listaAttiva.map((proposta) => (
                         <PropostaCard
                             key={proposta._id}
@@ -261,11 +291,12 @@ function PropostePage() {
                             onRifiuta={(p) => rispondi(p, "rifiuta")}
                             onConcludi={concludi}
                             onRecensisci={apriRecensione}
+                            onContatta={contatta}
                             recensioneLasciata={annunciRecensiti.has(proposta.annuncio?._id)}
                             azioneInCorso={azioneInCorsoId === proposta._id}
                         />
                     ))}
-                </Stack>
+                </Box>
             )}
 
             {recensione && (
