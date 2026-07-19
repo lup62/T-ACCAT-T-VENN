@@ -40,7 +40,20 @@ function applicaOrdinamento(lista, ordinamento) {
     }
 }
 
+function normalizzaData(valore) {
+    return typeof valore === "string" ? valore.slice(0, 10) : "";
+}
+
 function applicaFiltri(lista, filtri) {
+    // Un intervallo invertito non può rappresentare un periodo valido.
+    if (
+        filtri.periodoInizio &&
+        filtri.periodoFine &&
+        filtri.periodoFine < filtri.periodoInizio
+    ) {
+        return [];
+    }
+
     return lista.filter((a) => {
         // Il confronto passa per la categoria: i tipiLavoro fuori lista
         // (dati vecchi a testo libero) ricadono in "Altro".
@@ -59,10 +72,16 @@ function applicaFiltri(lista, filtri) {
             (a.prezzo.max < filtri.prezzoRange[0] || a.prezzo.min > filtri.prezzoRange[1]))
             return false;
 
-        if (filtri.periodoInizio && a.periodo.dataFine < filtri.periodoInizio)
+        // L'API restituisce timestamp ISO, mentre gli input date usano YYYY-MM-DD.
+        // Il confronto sulla sola data rende inclusivi entrambi gli estremi e
+        // mantiene gli annunci che si sovrappongono al periodo selezionato.
+        const dataInizio = normalizzaData(a.periodo?.dataInizio);
+        const dataFine = normalizzaData(a.periodo?.dataFine);
+
+        if (filtri.periodoInizio && dataFine < filtri.periodoInizio)
             return false;
 
-        if (filtri.periodoFine && a.periodo.dataInizio > filtri.periodoFine)
+        if (filtri.periodoFine && dataInizio > filtri.periodoFine)
             return false;
 
         return true;

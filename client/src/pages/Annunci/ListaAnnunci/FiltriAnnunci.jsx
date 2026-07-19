@@ -47,6 +47,11 @@ function FiltriAnnunci({ filtri, onFiltriChange, color = "primary", isLoggedIn =
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const [dialogOpen, setDialogOpen] = useState(false);
+    const periodoNonValido = Boolean(
+        filtri.periodoInizio &&
+        filtri.periodoFine &&
+        filtri.periodoFine < filtri.periodoInizio
+    );
 
     const toggleCheckbox = (campo, valore) => {
         const corrente = filtri[campo];
@@ -139,7 +144,11 @@ function FiltriAnnunci({ filtri, onFiltriChange, color = "primary", isLoggedIn =
                     label="Da"
                     size="small"
                     fullWidth
-                    slotProps={{ inputLabel: { shrink: true } }}
+                    error={periodoNonValido}
+                    slotProps={{
+                        inputLabel: { shrink: true },
+                        htmlInput: { max: filtri.periodoFine || undefined },
+                    }}
                     value={filtri.periodoInizio}
                     onChange={(e) => onFiltriChange({ ...filtri, periodoInizio: e.target.value })}
                 />
@@ -148,7 +157,16 @@ function FiltriAnnunci({ filtri, onFiltriChange, color = "primary", isLoggedIn =
                     label="A"
                     size="small"
                     fullWidth
-                    slotProps={{ inputLabel: { shrink: true } }}
+                    error={periodoNonValido}
+                    helperText={
+                        periodoNonValido
+                            ? "La data finale non può precedere quella iniziale."
+                            : ""
+                    }
+                    slotProps={{
+                        inputLabel: { shrink: true },
+                        htmlInput: { min: filtri.periodoInizio || undefined },
+                    }}
                     value={filtri.periodoFine}
                     onChange={(e) => onFiltriChange({ ...filtri, periodoFine: e.target.value })}
                 />
