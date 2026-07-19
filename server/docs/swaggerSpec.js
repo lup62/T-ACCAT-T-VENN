@@ -27,6 +27,7 @@ const swaggerSpec = {
         { name: "Proposte" },
         { name: "Recensioni" },
         { name: "Preferiti" },
+        { name: "Conversazioni" },
     ],
     components: {
         securitySchemes: {
@@ -531,6 +532,82 @@ const swaggerSpec = {
                     400: { description: "ID non valido" },
                     401: { description: "Token mancante o non valido" },
                     404: { description: "Preferito non trovato" },
+                },
+            },
+        },
+
+        "/conversazioni": {
+            get: {
+                tags: ["Conversazioni"],
+                summary: "Lista conversazioni utente autenticato",
+                description:
+                    "Conversazioni di cui l'utente è partecipante, ordinate dalla più recente, con partecipanti e annuncio di riferimento popolati e anteprima dell'ultimo messaggio.",
+                security: bearerSecurity,
+                responses: {
+                    200: { description: "Conversazioni recuperate" },
+                    401: { description: "Token mancante o non valido" },
+                },
+            },
+            post: {
+                tags: ["Conversazioni"],
+                summary: "Crea o recupera conversazione 1:1",
+                description:
+                    "Se tra i due utenti esiste già una conversazione la restituisce (200), altrimenti la crea (201). L'annuncio di riferimento è facoltativo e deve appartenere a uno dei due partecipanti. L'invio dei messaggi NON passa da REST: avviene via Socket.IO (eventi 'conversazione:entra' e 'messaggio:invia', broadcast 'messaggio:nuovo' alla stanza).",
+                security: bearerSecurity,
+                requestBody: {
+                    required: true,
+                    content: {
+                        "application/json": {
+                            example: {
+                                destinatarioId: "ID_UTENTE",
+                                annuncioRiferimento: "ID_ANNUNCIO",
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: { description: "Conversazione esistente recuperata" },
+                    201: { description: "Conversazione creata" },
+                    400: { description: "Dati non validi o conversazione con se stessi" },
+                    401: { description: "Token mancante o non valido" },
+                    403: { description: "Annuncio estraneo ai partecipanti" },
+                    404: { description: "Destinatario o annuncio non trovato" },
+                },
+            },
+        },
+
+        "/conversazioni/{conversazioneId}/messaggi": {
+            get: {
+                tags: ["Conversazioni"],
+                summary: "Storico messaggi conversazione",
+                description:
+                    "Messaggi in ordine cronologico con mittente popolato. Solo i partecipanti della conversazione.",
+                security: bearerSecurity,
+                parameters: [idParam("conversazioneId")],
+                responses: {
+                    200: { description: "Messaggi recuperati" },
+                    400: { description: "ID conversazione non valido" },
+                    401: { description: "Token mancante o non valido" },
+                    403: { description: "Solo partecipanti" },
+                    404: { description: "Conversazione non trovata" },
+                },
+            },
+        },
+
+        "/conversazioni/{conversazioneId}/messaggi/letti": {
+            patch: {
+                tags: ["Conversazioni"],
+                summary: "Segna come letti i messaggi ricevuti",
+                description:
+                    "Imposta 'letto' sui messaggi della conversazione inviati dall'altro partecipante; restituisce il conteggio degli aggiornati.",
+                security: bearerSecurity,
+                parameters: [idParam("conversazioneId")],
+                responses: {
+                    200: { description: "Messaggi segnati come letti" },
+                    400: { description: "ID conversazione non valido" },
+                    401: { description: "Token mancante o non valido" },
+                    403: { description: "Solo partecipanti" },
+                    404: { description: "Conversazione non trovata" },
                 },
             },
         },
