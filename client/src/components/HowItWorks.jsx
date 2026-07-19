@@ -50,11 +50,11 @@ const steps = [
         icon: <ChatIcon sx={{ fontSize: 28 }} />,
         title: "Collabora in sicurezza",
         description:
-            "Comunica in chat, organizza il lavoro e lascia una recensione al termine.",
+            "Quando la proposta viene accettata organizzate il lavoro in chat, senza uscire dalla piattaforma; alla conclusione vi recensite a vicenda.",
         benefits: [
-            "Chat privata tra utenti",
-            "Contatti sbloccati dopo l'accordo",
-            "Recensioni reciproche",
+            "Chat privata in tempo reale",
+            "Tutto dentro la piattaforma",
+            "Recensioni reciproche a lavoro concluso",
         ],
         color: "secondary",
     },
