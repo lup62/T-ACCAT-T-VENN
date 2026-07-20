@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: t-accat-t-venn
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: develop
+    buildCommand: npm --prefix server ci --omit=dev && npm --prefix client ci --include=dev && VITE_API_URL=$RENDER_EXTERNAL_URL npm --prefix client run build
+    startCommand: npm --prefix server start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
