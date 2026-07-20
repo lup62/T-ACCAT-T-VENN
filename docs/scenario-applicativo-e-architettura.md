@@ -176,18 +176,7 @@ Il browser interroga Nominatim limitando la ricerca all'Italia, ricava coordinat
 
 ## 4. Modello dei dati
 
-| Modello | Contenuto principale | Relazioni e vincoli rilevanti |
-| --- | --- | --- |
-| `User` | Ruoli, anagrafica, credenziali, indirizzo GeoJSON, dati lavoratore/imprenditore, rating medio. | Email univoca; almeno un ruolo; password hash escluso dalle query normali; indice `2dsphere` sull'indirizzo. |
-| `Annuncio` | Tipo, autore, titolo, descrizione, luogo, periodo, categoria, competenze, numero di lavoratori, compenso e stato. | Riferimento a `User`; validazioni incrociate su date, compenso e tipo; indice `2dsphere` sul luogo. |
-| `Proposta` | Annuncio, proponente, destinatario, messaggio, stato e date di proposta/risposta. | Riferimenti ad `Annuncio` e `User`; vietata sul proprio annuncio; indice univoco parziale che impedisce più proposte attive dello stesso utente sullo stesso annuncio. |
-| `Recensione` | Annuncio, autore, destinatario, direzione, stelle e commento. | Riferimenti ad annuncio e utenti; unicità per annuncio/autore/destinatario; vietata verso sé stessi; il rating medio è ricalcolato sul destinatario. |
-| `Preferito` | Utente, tipo e riferimento polimorfico. | Il riferimento punta a `Annuncio` o `User`; unicità per utente/tipo/riferimento. |
-| `Conversazione` | Due partecipanti, annuncio facoltativo e anteprima dell'ultimo messaggio. | Esattamente due utenti distinti; indice per partecipanti e ultimo aggiornamento. |
-| `Messaggio` | Conversazione, mittente, testo e indicatore di lettura. | Riferimenti a conversazione e utente; massimo 2000 caratteri; indice per storico cronologico. |
-| `RefreshToken` | Utente, hash del token, scadenza e data di revoca. | Hash univoco; il valore in chiaro esiste soltanto nel cookie del browser. |
-
-MongoDB non impone chiavi esterne tra collection: i riferimenti sono `ObjectId` gestiti da Mongoose e la coerenza delle operazioni tra più documenti è governata dai controller e dagli indici.
+La descrizione completa del modello dei dati (le 8 collezioni, i campi principali, relazioni e vincoli, oltre al diagramma ER) è nel documento dedicato [`modello-dati.md`](./modello-dati.md).
 
 ## 5. Sicurezza e autorizzazione
 

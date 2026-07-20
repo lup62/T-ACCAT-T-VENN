@@ -738,6 +738,102 @@ Risposte:
 
 ---
 
+## Conversazioni
+
+Chat privata 1:1, con invio/ricezione messaggi in tempo reale via Socket.IO
+(vedi `server/sockets/chatSocket.js`). Queste rotte REST coprono la lista
+conversazioni, la creazione/recupero, lo storico messaggi e la lettura;
+l'invio del messaggio avviene solo via socket, non via REST.
+
+### GET `/conversazioni`
+
+Lista conversazioni dell'utente autenticato, ordinate per ultimo aggiornamento.
+
+Auth: sì
+
+Risposta:
+
+```text
+200 OK
+```
+
+---
+
+### POST `/conversazioni`
+
+Crea una conversazione con un altro utente, oppure recupera quella già
+esistente tra gli stessi due partecipanti (200 se già esiste, 201 se creata).
+
+Auth: sì
+
+Body:
+
+```json
+{
+  "destinatarioId": "ID_UTENTE",
+  "annuncioRiferimento": "ID_ANNUNCIO"
+}
+```
+
+`annuncioRiferimento` è facoltativo.
+
+Regole:
+- non si può creare una conversazione con se stessi
+- se presente, `annuncioRiferimento` deve appartenere a uno dei due partecipanti
+- la conversazione esistente viene cercata per stessa coppia di partecipanti
+  e stesso `annuncioRiferimento` (o entrambe senza annuncio collegato)
+
+Risposte:
+
+```text
+200 OK
+201 Created
+400 Bad Request
+403 Forbidden
+404 Not Found
+```
+
+---
+
+### GET `/conversazioni/:conversazioneId/messaggi`
+
+Storico messaggi di una conversazione, in ordine cronologico.
+
+Auth: sì
+
+Solo partecipanti alla conversazione.
+
+Risposte:
+
+```text
+200 OK
+400 Bad Request
+403 Forbidden
+404 Not Found
+```
+
+---
+
+### PATCH `/conversazioni/:conversazioneId/messaggi/letti`
+
+Segna come letti tutti i messaggi ricevuti (non inviati dall'utente) in una
+conversazione.
+
+Auth: sì
+
+Solo partecipanti alla conversazione.
+
+Risposte:
+
+```text
+200 OK
+400 Bad Request
+403 Forbidden
+404 Not Found
+```
+
+---
+
 ## Seed dati demo
 
 Script:
