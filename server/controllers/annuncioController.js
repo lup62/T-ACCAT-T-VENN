@@ -1,6 +1,9 @@
 const Annuncio = require("../models/Annuncio");
 const mongoose = require("mongoose");
 const Proposta = require("../models/Proposta");
+const {
+    generaNotifichePerNuovoAnnuncio,
+} = require("../services/notificaRicercaService");
 
 function normalizzaOrario(orario) {
     if (!orario) {
@@ -76,6 +79,15 @@ async function creaAnnuncio(req, res) {
         numeroLavoratoriRichiesti,
         prezzo,
  });
+
+        try {
+            await generaNotifichePerNuovoAnnuncio(annuncio);
+        } catch (erroreNotifiche) {
+            console.error(
+                "Errore durante la generazione delle notifiche:",
+                erroreNotifiche
+            );
+        }
 
         return res.status(201).json({
             message: "Annuncio creato con successo.",
