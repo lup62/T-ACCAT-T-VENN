@@ -14,30 +14,49 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+
 import ViewListIcon from "@mui/icons-material/ViewList";
 import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
+import BookmarkAddOutlinedIcon from "@mui/icons-material/BookmarkAddOutlined";
+
 import AnnuncioCard from "./AnnuncioCard";
 import RegistratiDialog from "../RegistratiDialog";
 import StatoVuoto from "./StatoVuoto";
 import FiltriAnnunci from "./FiltriAnnunci";
 import MappaAnnunci from "./MappaAnnunci";
+
 import { getAnnunci } from "../../../services/annunci";
+import { creaRicercaSalvata } from "../../../services/ricercheSalvate";
+
 import { useAnnunciFiltrati } from "../../../hooks/useAnnunciFiltrati";
 import { usePreferitiAnnunci } from "../../../hooks/usePreferitiAnnunci";
 import { useAuth } from "../../../hooks/useAuth";
+
 import SnackbarAvviso from "../../../components/SnackbarAvviso";
 
 function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
     const navigate = useNavigate();
-    const { utente } = useAuth();
+
+    const { utente, accessToken } = useAuth();
+
     const [annunci, setAnnunci] = useState([]);
     const [caricamento, setCaricamento] = useState(true);
     const [errore, setErrore] = useState(null);
+
     const [errorePreferiti, setErrorePreferiti] = useState("");
-    const { isPreferito, togglePreferito, toggleInCorsoId } = usePreferitiAnnunci();
+
+    const [avvisoRicerca, setAvvisoRicerca] = useState("");
+    const [severityRicerca, setSeverityRicerca] = useState("success");
+    const [salvataggioRicerca, setSalvataggioRicerca] = useState(false);
+
+    const {
+        isPreferito,
+        togglePreferito,
+        toggleInCorsoId,
+    } = usePreferitiAnnunci();
 
     const toggle = async (annuncio) => {
         try {
@@ -73,9 +92,56 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
         hasMore,
     } = useAnnunciFiltrati(annunci);
 
+    const salvaRicercaCorrente = async () => {
+        if (!isLoggedIn || !accessToken) {
+            setDialogOpen(true);
+            return;
+        }
+
+        try {
+            setSalvataggioRicerca(true);
+
+            await creaRicercaSalvata(
+                {
+                    nome: ricerca.trim() || titolo,
+                    tipoAnnuncio,
+                    ricerca: ricerca.trim(),
+                    filtri: {
+                        ...filtri,
+                        periodoInizio: filtri.periodoInizio || null,
+                        periodoFine: filtri.periodoFine || null,
+                    },
+                },
+                accessToken
+            );
+
+            setSeverityRicerca("success");
+            setAvvisoRicerca("Ricerca salvata con successo.");
+        } catch (error) {
+            setSeverityRicerca("error");
+            setAvvisoRicerca(error.message);
+        } finally {
+            setSalvataggioRicerca(false);
+        }
+    };
+
     return (
-        <Box sx={{ px: { xs: 3, md: 10 }, py: { xs: 4, md: 6 } }}>
-            <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 4, flexWrap: "wrap" }}>
+        <Box
+            sx={{
+                px: { xs: 3, md: 10 },
+                py: { xs: 4, md: 6 },
+            }}
+        >
+            {/* Titolo + controlli desktop */}
+            <Stack
+                direction="row"
+                alignItems="center"
+                gap={2}
+                sx={{
+                    mb: 4,
+                    flexWrap: "wrap",
+                }}
+            >
                 <Typography
                     variant="h3"
                     component="h1"
@@ -92,7 +158,26 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                     {titolo}
                 </Typography>
 
-                <Stack direction="row" spacing={1} sx={{ ml: "auto", display: { xs: "none", md: "flex" } }}>
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{
+                        ml: "auto",
+                        display: { xs: "none", md: "flex" },
+                    }}
+                >
+                    <Button
+                        variant="outlined"
+                        color={color}
+                        startIcon={<BookmarkAddOutlinedIcon />}
+                        onClick={salvaRicercaCorrente}
+                        disabled={salvataggioRicerca}
+                    >
+                        {salvataggioRicerca
+                            ? "Salvataggio..."
+                            : "Salva ricerca"}
+                    </Button>
+
                     <Button
                         variant="contained"
                         color={color}
@@ -101,37 +186,80 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                     >
                         Pubblica annuncio
                     </Button>
+
                     <Button
                         variant={vistaLista ? "contained" : "outlined"}
                         color={color}
                         onClick={() => setVistaLista(true)}
-                        sx={{ minWidth: { xs: 44, sm: "auto" }, px: { xs: 1, sm: 2.5 } }}
+                        sx={{
+                            minWidth: { xs: 44, sm: "auto" },
+                            px: { xs: 1, sm: 2.5 },
+                        }}
                     >
-                        <ViewListIcon fontSize="small" sx={{ mr: { xs: 0, sm: 1 } }} />
-                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                        <ViewListIcon
+                            fontSize="small"
+                            sx={{
+                                mr: { xs: 0, sm: 1 },
+                            }}
+                        />
+
+                        <Box
+                            component="span"
+                            sx={{
+                                display: {
+                                    xs: "none",
+                                    sm: "inline",
+                                },
+                            }}
+                        >
                             Lista
                         </Box>
                     </Button>
+
                     <Button
                         variant={!vistaLista ? "contained" : "outlined"}
                         color={color}
                         onClick={() => setVistaLista(false)}
-                        sx={{ minWidth: { xs: 44, sm: "auto" }, px: { xs: 1, sm: 2.5 } }}
+                        sx={{
+                            minWidth: { xs: 44, sm: "auto" },
+                            px: { xs: 1, sm: 2.5 },
+                        }}
                     >
-                        <MapIcon fontSize="small" sx={{ mr: { xs: 0, sm: 1 } }} />
-                        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                        <MapIcon
+                            fontSize="small"
+                            sx={{
+                                mr: { xs: 0, sm: 1 },
+                            }}
+                        />
+
+                        <Box
+                            component="span"
+                            sx={{
+                                display: {
+                                    xs: "none",
+                                    sm: "inline",
+                                },
+                            }}
+                        >
                             Mappa
                         </Box>
                     </Button>
                 </Stack>
             </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 4 }}>
+            {/* Ricerca testuale + ordinamento */}
+            <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ mb: 4 }}
+            >
                 <TextField
                     fullWidth
                     placeholder="Cerca per titolo o descrizione..."
                     value={ricerca}
-                    onChange={(event) => setRicerca(event.target.value)}
+                    onChange={(event) =>
+                        setRicerca(event.target.value)
+                    }
                     slotProps={{
                         input: {
                             startAdornment: (
@@ -142,62 +270,137 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                         },
                     }}
                 />
+
                 <FormControl sx={{ minWidth: 200 }}>
                     <InputLabel>Ordina per</InputLabel>
+
                     <Select
                         value={ordinamento}
                         label="Ordina per"
-                        onChange={(event) => setOrdinamento(event.target.value)}
+                        onChange={(event) =>
+                            setOrdinamento(event.target.value)
+                        }
                     >
-                        <MenuItem value="recenti">Più recenti</MenuItem>
-                        <MenuItem value="vecchi">Più vecchi</MenuItem>
-                        <MenuItem value="prezzoAsc">Prezzo crescente</MenuItem>
-                        <MenuItem value="prezzoDesc">Prezzo decrescente</MenuItem>
+                        <MenuItem value="recenti">
+                            Più recenti
+                        </MenuItem>
+
+                        <MenuItem value="vecchi">
+                            Più vecchi
+                        </MenuItem>
+
+                        <MenuItem value="prezzoAsc">
+                            Prezzo crescente
+                        </MenuItem>
+
+                        <MenuItem value="prezzoDesc">
+                            Prezzo decrescente
+                        </MenuItem>
                     </Select>
                 </FormControl>
             </Stack>
 
-            <Stack direction="row" alignItems="center" sx={{ display: { xs: "flex", md: "none" }, mb: 2 }}>
+            {/* Controlli mobile */}
+            <Stack
+                direction="row"
+                alignItems="center"
+                sx={{
+                    display: {
+                        xs: "flex",
+                        md: "none",
+                    },
+                    mb: 2,
+                }}
+            >
                 <IconButton
                     onClick={() => setFiltriDrawerOpen(true)}
-                    sx={{ border: 1, borderColor: `${color}.main`, borderRadius: 2, color: `${color}.main` }}
+                    sx={{
+                        border: 1,
+                        borderColor: `${color}.main`,
+                        borderRadius: 2,
+                        color: `${color}.main`,
+                    }}
                 >
                     <MenuIcon />
                 </IconButton>
-                <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ ml: "auto" }}
+                >
+                    {/* Salva ricerca - mobile */}
+                    <Button
+                        variant="outlined"
+                        color={color}
+                        onClick={salvaRicercaCorrente}
+                        disabled={salvataggioRicerca}
+                        sx={{
+                            minWidth: 44,
+                            px: 1,
+                        }}
+                    >
+                        <BookmarkAddOutlinedIcon fontSize="small" />
+                    </Button>
+
                     <Button
                         variant="contained"
                         color={color}
                         onClick={() => navigate("/annunci/nuovo")}
-                        sx={{ minWidth: 44, px: 1 }}
+                        sx={{
+                            minWidth: 44,
+                            px: 1,
+                        }}
                     >
                         <AddIcon fontSize="small" />
                     </Button>
+
                     <Button
-                        variant={vistaLista ? "contained" : "outlined"}
+                        variant={
+                            vistaLista
+                                ? "contained"
+                                : "outlined"
+                        }
                         color={color}
                         onClick={() => setVistaLista(true)}
-                        sx={{ minWidth: 44, px: 1 }}
+                        sx={{
+                            minWidth: 44,
+                            px: 1,
+                        }}
                     >
                         <ViewListIcon fontSize="small" />
                     </Button>
+
                     <Button
-                        variant={!vistaLista ? "contained" : "outlined"}
+                        variant={
+                            !vistaLista
+                                ? "contained"
+                                : "outlined"
+                        }
                         color={color}
                         onClick={() => setVistaLista(false)}
-                        sx={{ minWidth: 44, px: 1 }}
+                        sx={{
+                            minWidth: 44,
+                            px: 1,
+                        }}
                     >
                         <MapIcon fontSize="small" />
                     </Button>
                 </Stack>
             </Stack>
 
+            {/* Filtri + annunci */}
             <Box
                 sx={{
                     display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
+                    flexDirection: {
+                        xs: "column",
+                        md: "row",
+                    },
                     gap: 4,
-                    alignItems: { md: "stretch" },
+                    alignItems: {
+                        md: "stretch",
+                    },
                 }}
             >
                 <FiltriAnnunci
@@ -206,12 +409,25 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                     color={color}
                     isLoggedIn={isLoggedIn}
                     drawerOpen={filtriDrawerOpen}
-                    onDrawerClose={() => setFiltriDrawerOpen(false)}
+                    onDrawerClose={() =>
+                        setFiltriDrawerOpen(false)
+                    }
                 />
 
-                <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box
+                    sx={{
+                        flex: 1,
+                        minWidth: 0,
+                    }}
+                >
                     {caricamento ? (
-                        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                py: 8,
+                            }}
+                        >
                             <CircularProgress color={color} />
                         </Box>
                     ) : errore ? (
@@ -238,31 +454,47 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                                         gap: 3,
                                     }}
                                 >
-                                    {annunciDaMostrare.map((annuncio) => (
-                                        <AnnuncioCard
-                                            key={annuncio._id}
-                                            annuncio={annuncio}
-                                            color={color}
-                                            preferito={isPreferito(annuncio._id)}
-                                            // Cuoricino solo da loggati e mai sui propri
-                                            // annunci (il backend li rifiuta comunque)
-                                            onTogglePreferito={
-                                                isLoggedIn && annuncio.autore?._id !== utente?.id
-                                                    ? toggle
-                                                    : undefined
-                                            }
-                                            toggleInCorso={toggleInCorsoId === annuncio._id}
-                                        />
-                                    ))}
+                                    {annunciDaMostrare.map(
+                                        (annuncio) => (
+                                            <AnnuncioCard
+                                                key={annuncio._id}
+                                                annuncio={annuncio}
+                                                color={color}
+                                                preferito={isPreferito(
+                                                    annuncio._id
+                                                )}
+                                                onTogglePreferito={
+                                                    isLoggedIn &&
+                                                    annuncio
+                                                        .autore
+                                                        ?._id !==
+                                                    utente?.id
+                                                        ? toggle
+                                                        : undefined
+                                                }
+                                                toggleInCorso={
+                                                    toggleInCorsoId ===
+                                                    annuncio._id
+                                                }
+                                            />
+                                        )
+                                    )}
                                 </Box>
 
                                 {hasMore && (
-                                    <Box sx={{ textAlign: "center", mt: 4 }}>
+                                    <Box
+                                        sx={{
+                                            textAlign: "center",
+                                            mt: 4,
+                                        }}
+                                    >
                                         <Button
                                             variant="outlined"
                                             color={color}
                                             size="large"
-                                            onClick={() => setDialogOpen(true)}
+                                            onClick={() =>
+                                                setDialogOpen(true)
+                                            }
                                         >
                                             Vedi altri annunci
                                         </Button>
@@ -271,14 +503,31 @@ function ListaAnnunciPage({ tipoAnnuncio, titolo, color }) {
                             </>
                         )
                     ) : (
-                        <MappaAnnunci annunci={annunciDaMostrare} color={color} />
+                        <MappaAnnunci
+                            annunci={annunciDaMostrare}
+                            color={color}
+                        />
                     )}
                 </Box>
             </Box>
 
-            <RegistratiDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+            <RegistratiDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+            />
 
-            <SnackbarAvviso testo={errorePreferiti} onClose={() => setErrorePreferiti("")} />
+            {/* Errori preferiti */}
+            <SnackbarAvviso
+                testo={errorePreferiti}
+                onClose={() => setErrorePreferiti("")}
+            />
+
+            {/* Esito salvataggio ricerca */}
+            <SnackbarAvviso
+                testo={avvisoRicerca}
+                severity={severityRicerca}
+                onClose={() => setAvvisoRicerca("")}
+            />
         </Box>
     );
 }

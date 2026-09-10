@@ -15,10 +15,10 @@ import PubblicaAnnuncioPage from '../pages/Annunci/PubblicaAnnuncio/PubblicaAnnu
 import MieiAnnunciPage from '../pages/Annunci/MieiAnnunci/MieiAnnunciPage.jsx'
 import PropostePage from '../pages/Proposte/PropostePage.jsx'
 import PreferitiPage from '../pages/Preferiti/PreferitiPage.jsx'
+import RicercheSalvatePage from '../pages/RicercheSalvate/RicercheSalvatePage.jsx'
 import NotFoundPage from '../pages/NotFound/NotFoundPage.jsx'
 import MainLayout from '../layouts/MainLayout.jsx'
 import ScrollToTop from '../components/ScrollToTop.jsx'
-
 /**
  * AppRoutes definisce tutte le rotte dell'applicazione.
  *
@@ -51,6 +51,7 @@ function AppRoutes() {
                 <Route path="annunci/nuovo" element={<PubblicaAnnuncioPage />} />
                 <Route path="proposte" element={<PropostePage />} />
                 <Route path="preferiti" element={<PreferitiPage />} />
+                <Route path="ricerche-salvate" element={<RicercheSalvatePage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Route>
         </Routes>

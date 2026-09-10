@@ -78,9 +78,10 @@ function Navbar() {
             <Toolbar
                 sx={{
                     minHeight: 72,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    position: "relative",
+                    display: "grid",
+                    gridTemplateColumns: "auto 1fr auto",
+                    alignItems: "center",
+                    columnGap: 2,
                 }}
             >
                 {/* Logo */}
@@ -112,10 +113,9 @@ function Navbar() {
                             lg: "flex",
                         },
                         gap: 1,
-                        position: "absolute",
-                        left: "50%",
-                        top: "50%",
-                        transform: "translate(-50%, -50%)",
+                        justifySelf: "center",
+                        alignItems: "center",
+                        whiteSpace: "nowrap",
                     }}
                 >
                     {navLinks.map(({ to, label, hash }) => (
@@ -137,6 +137,8 @@ function Navbar() {
                         display: "flex",
                         alignItems: "center",
                         gap: 1,
+                        justifySelf: "end",
+                        whiteSpace: "nowrap",
                     }}
                 >
                     {isLoggedIn ? (
@@ -153,6 +155,20 @@ function Navbar() {
                                 }}
                             >
                                 Preferiti
+                            </Button>
+
+                            <Button
+                                component={RouterLink}
+                                to="/ricerche-salvate"
+                                color="inherit"
+                                sx={{
+                                    display: {
+                                        xs: "none",
+                                        lg: "inline-flex",
+                                    },
+                                }}
+                            >
+                                Ricerche salvate
                             </Button>
 
                             <Button
@@ -344,6 +360,17 @@ function Navbar() {
                                     <ListItemText primary="Preferiti" />
                                 </ListItemButton>
                             </ListItem>
+
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to="/ricerche-salvate"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <ListItemText primary="Ricerche salvate" />
+                                </ListItemButton>
+                            </ListItem>
+
                             <ListItem disablePadding>
                                 <ListItemButton
                                     component={RouterLink}
@@ -353,6 +380,7 @@ function Navbar() {
                                     <ListItemText primary="Le mie proposte" />
                                 </ListItemButton>
                             </ListItem>
+
                             <ListItem disablePadding>
                                 <ListItemButton
                                     component={RouterLink}
@@ -362,15 +390,19 @@ function Navbar() {
                                     <ListItemText primary="Messaggi" />
                                 </ListItemButton>
                             </ListItem>
+
                             <ListItem disablePadding>
                                 <ListItemButton
                                     component={RouterLink}
                                     to="/profilo"
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
-                                    <ListItemText primary={`Profilo (${utente?.nome ?? ""})`} />
+                                    <ListItemText
+                                        primary={`Profilo (${utente?.nome ?? ""})`}
+                                    />
                                 </ListItemButton>
                             </ListItem>
+
                             <ListItem disablePadding>
                                 <ListItemButton onClick={handleLogout}>
                                     <ListItemText primary="Esci" />
