@@ -4,6 +4,9 @@ const Messaggio = require("../models/Messaggio");
 
 function configuraChatSocket(io) {
     io.on("connection", (socket) => {
+        const stanzaUtente = `utente:${socket.utente.id}`;
+        socket.join(stanzaUtente);
+
         console.log(
             `Socket connesso: ${socket.id} - utente ${socket.utente.id}`
         );

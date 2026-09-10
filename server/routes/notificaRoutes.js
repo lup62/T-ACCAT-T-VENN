@@ -5,6 +5,7 @@ const {
     listaNotifiche,
     segnaNotificaComeLetta,
     segnaTutteComeLette,
+    eliminaNotifica,
 } = require("../controllers/notificaController");
 
 const router = express.Router();
@@ -19,6 +20,12 @@ router.patch(
     "/:id/letta",
     requireAuth,
     segnaNotificaComeLetta
+);
+
+router.delete(
+    "/:id",
+    requireAuth,
+    eliminaNotifica
 );
 
 module.exports = router;

@@ -132,8 +132,46 @@ async function segnaTutteComeLette(req, res) {
     }
 }
 
+async function eliminaNotifica(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "ID notifica non valido.",
+            });
+        }
+
+        const notifica = await Notifica.findOneAndDelete({
+            _id: id,
+            destinatario: req.utente.id,
+        });
+
+        if (!notifica) {
+            return res.status(404).json({
+                message: "Notifica non trovata.",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Notifica eliminata con successo.",
+            notifica,
+        });
+    } catch (error) {
+        console.error(
+            "Errore durante l'eliminazione della notifica:",
+            error
+        );
+
+        return res.status(500).json({
+            message: "Errore interno del server.",
+        });
+    }
+}
+
 module.exports = {
     listaNotifiche,
     segnaNotificaComeLetta,
     segnaTutteComeLette,
+    eliminaNotifica,
 };

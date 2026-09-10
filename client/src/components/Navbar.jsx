@@ -27,6 +27,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import scrittaTaccat from "../assets/scrittaTaccat.svg"
 import { useAuth } from "../hooks/useAuth";
+import NotificationMenu from "./NotificationMenu";
 
 
 
@@ -198,6 +199,8 @@ function Navbar() {
                             >
                                 Messaggi
                             </Button>
+
+                            <NotificationMenu />
 
 
                             <Button

@@ -81,7 +81,20 @@ async function creaAnnuncio(req, res) {
  });
 
         try {
-            await generaNotifichePerNuovoAnnuncio(annuncio);
+            const notificheGenerate =
+                await generaNotifichePerNuovoAnnuncio(annuncio);
+
+            const io = req.app.get("io");
+
+            if (io) {
+                for (const notifica of notificheGenerate) {
+                    io.to(
+                        `utente:${notifica.destinatario.toString()}`
+                    ).emit("notifica:nuova", {
+                        notifica,
+                    });
+                }
+            }
         } catch (erroreNotifiche) {
             console.error(
                 "Errore durante la generazione delle notifiche:",
