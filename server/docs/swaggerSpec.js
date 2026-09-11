@@ -28,6 +28,8 @@ const swaggerSpec = {
         { name: "Recensioni" },
         { name: "Preferiti" },
         { name: "Conversazioni" },
+        { name: "Ricerche salvate" },
+        { name: "Notifiche" },
     ],
     components: {
         securitySchemes: {
@@ -608,6 +610,170 @@ const swaggerSpec = {
                     401: { description: "Token mancante o non valido" },
                     403: { description: "Solo partecipanti" },
                     404: { description: "Conversazione non trovata" },
+                },
+            },
+        },
+        "/ricerche-salvate": {
+            get: {
+                tags: ["Ricerche salvate"],
+                summary: "Lista ricerche salvate dell'utente",
+                description:
+                    "Restituisce esclusivamente le ricerche salvate appartenenti all'utente autenticato.",
+                security: bearerSecurity,
+                responses: {
+                    200: { description: "Ricerche salvate recuperate" },
+                    401: { description: "Token mancante o non valido" },
+                },
+            },
+
+            post: {
+                tags: ["Ricerche salvate"],
+                summary: "Salva una nuova ricerca",
+                description:
+                    "Memorizza i filtri utilizzati nella ricerca annunci. Le ricerche attive vengono utilizzate per generare notifiche quando viene pubblicato un nuovo annuncio compatibile.",
+                security: bearerSecurity,
+                requestBody: {
+                    required: true,
+                    content: {
+                        "application/json": {
+                            example: {
+                                nome: "Olivicoltura Bari",
+                                tipoAnnuncio: "richiesta_manodopera",
+                                ricerca: "raccolta olive",
+                                filtri: {
+                                    tipiLavoro: ["Olivicoltura"],
+                                    province: ["BA"],
+                                    prezzoRange: [70, 130],
+                                    periodoInizio: "2026-10-01",
+                                    periodoFine: "2026-12-31",
+                                },
+                                attiva: true,
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    201: { description: "Ricerca salvata creata" },
+                    400: { description: "Dati non validi" },
+                    401: { description: "Token mancante o non valido" },
+                },
+            },
+        },
+
+        "/ricerche-salvate/{id}": {
+            patch: {
+                tags: ["Ricerche salvate"],
+                summary: "Modifica una ricerca salvata",
+                description:
+                    "Aggiorna una ricerca dell'utente autenticato. È possibile anche attivarla o disattivarla tramite il campo 'attiva'.",
+                security: bearerSecurity,
+                parameters: [idParam()],
+                requestBody: {
+                    required: true,
+                    content: {
+                        "application/json": {
+                            example: {
+                                nome: "Olivicoltura Bari aggiornata",
+                                ricerca: "raccolta olive annuale",
+                                filtri: {
+                                    province: ["BA", "BT"],
+                                    prezzoRange: [80, 140],
+                                },
+                                attiva: true,
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: { description: "Ricerca salvata aggiornata" },
+                    400: { description: "ID o dati non validi" },
+                    401: { description: "Token mancante o non valido" },
+                    404: { description: "Ricerca salvata non trovata" },
+                },
+            },
+
+            delete: {
+                tags: ["Ricerche salvate"],
+                summary: "Elimina una ricerca salvata",
+                description:
+                    "Elimina una ricerca appartenente all'utente autenticato. Le notifiche già generate rimangono indipendenti dalla ricerca eliminata.",
+                security: bearerSecurity,
+                parameters: [idParam()],
+                responses: {
+                    200: { description: "Ricerca salvata eliminata" },
+                    400: { description: "ID non valido" },
+                    401: { description: "Token mancante o non valido" },
+                    404: { description: "Ricerca salvata non trovata" },
+                },
+            },
+        },
+
+        "/notifiche": {
+            get: {
+                tags: ["Notifiche"],
+                summary: "Lista notifiche dell'utente",
+                description:
+                    "Restituisce le notifiche persistenti dell'utente autenticato ordinate dalla più recente. Con soloNonLette=true restituisce soltanto quelle non lette.",
+                security: bearerSecurity,
+                parameters: [
+                    {
+                        name: "soloNonLette",
+                        in: "query",
+                        required: false,
+                        schema: {
+                            type: "boolean",
+                        },
+                    },
+                ],
+                responses: {
+                    200: { description: "Notifiche recuperate" },
+                    401: { description: "Token mancante o non valido" },
+                },
+            },
+        },
+
+        "/notifiche/leggi-tutte": {
+            patch: {
+                tags: ["Notifiche"],
+                summary: "Segna tutte le notifiche come lette",
+                security: bearerSecurity,
+                responses: {
+                    200: { description: "Notifiche aggiornate" },
+                    401: { description: "Token mancante o non valido" },
+                },
+            },
+        },
+
+        "/notifiche/{id}/letta": {
+            patch: {
+                tags: ["Notifiche"],
+                summary: "Segna una notifica come letta",
+                description:
+                    "L'operazione è consentita esclusivamente al destinatario della notifica.",
+                security: bearerSecurity,
+                parameters: [idParam()],
+                responses: {
+                    200: { description: "Notifica segnata come letta" },
+                    400: { description: "ID non valido" },
+                    401: { description: "Token mancante o non valido" },
+                    404: { description: "Notifica non trovata" },
+                },
+            },
+        },
+
+        "/notifiche/{id}": {
+            delete: {
+                tags: ["Notifiche"],
+                summary: "Elimina una notifica",
+                description:
+                    "Elimina definitivamente una notifica appartenente all'utente autenticato.",
+                security: bearerSecurity,
+                parameters: [idParam()],
+                responses: {
+                    200: { description: "Notifica eliminata" },
+                    400: { description: "ID non valido" },
+                    401: { description: "Token mancante o non valido" },
+                    404: { description: "Notifica non trovata" },
                 },
             },
         },

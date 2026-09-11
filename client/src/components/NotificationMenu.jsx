@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Badge,
     Box,
@@ -17,6 +18,7 @@ import { useNotifiche } from "../hooks/useNotifiche";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 function NotificationMenu() {
+    const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState(null);
     const [erroreAzione, setErroreAzione] = useState("");
     const [eliminazioneInCorsoId, setEliminazioneInCorsoId] =
@@ -44,13 +46,27 @@ function NotificationMenu() {
     };
 
     const gestisciClickNotifica = async (notifica) => {
-        if (notifica.letta) {
+        const annuncioId =
+            typeof notifica.annuncio === "object"
+                ? notifica.annuncio?._id
+                : notifica.annuncio;
+
+        if (!annuncioId) {
+            setErroreAzione(
+                "Annuncio associato alla notifica non disponibile."
+            );
             return;
         }
 
         try {
             setErroreAzione("");
-            await marcaComeLetta(notifica._id);
+
+            if (!notifica.letta) {
+                await marcaComeLetta(notifica._id);
+            }
+
+            chiudiMenu();
+            navigate(`/annunci/${annuncioId}`);
         } catch (error) {
             setErroreAzione(error.message);
         }
