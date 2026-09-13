@@ -2,151 +2,436 @@
 
 **Coltiviamo nuove opportunità di lavoro.**
 
-T'ACCAT & T'VENN è una piattaforma web universitaria che mette in contatto lavoratori e imprenditori del settore agricolo.
+T'ACCAT & T'VENN è una Single Page Application sviluppata come progetto universitario per mettere in contatto lavoratori e imprenditori del settore agricolo.
 
-La piattaforma supporta entrambe le direzioni dell'incontro tra domanda e offerta: gli imprenditori pubblicano richieste di manodopera, mentre i lavoratori pubblicano la propria disponibilità. Ogni account può avere il ruolo `lavoratore`, `imprenditore` oppure entrambi.
+La piattaforma supporta entrambe le direzioni dell'incontro tra domanda e offerta: gli imprenditori possono pubblicare richieste di manodopera, mentre i lavoratori possono pubblicare la propria disponibilità.
+
+Ogni account può possedere il ruolo `lavoratore`, `imprenditore` oppure entrambi.
+
+---
 
 ## Funzionalità principali
 
 - registrazione, login, rinnovo della sessione e logout;
-- profilo personale e profili pubblici di lavoratori e imprenditori;
+- autenticazione tramite access token JWT e refresh token `httpOnly`;
+- profilo personale e profili pubblici;
 - pubblicazione e gestione di richieste di manodopera e disponibilità di lavoro;
 - ricerca testuale, filtri, ordinamento e visualizzazione degli annunci su mappa;
 - geocoding dei luoghi e memorizzazione delle coordinate GeoJSON;
+- salvataggio delle ricerche effettuate sugli annunci;
+- modifica, attivazione, disattivazione ed eliminazione delle ricerche salvate;
+- matching automatico tra nuovi annunci e ricerche salvate attive;
+- notifiche persistenti per nuovi annunci compatibili;
+- ricezione real-time delle notifiche tramite Socket.IO;
+- menu notifiche con badge delle notifiche non lette;
 - proposte inviate e ricevute, con accettazione o rifiuto;
-- gestione del ciclo di vita degli annunci: `aperto`, `in_corso`, `concluso`, `chiuso`;
-- annunci e profili preferiti, con interfaccia corrente focalizzata sugli annunci;
+- ciclo di vita degli annunci: `aperto`, `in_corso`, `concluso`, `chiuso`;
+- annunci e profili preferiti;
 - recensioni reciproche dopo una collaborazione conclusa;
-- conversazioni private 1:1 e storico dei messaggi;
-- invio e ricezione dei messaggi in tempo reale tramite Socket.IO;
+- conversazioni private 1:1;
+- storico persistente dei messaggi;
+- invio e ricezione di messaggi in tempo reale tramite Socket.IO;
 - conferme di lettura dei messaggi;
-- documentazione interattiva delle API tramite Swagger UI.
+- documentazione interattiva delle API tramite Swagger UI;
+- esecuzione locale tramite Docker Compose;
+- deployment dimostrativo tramite Render.
 
-## Avvio rapido con Docker
+---
 
-Docker Compose è il metodo consigliato per eseguire l'intera applicazione. Avvia frontend, backend e MongoDB senza richiedere Node.js o MongoDB installati sul computer host.
+## Stack tecnologico
 
-### Prerequisiti
+| Area | Tecnologie principali |
+| --- | --- |
+| Frontend | React 19, Vite, Material UI, React Router, Leaflet, React Leaflet, Socket.IO Client |
+| Backend | Node.js 22, Express 5, Mongoose, JSON Web Token, bcrypt, Socket.IO, Swagger UI |
+| Database | MongoDB 7 in locale, MongoDB Atlas online, GeoJSON e indici `2dsphere` |
+| Infrastruttura | Docker, Docker Compose, Nginx, Render, Git, GitHub |
+| Servizi esterni | Nominatim, provider cartografici compatibili con Leaflet |
+
+---
+
+# Avvio rapido con Docker
+
+Docker Compose è il metodo consigliato per eseguire l'intera applicazione.
+
+Avvia:
+
+- frontend;
+- backend;
+- MongoDB.
+
+Non è necessario avere Node.js o MongoDB installati direttamente sul computer host.
+
+## Prerequisiti
+
+Sono necessari:
 
 - Git;
 - Docker Desktop oppure Docker Engine;
-- Docker Compose v2, disponibile tramite il comando `docker compose`;
+- Docker Compose v2 tramite comando `docker compose`;
 - porte `5173`, `3000` e `27017` libere.
 
-### 1. Clonazione del repository
+---
+
+## 1. Clonazione del repository
 
 ```bash
 git clone --branch develop https://github.com/lup62/T-ACCAT-T-VENN.git
 cd T-ACCAT-T-VENN
 ```
 
-Se il repository è già presente in locale, eseguire i comandi successivi dalla sua cartella principale.
+Se il repository è già presente in locale, eseguire i comandi successivi dalla cartella principale.
 
-### 2. Configurazione del backend
+---
+
+## 2. Configurazione del backend
 
 Creare `server/.env` partendo dal file di esempio.
 
-PowerShell:
+### PowerShell
 
 ```powershell
 Copy-Item server/.env.example server/.env
 ```
 
-macOS/Linux:
+### macOS / Linux / Git Bash
 
 ```bash
 cp server/.env.example server/.env
 ```
 
-Aprire `server/.env` e impostare almeno una chiave JWT lunga e casuale:
+Aprire successivamente `server/.env` e impostare almeno:
 
 ```env
 JWT_ACCESS_SECRET=inserire_una_chiave_segreta_lunga_e_casuale
 ```
 
-Il file `server/.env` è richiesto da Compose, contiene dati riservati ed è escluso da Git. In ambiente Docker, Compose imposta direttamente porta, origine frontend, ambiente e indirizzo MongoDB; il valore indispensabile fornito dal file è `JWT_ACCESS_SECRET`.
+Il file `server/.env` contiene dati riservati e non deve essere versionato.
 
-### 3. Build e avvio
+Nell'esecuzione tramite Docker Compose, le altre principali impostazioni vengono configurate automaticamente.
+
+---
+
+## 3. Build e avvio
+
+Dalla root del progetto:
 
 ```bash
 docker compose up --build -d
 ```
 
-Compose costruisce le immagini applicative, avvia i servizi e aspetta che ogni dipendenza sia healthy secondo l'ordine `mongo` → `backend` → `frontend`.
+Docker Compose costruisce le immagini applicative e avvia i servizi rispettando le dipendenze:
 
-Controllare lo stato:
+```text
+mongo
+  ↓
+backend
+  ↓
+frontend
+```
+
+Per verificare lo stato:
 
 ```bash
 docker compose ps
 ```
 
-I tre servizi devono risultare `healthy`.
+I servizi devono risultare disponibili/healthy.
 
-### 4. Indirizzi locali
+---
 
-| Servizio | Indirizzo | Mapping Docker |
-| --- | --- | --- |
-| Frontend | [http://localhost:5173](http://localhost:5173) | host `5173` → container `80` |
-| Backend | [http://localhost:3000](http://localhost:3000) | host `3000` → container `3000` |
-| Swagger UI | [http://localhost:3000/api-docs](http://localhost:3000/api-docs) | servito dal backend |
-| API REST | `http://localhost:3000/api` | servita dal backend |
-| MongoDB | `mongodb://localhost:27017/taccat` | host `27017` → container `27017` |
+## 4. Indirizzi locali
 
-La risposta prevista visitando il backend è:
+| Servizio | Indirizzo |
+| --- | --- |
+| Frontend | http://localhost:5173 |
+| Backend | http://localhost:3000 |
+| Swagger UI | http://localhost:3000/api-docs |
+| API REST | http://localhost:3000/api |
+| MongoDB | mongodb://localhost:27017/taccat |
+| Health check | http://localhost:3000/health |
+
+Visitando il backend in ambiente di sviluppo la risposta prevista è:
 
 ```text
 Backend T'ACCAT attivo!
 ```
 
-## Dati dimostrativi
+---
 
-Con lo stack avviato, eseguire il seed dentro il container del backend:
+# Credenziali demo
+
+Per facilitare il test delle funzionalità sono disponibili account generati tramite lo script di seed.
+
+Tutti gli utenti del dataset dimostrativo utilizzano la password:
+
+```text
+Password123!
+```
+
+Account consigliati per il test:
+
+| Ruolo | Nome | Email | Password |
+| --- | --- | --- | --- |
+| Imprenditore | Giovanni Russo | `giovanni.russo@seed.local` | `Password123!` |
+| Lavoratore | Luca Moretti | `luca.moretti@seed.local` | `Password123!` |
+| Imprenditore + Lavoratore | Paolo Quaranta | `paolo.quaranta@seed.local` | `Password123!` |
+
+Queste credenziali sono destinate esclusivamente all'ambiente dimostrativo.
+
+---
+
+# Dati dimostrativi
+
+Con lo stack già avviato, il database locale può essere popolato tramite:
 
 ```bash
 docker compose exec backend npm run seed
 ```
 
-> **Attenzione:** il seed elimina i dati applicativi gestiti dallo script prima di ricreare il dataset dimostrativo. Usarlo esclusivamente sul database di sviluppo.
+Lo script di seed genera utenti e dati dimostrativi utilizzabili per esplorare le principali funzionalità dell'applicazione.
 
-Il dataset corrente crea:
+Il dataset attualmente documentato comprende:
 
 - 20 utenti;
 - 36 annunci;
 - 25 proposte;
 - 12 recensioni;
 - 23 preferiti.
+- 3 ricerche salvate dimostrative, di cui 2 attive e 1 disattivata.
 
-Il seed non crea conversazioni o messaggi dimostrativi. Tutti gli utenti generati usano la password:
+Il seed non crea conversazioni, messaggi o notifiche dimostrative.
+
+Le notifiche vengono generate realmente quando un nuovo annuncio
+corrisponde a una ricerca salvata attiva, così da permettere il test
+completo del matching e della consegna real-time tramite Socket.IO.
+
+> **Attenzione:** lo script di seed elimina i dati applicativi gestiti dallo script prima di ricreare il dataset. Deve essere utilizzato esclusivamente su database di sviluppo o dimostrativi.
+
+---
+
+# Flusso consigliato per il test
+
+Per verificare rapidamente le funzionalità principali:
+
+1. effettuare il login con uno degli account demo;
+2. consultare gli annunci;
+3. utilizzare ricerca e filtri;
+4. salvare una ricerca;
+5. aprire la sezione `Ricerche salvate`;
+6. modificare, attivare o disattivare una ricerca;
+7. utilizzare un secondo account per pubblicare un annuncio compatibile;
+8. verificare la comparsa della notifica;
+9. aprire la notifica dalla Navbar;
+10. inviare una proposta;
+11. accettare o rifiutare la proposta con l'altro account;
+12. aprire una conversazione;
+13. verificare l'invio real-time dei messaggi;
+14. concludere la collaborazione;
+15. inserire una recensione.
+
+Per testare correttamente le funzionalità real-time è consigliabile utilizzare due browser diversi oppure una finestra normale e una finestra privata.
+
+---
+
+# Ricerche salvate e notifiche
+
+Un utente autenticato può salvare i filtri utilizzati durante la ricerca degli annunci.
+
+Una ricerca salvata può contenere:
+
+- tipo di annuncio;
+- testo di ricerca;
+- tipo di lavoro;
+- province;
+- fascia di prezzo;
+- periodo;
+- stato attivo/disattivo.
+
+Quando viene pubblicato un nuovo annuncio, il backend confronta il nuovo documento con le ricerche salvate attive.
+
+Il matching viene gestito attraverso:
 
 ```text
-Password123!
+server/utils/ricercaSalvataMatcher.js
 ```
 
-Account di esempio:
+La generazione delle notifiche viene invece orchestrata da:
 
-| Ruolo | Nome | Email |
-| --- | --- | --- |
-| Imprenditore | Giovanni Russo | `giovanni.russo@seed.local` |
-| Lavoratore | Luca Moretti | `luca.moretti@seed.local` |
-| Imprenditore e lavoratore | Paolo Quaranta | `paolo.quaranta@seed.local` |
+```text
+server/services/notificaRicercaService.js
+```
 
-## Gestione dello stack Docker
+Il flusso è:
 
-Eseguire i comandi dalla cartella principale del progetto.
+```text
+Nuovo annuncio
+      ↓
+Ricerca delle configurazioni attive
+      ↓
+Matching
+      ↓
+Creazione Notifica in MongoDB
+      ↓
+Socket.IO
+      ↓
+room utente:<userId>
+      ↓
+evento notifica:nuova
+      ↓
+NotificheContext
+      ↓
+NotificationMenu
+```
+
+Le notifiche vengono sempre persistite in MongoDB.
+
+Se l'utente è connesso, il backend invia inoltre l'evento real-time:
+
+```text
+notifica:nuova
+```
+
+alla room personale:
+
+```text
+utente:<userId>
+```
+
+In questo modo una notifica non viene persa nel caso in cui il destinatario sia offline.
+
+---
+
+# Architettura in breve
+
+```text
+Browser
+│
+├── React SPA
+│   ├── React Router
+│   ├── Material UI
+│   ├── AuthContext
+│   ├── RealtimeContext
+│   ├── NotificheContext
+│   ├── REST services
+│   └── Socket.IO client
+│
+├── Nominatim
+└── provider cartografici
+        │
+        ▼
+Backend Node.js / Express / Socket.IO
+│
+├── routes
+├── middlewares
+├── controllers
+├── services
+├── utils
+├── sockets
+└── models Mongoose
+        │
+        ▼
+MongoDB
+```
+
+L'applicazione adotta un'architettura client-server a tre livelli.
+
+Il frontend React gestisce:
+
+- interfaccia;
+- routing;
+- stato globale;
+- form;
+- ricerca e filtri;
+- mappe;
+- notifiche;
+- comunicazione REST;
+- comunicazione real-time.
+
+Il backend Express gestisce:
+
+- autenticazione;
+- autorizzazione;
+- API REST;
+- logica applicativa;
+- matching delle ricerche;
+- generazione delle notifiche;
+- persistenza;
+- Swagger;
+- Socket.IO.
+
+MongoDB persiste le 10 principali collezioni:
+
+```text
+User
+Annuncio
+Proposta
+Recensione
+Preferito
+Conversazione
+Messaggio
+RefreshToken
+RicercaSalvata
+Notifica
+```
+
+---
+
+# Comunicazione real-time
+
+Socket.IO viene utilizzato sia per la chat sia per le notifiche.
+
+## Chat
+
+Ogni conversazione utilizza una room:
+
+```text
+conversazione:<idConversazione>
+```
+
+Il principale evento inviato dal server è:
+
+```text
+messaggio:nuovo
+```
+
+## Notifiche
+
+Ogni utente autenticato entra automaticamente nella room:
+
+```text
+utente:<userId>
+```
+
+Quando viene generata una nuova notifica, il backend invia:
+
+```text
+notifica:nuova
+```
+
+alla room personale del destinatario.
+
+La connessione Socket.IO viene autenticata tramite access token JWT nel handshake.
+
+---
+
+# Gestione dello stack Docker
+
+I comandi seguenti devono essere eseguiti dalla root del progetto.
 
 | Operazione | Comando |
 | --- | --- |
-| Build o rebuild e avvio | `docker compose up --build -d` |
-| Stato dei servizi | `docker compose ps` |
-| Log di tutti i servizi | `docker compose logs -f` |
-| Ultime 100 righe del backend | `docker compose logs --tail=100 backend` |
+| Build/rebuild e avvio | `docker compose up --build -d` |
+| Stato servizi | `docker compose ps` |
+| Log servizi | `docker compose logs -f` |
+| Log backend | `docker compose logs --tail=100 backend` |
 | Arresto temporaneo | `docker compose stop` |
-| Ripresa dei container arrestati | `docker compose start` |
-| Arresto e rimozione di container e rete | `docker compose down` |
+| Ripresa | `docker compose start` |
+| Rimozione container e rete | `docker compose down` |
 
-`docker compose down` conserva il volume `mongo_data` e quindi i dati MongoDB.
+`docker compose down` mantiene il volume MongoDB.
 
-Per eliminare anche il database persistente ed eseguire un reset completo:
+Per eliminare anche i dati:
 
 ```bash
 docker compose down -v
@@ -154,89 +439,44 @@ docker compose up --build -d
 docker compose exec backend npm run seed
 ```
 
-> **Attenzione:** `docker compose down -v` elimina definitivamente il volume `mongo_data`.
+> **Attenzione:** `docker compose down -v` elimina definitivamente il database MongoDB locale.
 
-Il codice viene copiato nelle immagini e non sono configurati bind mount o hot reload nei container. Dopo una modifica al codice o alla configurazione occorre quindi ricostruire con `docker compose up --build -d`.
-
-## Architettura in breve
-
-```text
-Browser
-├── frontend React/Vite servito da Nginx
-├── chiamate REST e Socket.IO verso il backend
-└── chiamate HTTPS a Nominatim e ai provider cartografici
-
-Backend Node.js/Express/Socket.IO
-└── Mongoose → MongoDB
-```
-
-L'applicazione adotta un'architettura client-server a tre livelli:
-
-1. la Single Page Application React gestisce interfaccia, routing, stato della sessione, filtri e mappe;
-2. il backend modulare Express espone API REST, autenticazione, regole applicative, Swagger e Socket.IO sullo stesso server HTTP;
-3. MongoDB persiste utenti, annunci, proposte, preferiti, recensioni, conversazioni, messaggi e refresh token.
-
-La chat usa REST per apertura delle conversazioni, storico e conferme di lettura; invio e ricezione dei nuovi messaggi passano invece da Socket.IO. Il frontend interroga direttamente Nominatim per il geocoding e usa tile CARTO con dati OpenStreetMap per le mappe.
-
-### Container Docker
-
-| Servizio | Immagine o build | Responsabilità |
-| --- | --- | --- |
-| `frontend` | build Node.js 22, runtime Nginx 1.27 | Compila la SPA con Vite e serve i file statici con fallback verso `index.html`. |
-| `backend` | `server/Dockerfile`, Node.js 22 Alpine | Esegue Express, API REST, Swagger e Socket.IO sulla porta `3000`. |
-| `mongo` | `mongo:7` | Persiste i dati nel volume `mongo_data`. |
-
-Tutti i servizi usano la rete bridge `taccat-network`, la policy di riavvio `unless-stopped` e healthcheck dedicati.
-
-## Stack tecnologico
-
-| Area | Tecnologie principali |
-| --- | --- |
-| Frontend | React 19, Vite 8, Material UI, React Router, Leaflet, React Leaflet, Socket.IO Client |
-| Backend | Node.js 22, Express 5, Mongoose, JSON Web Token, bcrypt, Socket.IO, Swagger UI |
-| Database | MongoDB 7 in locale, MongoDB Atlas online, GeoJSON e indici geospaziali `2dsphere` |
-| Infrastruttura | Docker, Docker Compose, Nginx 1.27, Render, Git e GitHub |
-| Servizi esterni | Nominatim, CARTO e OpenStreetMap |
-
-## Variabili di ambiente
-
-| Componente | Variabile | Uso |
-| --- | --- | --- |
-| Backend | `PORT` | Porta HTTP. Compose usa `3000`. |
-| Backend | `CLIENT_ORIGIN` | Origine autorizzata dal CORS. Compose usa `http://localhost:5173`. |
-| Backend | `NODE_ENV` | Ambiente di esecuzione. Compose usa `development`. |
-| Backend | `MONGODB_URI` | Connessione al database. Compose usa `mongodb://mongo:27017/taccat`. |
-| Backend | `JWT_ACCESS_SECRET` | Segreto obbligatorio per firmare gli access token JWT. |
-| Frontend | `VITE_API_URL` | URL base per REST e Socket.IO. Compose usa `http://localhost:3000`. |
-
-`VITE_API_URL` è un argomento di build: viene incorporato nel bundle frontend. Se cambia, l'immagine `frontend` deve essere ricostruita.
-
-## Deployment online con Render
-
-Per la pubblicazione dimostrativa è disponibile il Blueprint [`render.yaml`](./render.yaml). Il servizio gratuito esegue frontend, API, Swagger e Socket.IO sullo stesso URL HTTPS e usa il database MongoDB Atlas esistente.
-
-La procedura completa, inclusi configurazione di `MONGODB_URI`, IP Access List di Atlas, verifica e avvertenze sul seed, è descritta in [Deployment dimostrativo su Render](./docs/deployment-render.md).
-
-In sintesi:
-
-1. creare un Blueprint Render collegato al repository e al branch `develop`;
-2. inserire `MONGODB_URI` quando richiesto;
-3. autorizzare in Atlas gli indirizzi in uscita mostrati da Render;
-4. aprire l'URL `onrender.com` assegnato al servizio.
-
-Il seed non parte automaticamente e non deve essere lanciato sull'Atlas già popolato, perché esegue un reset dei dati applicativi.
-
-## Sviluppo manuale senza container applicativi
-
-Per lavorare con i server di sviluppo npm servono Node.js 22 e npm. Non avviare contemporaneamente lo stack Docker completo, perché frontend e backend userebbero le stesse porte.
-
-### 1. Avviare soltanto MongoDB
+I container non utilizzano bind mount o hot reload. Dopo modifiche al codice è quindi necessario ricostruire:
 
 ```bash
-docker compose up -d mongo
+docker compose up --build -d
 ```
 
-Per questa modalità, in `server/.env` usare:
+---
+
+# Container Docker
+
+| Servizio | Immagine / build | Responsabilità |
+| --- | --- | --- |
+| `frontend` | Build Node.js + runtime Nginx | Build della SPA e servizio dei file statici |
+| `backend` | `server/Dockerfile` | Express, API REST, Swagger e Socket.IO |
+| `mongo` | `mongo:7` | Persistenza MongoDB |
+
+I servizi condividono la rete:
+
+```text
+taccat-network
+```
+
+---
+
+# Variabili di ambiente
+
+| Componente | Variabile | Utilizzo |
+| --- | --- | --- |
+| Backend | `PORT` | Porta HTTP, default `3000` |
+| Backend | `CLIENT_ORIGIN` | Origine autorizzata dal CORS |
+| Backend | `NODE_ENV` | Ambiente di esecuzione |
+| Backend | `MONGODB_URI` | Connessione MongoDB |
+| Backend | `JWT_ACCESS_SECRET` | Segreto per gli access token JWT |
+| Frontend | `VITE_API_URL` | Base URL per REST e Socket.IO |
+
+Esempio per sviluppo manuale:
 
 ```env
 PORT=3000
@@ -246,7 +486,23 @@ MONGODB_URI=mongodb://localhost:27017/taccat
 JWT_ACCESS_SECRET=inserire_una_chiave_segreta_lunga_e_casuale
 ```
 
-### 2. Avviare il backend
+`VITE_API_URL` viene incorporata nella build del frontend.
+
+Se viene modificata in ambiente Docker, l'immagine frontend deve essere ricostruita.
+
+---
+
+# Sviluppo manuale senza container applicativi
+
+Per utilizzare direttamente i server di sviluppo sono necessari Node.js e npm.
+
+## 1. Avviare MongoDB
+
+```bash
+docker compose up -d mongo
+```
+
+## 2. Avviare il backend
 
 ```bash
 cd server
@@ -254,9 +510,9 @@ npm ci
 npm run dev
 ```
 
-### 3. Avviare il frontend
+## 3. Avviare il frontend
 
-In un secondo terminale:
+In un altro terminale:
 
 ```bash
 cd client
@@ -264,75 +520,158 @@ npm ci
 npm run dev
 ```
 
-Con il backend sulla porta standard non è necessario creare `client/.env`, perché il frontend usa il fallback `http://localhost:3000`. Per un backend differente impostare `VITE_API_URL` in `client/.env`.
+Con il backend sulla porta standard, il frontend utilizza:
 
-## Comandi npm disponibili
+```text
+http://localhost:3000
+```
 
-### Backend
+come fallback.
 
-Eseguire dalla cartella `server/`.
+Per utilizzare un backend differente configurare `VITE_API_URL`.
+
+---
+
+# Comandi npm
+
+## Backend
+
+Eseguire da `server/`.
 
 | Comando | Descrizione |
 | --- | --- |
-| `npm start` | Avvia Express e Socket.IO in modalità standard. |
-| `npm run dev` | Avvia Express e Socket.IO tramite `node server.js`. |
-| `npm run seed` | Svuota e ripopola il database di sviluppo con dati dimostrativi. |
+| `npm start` | Avvia backend Express e Socket.IO |
+| `npm run dev` | Avvia il backend in modalità sviluppo |
+| `npm run seed` | Ripopola il database dimostrativo |
 
-### Frontend
+## Frontend
 
-Eseguire dalla cartella `client/`.
+Eseguire da `client/`.
 
 | Comando | Descrizione |
 | --- | --- |
-| `npm run dev` | Avvia Vite con hot reload. |
-| `npm run build` | Genera la build statica in `dist/`. |
-| `npm run lint` | Esegue ESLint sul frontend. |
-| `npm run preview` | Serve localmente la build generata. |
+| `npm run dev` | Avvia Vite |
+| `npm run build` | Genera la build di produzione |
+| `npm run lint` | Esegue ESLint |
+| `npm run preview` | Serve la build localmente |
 
-## Struttura del repository
+---
+
+# Deployment online
+
+Il repository contiene:
+
+```text
+render.yaml
+```
+
+per il deployment dimostrativo su Render.
+
+Il servizio Render costruisce il frontend e lo serve tramite Express insieme a:
+
+- API REST;
+- Swagger UI;
+- Socket.IO.
+
+La persistenza online utilizza MongoDB Atlas.
+
+La procedura dettagliata è disponibile in:
+
+[Deployment dimostrativo su Render](./docs/deployment-render.md)
+
+L'endpoint utilizzato per l'health check è:
+
+```text
+/health
+```
+
+Il seed non viene eseguito automaticamente durante il deployment.
+
+---
+
+# Struttura del repository
 
 ```text
 T-ACCAT-T-VENN/
-├── client/                     # Frontend React/Vite
-│   ├── src/                    # Pagine, componenti, hook, context e service
-│   ├── Dockerfile              # Build Vite e runtime Nginx
-│   └── nginx.conf              # Configurazione SPA fallback
-├── server/                     # Backend Node.js/Express
-│   ├── config/                 # Connessione MongoDB
-│   ├── controllers/            # Casi d'uso e regole applicative
-│   ├── docs/                   # Specifica OpenAPI/Swagger
-│   ├── middlewares/            # Autenticazione e autorizzazione
-│   ├── models/                 # Schemi e indici Mongoose
-│   ├── routes/                 # Rotte REST
-│   ├── scripts/                # Seed del database
-│   ├── sockets/                # Autenticazione e chat real-time
-│   ├── Dockerfile              # Immagine backend Node.js
-│   └── server.js               # Entry point del server
-├── docs/                       # Documentazione progettuale e diagrammi UML
-├── docker-compose.yaml         # Orchestrazione dell'intero stack
-├── render.yaml                 # Blueprint del deployment dimostrativo
+│
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── contexts/
+│   │   ├── hooks/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── theme/
+│   ├── Dockerfile
+│   └── nginx.conf
+│
+├── server/
+│   ├── config/
+│   ├── controllers/
+│   ├── docs/
+│   ├── middlewares/
+│   ├── models/
+│   ├── routes/
+│   ├── scripts/
+│   ├── services/
+│   ├── sockets/
+│   ├── utils/
+│   ├── Dockerfile
+│   └── server.js
+│
+├── docs/
+│   ├── UML uso/
+│   ├── UML sequenza/
+│   ├── componenti-react.md
+│   ├── deployment-render.md
+│   ├── modello-dati.md
+│   ├── modello-dati-diagramma-er.pdf
+│   └── scenario-applicativo-e-architettura.md
+│
+├── docker-compose.yaml
+├── render.yaml
 └── README.md
 ```
 
-## Documentazione
+---
 
-Per gli approfondimenti progettuali bisogna fare riferimento ai documenti presenti nella cartella [`docs/`](./docs/) e nelle relative sottocartelle.
+# Documentazione
+
+La documentazione principale del progetto è disponibile nella cartella `docs/`.
+
+Documenti principali:
 
 - [Scenario applicativo e architettura](./docs/scenario-applicativo-e-architettura.md)
+- [Modello dei dati](./docs/modello-dati.md)
+- [Diagramma ER](./docs/modello-dati-diagramma-er.pdf)
 - [Componenti React](./docs/componenti-react.md)
-- [Deployment dimostrativo su Render](./docs/deployment-render.md)
-- [Diagrammi UML di sequenza](./docs/UML%20sequenza/)
-- [Documentazione del frontend](./client/README.md)
-- [Riepilogo delle API backend](./server/API.md)
-- [Swagger UI](http://localhost:3000/api-docs), disponibile con il backend avviato
+- [UML casi d'uso](./docs/UML%20uso/)
+- [UML di sequenza](./docs/UML%20sequenza/)
+- [Deployment Render](./docs/deployment-render.md)
+- [Documentazione frontend](./client/README.md)
+- [Riepilogo API backend](./server/API.md)
 
-La documentazione Swagger comprende anche le API delle conversazioni. Il file `server/API.md` è un riepilogo statico e potrebbe non coprire ogni endpoint presente nella specifica interattiva.
+Con il backend avviato, Swagger UI è disponibile su:
 
-## Risoluzione dei problemi
+```text
+http://localhost:3000/api-docs
+```
 
-### Uno o più container non diventano healthy
+La specifica OpenAPI completa si trova in:
 
-Controllare stato e log:
+```text
+server/docs/swaggerSpec.js
+```
+
+---
+
+# Risoluzione dei problemi
+
+## I container non diventano healthy
+
+Controllare:
 
 ```bash
 docker compose ps
@@ -341,66 +680,112 @@ docker compose logs --tail=100 backend
 docker compose logs --tail=100 frontend
 ```
 
-Il frontend parte dopo il backend e il backend parte dopo MongoDB; un errore in un servizio blocca quindi quelli dipendenti.
+Il frontend dipende dal backend e il backend dipende da MongoDB.
 
-### Compose segnala che `server/.env` non esiste
+---
 
-Crearlo da `server/.env.example` e valorizzare `JWT_ACCESS_SECRET`, come descritto nell'avvio rapido.
+## `server/.env` non esiste
 
-### Il backend non si collega a MongoDB
+Crearlo da:
 
-- dentro Docker l'URI deve usare il nome del servizio: `mongodb://mongo:27017/taccat`;
-- con backend avviato sull'host deve usare `mongodb://localhost:27017/taccat`.
+```text
+server/.env.example
+```
 
-Compose imposta automaticamente il primo valore per il container backend.
+e valorizzare almeno:
 
-### Una porta è già occupata
+```text
+JWT_ACCESS_SECRET
+```
 
-Arrestare eventuali processi locali o un precedente stack:
+---
+
+## Il backend non si collega a MongoDB
+
+Dentro Docker utilizzare:
+
+```text
+mongodb://mongo:27017/taccat
+```
+
+Avviando il backend direttamente sull'host utilizzare:
+
+```text
+mongodb://localhost:27017/taccat
+```
+
+---
+
+## Una porta è già occupata
+
+Arrestare lo stack precedente:
 
 ```bash
 docker compose down
 ```
 
-Se si modificano i mapping di porta in `docker-compose.yaml`, aggiornare anche `CLIENT_ORIGIN` e il build argument `VITE_API_URL`, quindi ricostruire le immagini.
+oppure terminare il processo che utilizza la porta interessata.
 
-### Il frontend non riflette le ultime modifiche
+---
 
-I container non usano hot reload. Ricostruire le immagini:
+## Il frontend non mostra le ultime modifiche
+
+Ricostruire le immagini:
 
 ```bash
 docker compose up --build -d
 ```
 
-### Il frontend non comunica con il backend
+---
 
-Controllare che:
+## Il frontend non comunica con il backend
 
-- `backend` sia healthy;
-- `VITE_API_URL` punti all'indirizzo raggiungibile dal browser;
-- `CLIENT_ORIGIN` corrisponda all'indirizzo del frontend;
-- il browser non segnali errori CORS;
-- dopo una modifica a `VITE_API_URL` sia stata ricostruita l'immagine frontend.
+Verificare:
 
-### Serve un database completamente pulito
+- stato del backend;
+- `VITE_API_URL`;
+- `CLIENT_ORIGIN`;
+- eventuali errori CORS;
+- corretta ricostruzione della build frontend.
 
-Usare il reset con volume soltanto se la perdita dei dati locali è accettabile:
+---
+
+## Le notifiche real-time non arrivano
+
+Verificare:
+
+- login dell'utente;
+- validità dell'access token;
+- connessione Socket.IO;
+- presenza della ricerca salvata;
+- `attiva = true`;
+- compatibilità del nuovo annuncio con i filtri;
+- log del backend.
+
+Per controllare il backend:
 
 ```bash
-docker compose down -v
-docker compose up --build -d
-docker compose exec backend npm run seed
+docker compose logs --tail=100 backend
 ```
 
-## Sicurezza e limiti dell'ambiente locale
+---
 
-- non versionare mai `server/.env`;
-- usare un `JWT_ACCESS_SECRET` lungo, casuale e diverso tra ambienti;
-- non usare gli account e la password del seed in produzione;
-- la configurazione Compose è pensata per sviluppo locale: usa `NODE_ENV=development`, non configura TLS ed espone le tre porte sull'host;
-- Nominatim e i provider cartografici sono dipendenze esterne soggette alle rispettive policy e disponibilità;
-- il repository non include attualmente una suite di test automatizzata o una pipeline CI.
+# Sicurezza e limiti
 
-## Autori
+Non devono essere versionati file `.env` contenenti segreti.
 
-Il progetto è sviluppato a scopo universitario ed è stato sviluppato da Oronzo Franchini, Giovanni Pastore e Pasquale Lorusso
+Utilizzare un `JWT_ACCESS_SECRET` lungo e casuale.
+
+Gli account seed e la password:
+
+```text
+Password123!
+```
+
+sono destinati esclusivamente all'ambiente dimostrativo.
+
+La configurazione Docker locale è pensata per sviluppo e dimostrazione e non rappresenta una configurazione completa di produzione.
+
+Il progetto non include attualmente una suite completa di test automatizzati o una pipeline CI.
+
+Socket.IO utilizza un singolo processo backend. Una futura scalabilità orizzontale richiederebbe un meccanismo di condivisione degli eventi tra istanze.

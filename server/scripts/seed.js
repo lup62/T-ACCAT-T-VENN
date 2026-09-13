@@ -5,8 +5,8 @@
  *   node scripts/seed.js
  *
  * ATTENZIONE: svuota TUTTE le collection (utenti, annunci, proposte,
- * preferiti, recensioni, messaggi, conversazioni, refresh token) prima di ricreare
- * i dati. Da usare solo sul database di sviluppo.
+ * preferiti, recensioni, messaggi, conversazioni, refresh token,
+ * ricerche salvate e notifiche) prima di ricreare
  *
  * Cosa crea:
  *   - 20 utenti (8 imprenditori, 10 lavoratori, 2 con doppio ruolo),
@@ -20,6 +20,9 @@
  *   - recensioni sugli annunci conclusi (anche non reciproche e con voti
  *     variabili), con ratingMedio ricalcolato come fa il controller
  *   - preferiti di tipo "annuncio" e "profilo"
+ *   - 3 ricerche salvate dimostrative, di cui 2 attive e 1 disattivata;
+ *     le notifiche non vengono create dal seed, ma vengono generate
+ *     realmente dal matching quando viene pubblicato un nuovo annuncio
  */
 
 require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
@@ -35,6 +38,8 @@ const Recensione = require("../models/Recensione");
 const Messaggio = require("../models/Messaggio");
 const Conversazione = require("../models/Conversazione");
 const RefreshToken = require("../models/RefreshToken");
+const RicercaSalvata = require("../models/RicercaSalvata");
+const Notifica = require("../models/Notifica");
 
 const PASSWORD = "Password123!";
 
@@ -74,14 +79,16 @@ async function main() {
 
     // ── 1. Pulizia totale ────────────────────────────────────────────────
     const collections = [
-        User,
-        Annuncio,
-        Proposta,
-        Preferito,
-        Recensione,
+        Notifica,
+        RicercaSalvata,
         Messaggio,
         Conversazione,
+        Recensione,
+        Preferito,
+        Proposta,
         RefreshToken,
+        Annuncio,
+        User,
     ];
     for (const model of collections) {
         const { deletedCount } = await model.deleteMany({});
@@ -222,6 +229,62 @@ async function main() {
             })
         );
     console.log("  creati 20 utenti");
+
+    // ── Ricerche salvate ────────────────────────────────────────────────────
+//
+// Vengono create alcune ricerche dimostrative.
+// Non vengono invece create notifiche artificiali: le notifiche devono
+// essere prodotte realmente dal matching quando viene pubblicato
+// un nuovo annuncio tramite l'applicazione.
+
+    await RicercaSalvata.create(
+        {
+            utente: luca._id,
+            nome: "Nuove offerte di lavoro",
+            tipoAnnuncio: "richiesta_manodopera",
+            ricerca: "",
+            filtri: {
+                tipiLavoro: [],
+                province: [],
+                prezzoRange: [0, 200],
+                periodoInizio: null,
+                periodoFine: null,
+            },
+            attiva: true,
+        },
+        {
+            utente: giovanni._id,
+            nome: "Lavoratori disponibili",
+            tipoAnnuncio: "disponibilita_lavoro",
+            ricerca: "",
+            filtri: {
+                tipiLavoro: [],
+                province: [],
+                prezzoRange: [0, 200],
+                periodoInizio: null,
+                periodoFine: null,
+            },
+            attiva: true,
+        },
+        {
+            utente: paolo._id,
+            nome: "Olivicoltura Bari",
+            tipoAnnuncio: "richiesta_manodopera",
+            ricerca: "",
+            filtri: {
+                tipiLavoro: ["Olivicoltura"],
+                province: ["BA"],
+                prezzoRange: [0, 200],
+                periodoInizio: null,
+                periodoFine: null,
+            },
+            attiva: false,
+        }
+    );
+
+    console.log(
+        "  create 3 ricerche salvate (2 attive, 1 disattivata)"
+    );
 
     // ── 3. Annunci ───────────────────────────────────────────────────────
     // Date relative a luglio 2026: conclusi nel passato, aperti nel futuro.
